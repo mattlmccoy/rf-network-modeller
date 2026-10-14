@@ -2,7 +2,7 @@ import { sub } from '../engine/complex.ts';
 import { inputImpedance } from '../engine/mna.ts';
 import { compile } from '../chain/compile.ts';
 import { type TaggedSweep, applyState } from '../chain/state.ts';
-import type { BranchTable, Chain, Context, Variant } from '../chain/types.ts';
+import type { BranchCache, Chain, Context, Variant } from '../chain/types.ts';
 import { type Sweep, bandIndices, gammaFromZ } from '../io/sweep.ts';
 import { illDetermined, levenbergMarquardt, paramStats } from './lm.ts';
 import { type ParamRef, fromFitVars, refName, toFitVars } from './params.ts';
@@ -36,7 +36,7 @@ export interface NetworkFit {
 /** Γ_model − Γ_meas over the band for every included sweep in its own state: real parts, then imaginary parts. */
 export function networkResidual(input: NetworkFitInput): (x: number[]) => number[] {
   const band = input.band ?? FIT_BAND;
-  const cache = new Map<string, BranchTable>();
+  const cache: BranchCache = new Map();
   const used = input.sweeps.filter((s) => s.include);
   const idx = used.map((s) => bandIndices(s.sweep.f, band[0], band[1]));
   return (x) => {

@@ -81,3 +81,47 @@ test('a measured branch whose sweep is not loaded is a named error', () => {
   const c = chainOf([shunt('arm', [{ id: 'm', label: 'm', type: 'measuredBranch', sweepId: 'missing', kr: param(1), d: param(0), dLb: param(0), loop: false }])]);
   assert.throws(() => compile(c, ctx()), /not loaded/);
 });
+
+// Final-review fixes (I1, I2, I3, I6)
+test('a sub-chain with no series element is refused, not silently shorted (final review I1)', () => {
+  assert.throws(() => compile(chainOf([cap('cs', 80), shunt('a', [res('r', 50)]), shunt('s', [shunt('inner', [cap('ci', 100)])])]), ctx()), ChainError);
+  assert.throws(() => compile(chainOf([{ id: 'p', label: 'p', type: 'parallel', chains: [[ind('l', 300e-9)], [shunt('sa', [res('r2', 1000)])]] }, shunt('b', [res('r', 50)])]), ctx()), ChainError);
+});
+
+test('zero-length coax and wire pass through instead of reading OPEN (final review I2)', () => {
+  const f = 13.56e6;
+  const zeroLen: Context = { variant: { name: 'z', cable: { length: 0, vf: 0.7, z0: 50, alpha13: 0 }, Lj: 0 }, sweeps: {} };
+  assertClose(evaluate(chainOf([{ id: 'coax', label: 'coax', type: 'coax' }, cap('cs', 80), shunt('a', [res('r', 5)])]), zeroLen, [f])[0], cx(5, -1 / (w(f) * 80e-12)), 1e-9);
+  assertClose(evaluate(chainOf([{ id: 'wr', label: 'wr', type: 'wire', lengthMm: 0, awg: 14, strands: 1 }, shunt('a', [res('r', 5)])]), ctx(), [f])[0], cx(5), 1e-9);
+});
+
+test('series elements that cancel exactly act as a short (final review I2)', () => {
+  assertClose(evaluate(chainOf([ind('l1', 300e-9), ind('l2', -300e-9), shunt('a', [res('r', 50)])]), ctx(), [13.56e6])[0], cx(50), 1e-9);
+});
+
+test('a dangling ideal transformer behind an open does not open the network (final review I2)', () => {
+  const f = 13.56e6;
+  const c = chainOf([cap('cs', 80), shunt('a', [res('r', 50)]), cap('gap', 0), { id: 't', label: 't', type: 'ideal', n: 3 }]);
+  assertClose(evaluate(c, ctx(), [f])[0], cx(50, -1 / (w(f) * 80e-12)), 1e-9);
+});
+
+test('a non-finite element value reads as invalid (NaN), not OPEN (final review I2)', () => {
+  const z = evaluate(chainOf([shunt('a', [res('r', Number.NaN)])]), ctx(), [13.56e6])[0];
+  assert.ok(Number.isNaN(z.re) && Number.isNaN(z.im), `got ${z.re} ${z.im}`);
+});
+
+test('duplicate block ids are refused (final review I3)', () => {
+  assert.throws(() => compile(chainOf([cap('b', 30), shunt('arm', [cap('b', 300)]), shunt('load', [res('r', 5)])]), ctx()), /duplicate block id/);
+});
+
+test('a shared branch cache never mixes variants or sweeps (final review I6)', () => {
+  const sA: Sweep = { id: 's', name: 'a', f: [10e6, 15e6, 20e6], gamma: [cx(0.1, 0.2), cx(0.3, -0.1), cx(-0.2, 0.4)] };
+  const sB: Sweep = { ...sA, name: 'b', gamma: [cx(0.2, 0.1), cx(0.1, 0.3), cx(0.0, -0.4)] };
+  const c = chainOf([{ id: 'coax', label: 'coax', type: 'coax' }, shunt('arm', [{ id: 'm', label: 'm', type: 'measuredBranch', sweepId: 's', kr: param(1), d: param(0), dLb: param(0), loop: false }])]);
+  const v1 = { name: 'v', cable: { length: 1.245, vf: 0.7, z0: 50, alpha13: 0 }, Lj: 342e-9 };
+  const v2 = { ...v1, cable: { ...v1.cable, vf: 0.66 } }; // same name, length and Lj
+  const shared = new Map();
+  evaluate(c, { variant: v1, sweeps: { s: sA }, cache: shared }, [15e6]);
+  assertClose(evaluate(c, { variant: v2, sweeps: { s: sA }, cache: shared }, [15e6])[0], evaluate(c, { variant: v2, sweeps: { s: sA } }, [15e6])[0], 1e-12);
+  assertClose(evaluate(c, { variant: v2, sweeps: { s: sB }, cache: shared }, [15e6])[0], evaluate(c, { variant: v2, sweeps: { s: sB } }, [15e6])[0], 1e-12);
+});

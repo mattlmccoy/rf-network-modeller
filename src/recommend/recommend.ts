@@ -2,7 +2,7 @@ import { type Counts, physicalParts, sumCounts } from '../blocks/ht50.ts';
 import { inputImpedance } from '../engine/mna.ts';
 import { compile } from '../chain/compile.ts';
 import { allBlocks, applyState, findBlock } from '../chain/state.ts';
-import type { BranchTable, CapBankBlock, Chain, Variant, Window } from '../chain/types.ts';
+import type { BranchCache, CapBankBlock, Chain, Variant, Window } from '../chain/types.ts';
 import { type Sweep, nearestIndex } from '../io/sweep.ts';
 import { DriveError, drive, maxCapStressPct, reports } from '../stress/drive.ts';
 import { type Candidate, type Pick, candidates, describeMoves, moveCount } from './enumerate.ts';
@@ -53,7 +53,7 @@ export function recommend(input: RecommendInput): RecommendOutput {
   const labels = Object.fromEntries(searched.map((b) => [b.id, b.label]));
   const fSeg = input.grid.filter((f) => f > ROOM_SEG[0] && f < ROOM_SEG[1]);
   const f0 = input.grid[nearestIndex(input.grid, F0)];
-  const caches = input.fitted.map(() => new Map<string, BranchTable>());
+  const caches = input.fitted.map((): BranchCache => new Map());
   const all = candidates(searched.map((b) => ({ id: b.id, slots: b.slots })), input.stock, reserved, input.allowSeriesPairs).map((cand): Recommendation => {
     let maxStressPct: number | null = null;
     const landings = input.fitted.map((fv, k) => {

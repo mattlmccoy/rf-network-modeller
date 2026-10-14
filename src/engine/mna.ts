@@ -1,4 +1,4 @@
-import { type Complex, ONE, OPEN, ZERO, add, cx, neg } from './complex.ts';
+import { type Complex, ONE, OPEN, ZERO, add, cx, isFiniteC, neg } from './complex.ts';
 import { SingularMatrixError, solveLinear } from './linsolve.ts';
 import type { Y2 } from './twoport.ts';
 
@@ -14,6 +14,17 @@ export type Element = YElement | Y2Element | IdealElement;
 export interface Netlist { nodeCount: number; port: number; elements: Element[] }
 export interface Solution { v: Complex[]; idealCurrents: Complex[] }
 
+/** An element value is not finite (NaN or infinite admittance): the circuit is invalid, not open. */
+export class InvalidCircuitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'InvalidCircuitError';
+  }
+}
+
+/** Impedance returned for an invalid circuit, so callers can tell it from OPEN. */
+export const INVALID: Complex = cx(Number.NaN, Number.NaN);
+
 export function solveNetlist(net: Netlist, f: number, iPort: Complex = ONE): Solution {
   const nv = net.nodeCount - 1;
   const ideals = net.elements.filter((e): e is IdealElement => e.kind === 'ideal');
@@ -27,12 +38,14 @@ export function solveNetlist(net: Netlist, f: number, iPort: Complex = ONE): Sol
   for (const e of net.elements) {
     if (e.kind === 'y') {
       const y = e.y(f);
+      if (!isFiniteC(y)) throw new InvalidCircuitError(`an element value is not finite at ${f} Hz`);
       put(e.a, e.a, y);
       put(e.b, e.b, y);
       put(e.a, e.b, neg(y));
       put(e.b, e.a, neg(y));
     } else if (e.kind === 'y2') {
       const [y11, y12, y21, y22] = e.y(f);
+      if (![y11, y12, y21, y22].every(isFiniteC)) throw new InvalidCircuitError(`a two-port value is not finite at ${f} Hz`);
       put(e.a, e.a, y11);
       put(e.a, e.b, y12);
       put(e.b, e.a, y21);
@@ -61,12 +74,13 @@ export function solveNetlist(net: Netlist, f: number, iPort: Complex = ONE): Sol
   return { v: [ZERO, ...x.slice(0, nv)], idealCurrents: x.slice(nv) };
 }
 
-/** Impedance looking into the port; OPEN when no current path exists (singular matrix). */
+/** Impedance looking into the port; OPEN when no current path exists, INVALID (NaN) when an element value is not finite. */
 export function inputImpedance(net: Netlist, f: number): Complex {
   try {
     return solveNetlist(net, f).v[net.port];
   } catch (err) {
     if (err instanceof SingularMatrixError) return OPEN;
+    if (err instanceof InvalidCircuitError) return INVALID;
     throw err;
   }
 }

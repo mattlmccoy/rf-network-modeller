@@ -77,10 +77,17 @@ export interface BranchTable {
   im: number[];
 }
 
+/** Cached measured-branch tables; an entry is reused only for the same sweep object (final review I6). */
+export interface BranchCacheEntry {
+  sweep: Sweep;
+  table: BranchTable;
+}
+export type BranchCache = Map<string, BranchCacheEntry>;
+
 export interface Context {
   variant: Variant;
   sweeps: Record<string, Sweep>;
-  cache?: Map<string, BranchTable>;
+  cache?: BranchCache;
 }
 
 export type ZFn = (f: number) => Complex;

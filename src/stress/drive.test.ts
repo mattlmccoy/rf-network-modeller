@@ -95,3 +95,8 @@ test('an open port or a lossless network is a DriveError, not NaN (review focus 
   const lossless: Chain = { name: 'l', blocks: [{ id: 'arm', label: 'arm', type: 'shunt', chain: [{ id: 'c', label: 'c', type: 'primitive', kind: 'C', value: param(100e-12) }] }] };
   assert.throws(() => drive(lossless, cdCtx, 13.56e6, 100), DriveError);
 });
+
+test('a non-finite element value is a DriveError that says so, not "open" (final review I2)', () => {
+  const bad: Chain = { name: 'b', blocks: [{ id: 'arm', label: 'arm', type: 'shunt', chain: [{ id: 'r', label: 'r', type: 'primitive', kind: 'R', value: param(Number.NaN) }] }] };
+  assert.throws(() => drive(bad, cdCtx, 13.56e6, 100), /not finite/);
+});

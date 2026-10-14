@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { illDetermined, levenbergMarquardt, paramStats } from './lm.ts';
+import { FitError, illDetermined, levenbergMarquardt, paramStats } from './lm.ts';
 import { assertNear } from '../testutil.ts';
 
 test('Rosenbrock least squares converges to (1, 1)', () => {
@@ -46,4 +46,9 @@ test('a parameter pinned at its bound does not stall the others (active set)', (
   assertNear(r.x[0], 0, 1e-9);
   assertNear(r.x[1], 1, 1e-6);
   assert.ok(r.converged, `not converged after ${r.iterations} iterations`);
+});
+
+test('fewer residuals than parameters is a FitError (final review I5)', () => {
+  assert.throws(() => levenbergMarquardt(() => [], [1, 2]), FitError);
+  assert.throws(() => levenbergMarquardt((x) => [x[0] + x[1]], [1, 2]), FitError);
 });

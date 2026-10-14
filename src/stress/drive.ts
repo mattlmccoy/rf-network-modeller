@@ -1,6 +1,6 @@
 import { type Complex, abs, add, conj, isFiniteC, mul, scale, sub } from '../engine/complex.ts';
 import { SingularMatrixError } from '../engine/linsolve.ts';
-import { solveNetlist } from '../engine/mna.ts';
+import { InvalidCircuitError, solveNetlist } from '../engine/mna.ts';
 import { type UnitState, unitState } from '../engine/transformer.ts';
 import { type CapValue, CAP_VALUES, HT50 } from '../blocks/ht50.ts';
 import { capBankFarads, groupPf } from '../chain/blockZ.ts';
@@ -32,6 +32,7 @@ export function drive(chain: Chain, ctx: Context, f: number, watts: number): Dri
     v = solveNetlist(compiled.net, f).v;
   } catch (e) {
     if (e instanceof SingularMatrixError) throw new DriveError('the network is open at the port, so no power can enter');
+    if (e instanceof InvalidCircuitError) throw new DriveError(`${e.message}: check the block values (an element value is not finite)`);
     throw e;
   }
   const zin = v[compiled.net.port];

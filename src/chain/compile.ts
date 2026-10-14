@@ -1,10 +1,11 @@
-import { type Complex, ZERO, add, inv, isFiniteC } from '../engine/complex.ts';
+import { type Complex, ZERO, add, cx, inv } from '../engine/complex.ts';
 import { coaxY } from '../engine/coax.ts';
 import { type Element, type Netlist, inputImpedance } from '../engine/mna.ts';
 import { unitY } from '../engine/transformer.ts';
 import type { Y2 } from '../engine/twoport.ts';
 import { branchOutOfRange, buildBranchTable, twoTerminalZ } from './blockZ.ts';
-import type { Block, BranchTable, Chain, Context, MeasuredBranchBlock, ZFn } from './types.ts';
+import { duplicateIds } from './state.ts';
+import type { Block, BranchCache, BranchTable, Chain, Context, MeasuredBranchBlock, ZFn } from './types.ts';
 
 export class ChainError extends Error {
   constructor(message: string) {
@@ -20,18 +21,37 @@ export interface TwoPortRef { blockId: string; kind: 'coax' | 'stack'; a: number
 export interface BranchRef { block: MeasuredBranchBlock; table: BranchTable }
 export interface Compiled { net: Netlist; runs: Run[]; twoPorts: TwoPortRef[]; branches: BranchRef[] }
 
-/** Admittance of a series run; any open part (non-finite z) makes the run carry no current. */
+/** Admittance standing in for a run whose impedances cancel exactly at one frequency only (a 1 nΩ short). */
+export const SHORT_Y = 1e9;
+
+const PROBE_F = [1e6, 13.56e6, 30e6];
+/** True when the run's impedances cancel exactly at every probe frequency (e.g. +L then −L): a true short. */
+function cancels(parts: RunPart[]): boolean {
+  return PROBE_F.every((f) => {
+    const z = parts.reduce((acc, p) => add(acc, p.z(f)), ZERO);
+    return z.re === 0 && z.im === 0;
+  });
+}
+
+/**
+ * Admittance of a series run. An open part (infinite z) makes the run carry no current; a NaN part makes it invalid;
+ * parts that cancel exactly (Σz = 0) act as a short.
+ */
 export function seriesY(parts: RunPart[], f: number): Complex {
   let z = ZERO;
   for (const p of parts) {
     const zp = p.z(f);
-    if (!isFiniteC(zp)) return ZERO;
+    if (Number.isNaN(zp.re) || Number.isNaN(zp.im)) return cx(Number.NaN, Number.NaN);
+    if (!Number.isFinite(zp.re) || !Number.isFinite(zp.im)) return ZERO;
     z = add(z, zp);
   }
+  if (z.re === 0 && z.im === 0) return cx(SHORT_Y);
   return inv(z);
 }
 
 export function compile(chain: Chain, ctx: Context): Compiled {
+  const dup = duplicateIds(chain);
+  if (dup.length) throw new ChainError(`duplicate block id(s) ${dup.join(', ')}: every block needs its own id`);
   const parent: number[] = [0]; // union-find over node ids; 0 = ground and always its own root
   const alloc = (): number => {
     parent.push(parent.length);
@@ -54,17 +74,17 @@ export function compile(chain: Chain, ctx: Context): Compiled {
     if (rb === 0) parent[ra] = 0;
     else parent[rb] = ra;
   };
-  const cache = ctx.cache ?? new Map<string, BranchTable>();
+  const cache: BranchCache = ctx.cache ?? new Map();
   const tableFor = (sweepId: string): BranchTable => {
-    const key = `${sweepId}|${ctx.variant.name}|${ctx.variant.cable.length}|${ctx.variant.Lj}`;
-    let t = cache.get(key);
-    if (!t) {
-      const s = ctx.sweeps[sweepId];
-      if (!s) throw new ChainError(`the measured branch needs sweep "${sweepId}", which is not loaded`);
-      t = buildBranchTable(s, ctx.variant);
-      cache.set(key, t);
-    }
-    return t;
+    const s = ctx.sweeps[sweepId];
+    if (!s) throw new ChainError(`the measured branch needs sweep "${sweepId}", which is not loaded`);
+    const c = ctx.variant.cable;
+    const key = `${sweepId}|${c.length}|${c.vf}|${c.z0}|${c.alpha13}|${ctx.variant.Lj}`;
+    const hit = cache.get(key);
+    if (hit && hit.sweep === s) return hit.table;
+    const table = buildBranchTable(s, ctx.variant);
+    cache.set(key, { sweep: s, table });
+    return table;
   };
   const runs: Run[] = [];
   const twoPorts: TwoPortRef[] = [];
@@ -73,13 +93,15 @@ export function compile(chain: Chain, ctx: Context): Compiled {
   const cable = ctx.variant.cable;
   const port = alloc();
 
-  const walk = (blocks: Block[], start: number): number => {
+  /** Walks a path; returns its end node and whether it passed through any element (or an explicit short). */
+  const walk = (blocks: Block[], start: number): [number, boolean] => {
     let node = start;
     let pending: RunPart[] = [];
     let open = false;
+    let carried = false;
     const flush = (): void => {
       if (open) node = alloc();
-      else if (pending.length) {
+      else if (pending.length && !cancels(pending)) {
         const e = alloc();
         runs.push({ a: node, b: e, parts: pending });
         node = e;
@@ -90,55 +112,66 @@ export function compile(chain: Chain, ctx: Context): Compiled {
     for (const b of blocks) {
       if (b.type === 'coax') {
         flush();
+        carried = true;
+        if (!(cable.length > 0)) continue; // a zero-length line passes straight through (final review I2)
         const e = alloc();
         twoPorts.push({ blockId: b.id, kind: 'coax', a: node, b: e, y: (f) => coaxY(cable, f) });
         node = e;
       } else if (b.type === 'stack') {
         flush();
+        carried = true;
         const e = alloc();
         const u = b.unit;
         twoPorts.push({ blockId: b.id, kind: 'stack', a: node, b: e, y: (f) => unitY(u, f) });
         node = e;
       } else if (b.type === 'ideal') {
         flush();
+        carried = true;
         const e = alloc();
         ideals.push({ p1: node, s1: e, n: b.n });
         node = e;
       } else if (b.type === 'shunt') {
         flush();
         if (!b.chain.length) throw new ChainError(`shunt "${b.label}" is empty and would short its node to ground`);
-        union(walk(b.chain, node), 0);
+        const [end, ok] = walk(b.chain, node);
+        if (!ok) throw new ChainError(`shunt "${b.label}" has no element in its own path and would short its node to ground`);
+        union(end, 0);
       } else if (b.type === 'parallel') {
         flush();
         if (!b.chains.length || b.chains.some((c) => !c.length)) throw new ChainError(`parallel group "${b.label}" has an empty arm, which would short it`);
-        const ends = b.chains.map((c) => walk(c, node));
-        for (const e of ends.slice(1)) union(ends[0], e);
-        node = ends[0];
+        const arms = b.chains.map((c) => walk(c, node));
+        if (arms.some(([, ok]) => !ok)) throw new ChainError(`parallel group "${b.label}" has an arm with no element in its own path, which would short it`);
+        for (const [e] of arms.slice(1)) union(arms[0][0], e);
+        node = arms[0][0];
+        carried = true;
       } else {
         const imp = twoTerminalZ(b, tableFor);
         if (b.type === 'measuredBranch') branches.push({ block: b, table: tableFor(b.sweepId) });
+        carried = true;
         if (imp.kind === 'open') open = true;
         else if (imp.kind === 'z') pending.push({ blockId: b.id, z: imp.z });
       }
     }
     flush();
-    return node;
+    return [node, carried];
   };
   walk(chain.blocks, port);
 
-  // Keep only elements connected to the port (two-ports and ideal transformers also connect through ground).
+  // Keep only elements connected to the port. Ground is a sink, not a connector: an island that touches the rest of the
+  // network only through ground carries no current from the port and would make the solve singular (final review I2).
   const edges: [number, number][] = [];
   for (const r of runs) edges.push([find(r.a), find(r.b)]);
-  for (const t of twoPorts) edges.push([find(t.a), find(t.b)], [find(t.a), 0], [find(t.b), 0]);
-  for (const i of ideals) edges.push([find(i.p1), 0], [find(i.s1), 0]);
+  for (const t of twoPorts) edges.push([find(t.a), find(t.b)]);
+  for (const i of ideals) edges.push([find(i.p1), find(i.s1)]);
   const reach = new Set<number>([find(port)]);
   for (let grew = true; grew; ) {
     grew = false;
     for (const [x, y] of edges) {
-      if (reach.has(x) !== reach.has(y)) {
-        reach.add(x);
-        reach.add(y);
-        grew = true;
+      for (const [from, to] of [[x, y], [y, x]]) {
+        if (reach.has(from) && from !== 0 && !reach.has(to)) {
+          reach.add(to);
+          grew = true;
+        }
       }
     }
   }

@@ -192,6 +192,8 @@ Both uses must take the same variant. Mixing them caused the `o7_caps.py` error 
 
 `o7_joint.py` takes min/max over all in-window points in the band. For one contiguous band, which is the normal case, this is identical.
 
+**Filter:** keep a pick only when a majority of variants put it in the window (`o7_joint.py`: at least 2 of 3).
+
 **Ranking** (generalises `o7_joint.py`):
 1. variants in the window, descending;
 2. min(median room-up across variants, 2.5 %), descending;
@@ -200,7 +202,7 @@ Both uses must take the same variant. Mixing them caused the `o7_caps.py` error 
 Part moves = Σ|Δcount| per value per bank. The 2.5 % cap means that once there is enough room, fewer moves wins.
 
 **Display**
-- Top 12 rows. Any part over 100 % of rating is red; 80–100 % is amber.
+- Top 12 rows, or fewer when fewer picks pass the filter. Any part over 100 % of rating is red; 80–100 % is amber.
 - Clicking a row overlays its curve and per-variant landings on the Smith chart and lists the moves, e.g. "series: remove 1×100; add 1×50 + 1×30".
 - **Apply** sets the chain to the pick.
 
@@ -285,7 +287,7 @@ Red-green TDD for all non-UI logic. Each layer gates the next.
    - embed ∘ deembed = identity;
    - the L-network from `match.l_network` matches to 50 Ω.
 2. **Python parity, using fixtures captured from the real code.**
-   - `tools/capture_fixtures.py`, run with `uv run --no-project --python 3.12 --with numpy --with scipy`, imports `rfchain.py`, `design.py`, `calib.py` and `stock_net.py` from `MANUAL_MATCHING_NETWORK/2026-10-10_DESIGN_SPACE/`.
+   - `tools/capture_fixtures.py`, run with `uv run --no-project --python 3.12 --with numpy --with scipy`, imports `rfchain.py`, `design.py` and `calib.py` from `MANUAL_MATCHING_NETWORK/2026-10-10_DESIGN_SPACE/`. It reproduces the `o7_joint.py`, `o7_loopstate.py` and `stock_net.py` recipes, and exits if they stop matching the predictions recorded in `SWEEP_NOTES.md`.
    - It writes JSON stamped with each source file's SHA-256.
    - TypeScript must match `input_impedance`, `network_input`, `embed`, `deembed`, `solve_chain` (all currents, voltages, losses, B and loop V) and `design.make_unit` to 1e-9 relative.
    - Fixtures are never hand-written.

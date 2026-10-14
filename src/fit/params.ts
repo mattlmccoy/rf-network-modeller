@@ -18,18 +18,26 @@ export function getParam(chain: Chain, ref: ParamRef): Param {
   return p;
 }
 
+/** Fit unit for a reference: a primitive's `value` takes its kind's unit (C in pF, L in nH, R in Ω). */
+export function unitOf(chain: Chain, ref: ParamRef): number {
+  if (ref.key !== 'value') return FIT_UNIT[ref.key];
+  const b = findBlock(chain, ref.blockId);
+  if (b?.type === 'primitive') return b.kind === 'C' ? 1e-12 : b.kind === 'L' ? 1e-9 : 1;
+  return FIT_UNIT.value;
+}
+
 export function withParamValue(chain: Chain, ref: ParamRef, value: number, badge?: Badge): Chain {
   const p = getParam(chain, ref);
   return updateBlock(chain, ref.blockId, { [ref.key]: { ...p, value, badge: badge ?? p.badge } });
 }
 
 export function toFitVars(chain: Chain, refs: ParamRef[]): { x: number[]; lo: number[]; hi: number[] } {
-  const ps = refs.map((r) => ({ p: getParam(chain, r), u: FIT_UNIT[r.key] }));
+  const ps = refs.map((r) => ({ p: getParam(chain, r), u: unitOf(chain, r) }));
   return { x: ps.map(({ p, u }) => p.value / u), lo: ps.map(({ p, u }) => p.lo / u), hi: ps.map(({ p, u }) => p.hi / u) };
 }
 
 export const fromFitVars = (chain: Chain, refs: ParamRef[], x: number[], badge: Badge = 'fit'): Chain =>
-  refs.reduce((c, r, i) => withParamValue(c, r, x[i] * FIT_UNIT[r.key], badge), chain);
+  refs.reduce((c, r, i) => withParamValue(c, r, x[i] * unitOf(c, r), badge), chain);
 
 /** Every parameter marked free, in chain order. */
 export function freeRefs(chain: Chain): ParamRef[] {

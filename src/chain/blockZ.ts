@@ -64,6 +64,7 @@ export function twoTerminalZ(b: TwoTerminalBlock, table: (sweepId: string) => Br
       if (b.L.value === 0 && b.R === 0) return { kind: 'short' };
       return { kind: 'z', z: (f) => cx(b.R, w(f) * b.L.value) };
     case 'wire':
+      if (!(b.lengthMm > 0)) return { kind: 'short' };
       return {
         kind: 'z',
         z: (f) => {

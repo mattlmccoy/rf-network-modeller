@@ -2,6 +2,14 @@ import { SingularMatrixError, solveReal } from '../engine/linsolve.ts';
 
 export type Residual = (x: number[]) => number[];
 
+/** A fit that cannot be done: no residual, or fewer residuals than free parameters. */
+export class FitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'FitError';
+  }
+}
+
 export interface LmOptions {
   lo?: number[];
   hi?: number[];
@@ -56,6 +64,7 @@ export function levenbergMarquardt(res: Residual, x0: number[], opt: LmOptions =
   const relStep = opt.relStep ?? 1e-6;
   let x = clamp(x0, lo, hi);
   let r = res(x);
+  if (r.length === 0 || r.length < n) throw new FitError(`${r.length} residual value(s) for ${n} parameter(s): nothing to fit`);
   let cost = half2(r);
   let J = jacobian(res, x, lo, hi, relStep, r);
   let lambda = 1e-3;
