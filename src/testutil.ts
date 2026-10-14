@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import type { Complex } from './engine/complex.ts';
 
 /** Passes when |a - b| <= rel * max(|b|, 1), measured on the complex magnitude. */
@@ -17,3 +18,10 @@ export function assertNear(a: number, b: number, rel = 1e-9, msg = ''): void {
 
 export const fmt = (z: Complex): string => `${z.re}${z.im >= 0 ? '+' : '-'}${Math.abs(z.im)}j`;
 export const pair = (p: number[]): Complex => ({ re: p[0], im: p[1] });
+
+/** Repository root. */
+export const ROOT = new URL('../', import.meta.url);
+
+export function readFixtureJson<T>(name: string): T {
+  return JSON.parse(readFileSync(new URL(`fixtures/python/${name}`, ROOT), 'utf8')) as T;
+}
