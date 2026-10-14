@@ -1,0 +1,110 @@
+{
+ "tmodel": {
+  "variant": "1.245",
+  "n": 5.0,
+  "n_p": 3,
+  "n_c": 4,
+  "f_pri": 0.0,
+  "k1": 0.7,
+  "f_lo": 2000000.0,
+  "f_hi": 25000000.0,
+  "unit": {
+   "n": 5.0,
+   "L_leak": 1.1492489047228436e-06,
+   "f_pri": 0.0,
+   "L_m": 1.4896689787020887e-06,
+   "G_core": 0.00021614274973254772,
+   "R1": 0.8822646690692251,
+   "R2": 9.452835740027414,
+   "C_w": 0.0,
+   "N_p": 3,
+   "N_c": 4
+  },
+  "load": {
+   "C": 7.0942769999019026e-12,
+   "G_cube": 0.0,
+   "G_fix": 0.0
+  },
+  "rms_rel": 0.10989730578751848,
+  "n_res": 9678,
+  "cost": 58.44262482786051
+ },
+ "shorts": [
+  {
+   "file": "coax-jumpers-shorted_for_both_trans_nanovna-sweep-1791928236499.s1p",
+   "band": [
+    2000000.0,
+    25000000.0
+   ],
+   "fixed": [
+    {
+     "length": 1.245,
+     "L_nH": 343.5797975362985,
+     "rms": 0.7124341569533776
+    },
+    {
+     "length": 1.2825,
+     "L_nH": 328.55534370603135,
+     "rms": 0.5608809679894393
+    },
+    {
+     "length": 1.5094,
+     "L_nH": 247.98690399230907,
+     "rms": 0.5256154639615315
+    }
+   ],
+   "free": {
+    "length": 1.382926431861973,
+    "L_nH": 290.9396773101681,
+    "rms": 0.3808596287784817
+   }
+  },
+  {
+   "file": "coax-jumpers-shorted_nanovna-sweep-1791923630763.s1p",
+   "band": [
+    2000000.0,
+    25000000.0
+   ],
+   "fixed": [
+    {
+     "length": 1.245,
+     "L_nH": 447.7159505455581,
+     "rms": 1.1199681599217814
+    },
+    {
+     "length": 1.2825,
+     "L_nH": 428.37446232650797,
+     "rms": 0.82920029092862
+    },
+    {
+     "length": 1.5094,
+     "L_nH": 328.7696499500549,
+     "rms": 0.7923450480556282
+    }
+   ],
+   "free": {
+    "length": 1.3791232695801843,
+    "L_nH": 382.7338165798745,
+    "rms": 0.46393725524452306
+   }
+  }
+ ],
+ "_sources": {
+  "rfchain.py": "3909f4f87ea866a99c0c0e15c1fd140bdc33ade763d3d997d62d5560f9f9e53b",
+  "design.py": "dcc41ed3dbeb229033cd4d85dff149aa8b31a684cc8d78f3b07f8960eb7b3b8c",
+  "calib.py": "989ee49bd362cbe5da0620c46433e488929493959253023984f0bd9a6ca61546",
+  "builds_fit.json": "8ccf09f3090f8c9b376ec9aec429c4167bdc66af6c799fe1f2db4d31ede4dbed"
+ },
+ "_sweeps": {
+  "2026-09-30_CAPFREE_218_CD_1-60M_nanovna-sweep-1790787282764.s1p": "39912e0bb836952bca01383c0806d7b277bc95701b55a64f9ad94ea73bb74557",
+  "2026-10-01_NET_218_CD_100s_3x100+30p_10-18M_PRE-loop_nanovna-sweep-1790884838445.s1p": "38a0d03ebaff3937ddc6fa0442702164f93cace47d7bc4a3bf832c9fb9f5cfbb",
+  "coax-jumpers-shorted_for_both_trans_nanovna-sweep-1791928236499.s1p": "11d6c68878c2b781b07a72101b36abe6f03aa658cca93f6a8af12a2de22bed87",
+  "coax-jumpers-shorted_nanovna-sweep-1791923630763.s1p": "a6c90ad542839e0b687bdcb27b9d43540e2f8906dd536d071693992e317fe34a",
+  "noAIT_100ser_200sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791931275980.s1p": "96aa0902cb4719cf969b1c292b45cc50914951dd61f4ce614e3d7cc045b552db",
+  "noAIT_130ser_230sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791930836256.s1p": "2227ac47b8eb5c7a5abcfb8dcd0f09812940e476fc4b263d117029b4ce4ea148",
+  "noAIT_80ser_200sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791931754256.s1p": "4399f683d26997bd3c9ba0ef387730423485929d78e0e3cbd85a36a93518060b",
+  "noAIT_sense-loop_80ser_180sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791933400391.s1p": "e489f89cd82dc1004aff420e632d9f0e3b2ddbb0a60cf07c20d6b488425907af",
+  "noAIT_sense-loop_80ser_200sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791932761517.s1p": "21ee446aef5296a35cc83d39d9703052327d9e4d5a510d66211641490cfa4327",
+  "noAIT_trans1_3pri_15sec_trans2_3pri_15sec_direct_LOAD-ATTACHED_nanovna-sweep-1791927664566.s1p": "2bb48573e66d349c31e352dc22b448071e753ad7f3c4563625c9444a5a722368"
+ }
+}

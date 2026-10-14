@@ -1,0 +1,112 @@
+{
+ "consts": {
+  "AL13": 7.2e-08,
+  "L_air_t2": 1.75e-08,
+  "L_m_cd": 7.15e-07,
+  "leak_a": 1.63e-07,
+  "leak_b": 1.436e-09,
+  "leak_mult": 1.0,
+  "leak_gamma": 2.0,
+  "C_plate": 2.73e-12,
+  "c_w_cd": 2e-13,
+  "c_w_gamma": 1.5,
+  "mount_mult": 1.0,
+  "g_w_cd": 2e-07,
+  "G_plate": 9e-07,
+  "G_cube": 3e-07,
+  "R1_fix": 0.1,
+  "r1_per_mm": 0.00015,
+  "strap_factor": 0.35,
+  "R2_fix": 0.05,
+  "r2_per_mm": 0.0006,
+  "p_ref": 500.0,
+  "b_ref": 8.75,
+  "beta": 2.5,
+  "rth_2core": 1.3,
+  "x_cd80": 1.95,
+  "b_cd80": 7.15,
+  "p_stack_cd80": 21.0,
+  "lead_dT_cd80": 25.0,
+  "eta_up": 0.7,
+  "v2_80": 2800.0,
+  "v2_500": 7000.0,
+  "i1_cd80": 10.8
+ },
+ "designs": [
+  {
+   "N_p": 2,
+   "N_s": 18,
+   "N_c": 2,
+   "strap": false,
+   "turn_length_mm": 80.2,
+   "unit": {
+    "n": 9.0,
+    "L_leak": 1.1126687999999999e-06,
+    "f_pri": 0.0,
+    "L_m": 6.459999999999999e-07,
+    "G_core": 0.0,
+    "R1": 0.12406,
+    "R2": 0.91616,
+    "C_w": 2e-13,
+    "N_p": 2,
+    "N_c": 2
+   }
+  },
+  {
+   "N_p": 3,
+   "N_s": 15,
+   "N_c": 4,
+   "strap": false,
+   "turn_length_mm": 138.0,
+   "unit": {
+    "n": 5.0,
+    "L_leak": 3.2505120000000004e-06,
+    "f_pri": 0.0,
+    "L_m": 2.7494999999999997e-06,
+    "G_core": 0.0,
+    "R1": 0.1621,
+    "R2": 1.292,
+    "C_w": 3.7618876996344163e-13,
+    "N_p": 3,
+    "N_c": 4
+   }
+  },
+  {
+   "N_p": 2,
+   "N_s": 16,
+   "N_c": 4,
+   "strap": true,
+   "turn_length_mm": 138.0,
+   "unit": {
+    "n": 8.0,
+    "L_leak": 1.444672e-06,
+    "f_pri": 0.0,
+    "L_m": 1.222e-06,
+    "G_core": 0.0,
+    "R1": 0.11449000000000001,
+    "R2": 1.3748,
+    "C_w": 4.012680212943377e-13,
+    "N_p": 2,
+    "N_c": 4
+   }
+  }
+ ],
+ "_sources": {
+  "rfchain.py": "3909f4f87ea866a99c0c0e15c1fd140bdc33ade763d3d997d62d5560f9f9e53b",
+  "design.py": "dcc41ed3dbeb229033cd4d85dff149aa8b31a684cc8d78f3b07f8960eb7b3b8c",
+  "calib.py": "989ee49bd362cbe5da0620c46433e488929493959253023984f0bd9a6ca61546",
+  "builds_fit.json": "8ccf09f3090f8c9b376ec9aec429c4167bdc66af6c799fe1f2db4d31ede4dbed"
+ },
+ "_sweeps": {
+  "2026-09-30_CAPFREE_218_CD_1-60M_nanovna-sweep-1790787282764.s1p": "39912e0bb836952bca01383c0806d7b277bc95701b55a64f9ad94ea73bb74557",
+  "2026-10-01_NET_218_CD_100s_3x100+30p_10-18M_PRE-loop_nanovna-sweep-1790884838445.s1p": "38a0d03ebaff3937ddc6fa0442702164f93cace47d7bc4a3bf832c9fb9f5cfbb",
+  "coax-jumpers-shorted_for_both_trans_nanovna-sweep-1791928236499.s1p": "11d6c68878c2b781b07a72101b36abe6f03aa658cca93f6a8af12a2de22bed87",
+  "coax-jumpers-shorted_nanovna-sweep-1791923630763.s1p": "a6c90ad542839e0b687bdcb27b9d43540e2f8906dd536d071693992e317fe34a",
+  "noAIT_100ser_200sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791931275980.s1p": "96aa0902cb4719cf969b1c292b45cc50914951dd61f4ce614e3d7cc045b552db",
+  "noAIT_130ser_230sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791930836256.s1p": "2227ac47b8eb5c7a5abcfb8dcd0f09812940e476fc4b263d117029b4ce4ea148",
+  "noAIT_80ser_200sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791931754256.s1p": "4399f683d26997bd3c9ba0ef387730423485929d78e0e3cbd85a36a93518060b",
+  "noAIT_sense-loop_80ser_180sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791933400391.s1p": "e489f89cd82dc1004aff420e632d9f0e3b2ddbb0a60cf07c20d6b488425907af",
+  "noAIT_sense-loop_80ser_200sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791932761517.s1p": "21ee446aef5296a35cc83d39d9703052327d9e4d5a510d66211641490cfa4327",
+  "noAIT_trans1_3pri_15sec_trans2_3pri_15sec_direct_LOAD-ATTACHED_nanovna-sweep-1791927664566.s1p": "2bb48573e66d349c31e352dc22b448071e753ad7f3c4563625c9444a5a722368"
+ }
+}
