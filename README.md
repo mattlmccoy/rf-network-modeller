@@ -6,9 +6,12 @@ response, fit it to measured sweeps, get stock-cap recommendations and part stre
 
 ```bash
 npm install
+npm run dev         # the app at http://localhost:5181 (opens on the O7 example)
 npm test            # unit + parity tests
 npm run typecheck
+npm run build       # static site in dist/ (open dist/index.html through any static server)
 npm run validate    # blind replay of the 2026-10-13 history -> docs/validation/
+npm run example     # rebuild public/examples/o7 from the fixtures
 ```
 
 Reference fixtures come from the real Python model (`tools/capture_fixtures.py`); never edit `fixtures/python/` by hand.
