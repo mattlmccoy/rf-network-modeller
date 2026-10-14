@@ -9,6 +9,8 @@ import { LandingStrip } from './LandingStrip.tsx';
 import { CircuitStrip } from './CircuitStrip.tsx';
 import { Inspector } from './Inspector.tsx';
 import { type Dot, PlotPane, type Trace } from './PlotPane.tsx';
+import { StockPanel } from './StockPanel.tsx';
+import { SweepsPanel } from './SweepsPanel.tsx';
 
 type Theme = 'light' | 'dark';
 const VARIANT_COLORS = ['#a9008b', '#173de3', '#20aa35'];
@@ -72,8 +74,8 @@ export default function App() {
             {loadError ? <small className="bad">Could not load the O7 example: {loadError}</small> : <small>{state.chain.name}</small>}
             <button className="wide" onClick={openExample}>Reload O7 example</button>
           </fieldset>
-          {/* SWEEPS */}
-          {/* STOCK */}
+          <SweepsPanel state={state} dispatch={dispatch} />
+          <StockPanel state={state} dispatch={dispatch} />
         </aside>
         <section className="readouts-column">
           <Inspector state={state} dispatch={dispatch} />
