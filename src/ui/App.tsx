@@ -7,6 +7,7 @@ import { evalGrid } from '../app/grid.ts';
 import { type PaneMode, emptyState, reducer } from '../app/state.ts';
 import { LandingStrip } from './LandingStrip.tsx';
 import { CircuitStrip } from './CircuitStrip.tsx';
+import { Inspector } from './Inspector.tsx';
 import { type Dot, PlotPane, type Trace } from './PlotPane.tsx';
 
 type Theme = 'light' | 'dark';
@@ -75,7 +76,7 @@ export default function App() {
           {/* STOCK */}
         </aside>
         <section className="readouts-column">
-          <fieldset><legend>Block</legend><small>The block inspector arrives in Task 7.</small></fieldset>
+          <Inspector state={state} dispatch={dispatch} />
         </section>
         <section className="charts-grid">
           <CircuitStrip state={state} dispatch={dispatch} />
