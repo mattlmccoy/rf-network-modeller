@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { DEFAULT_VARIANTS, O7_FILES } from '../chain/presets.ts';
-import { evaluateVariants } from './evaluate.ts';
+import { evaluateVariants, measuredLanding } from './evaluate.ts';
+import { cx } from '../engine/complex.ts';
+import { gammaFromZ, nearestIndex } from '../io/sweep.ts';
 import { type ExampleManifest, exampleState } from './example.ts';
 import { evalGrid } from './grid.ts';
 import { reducer } from './state.ts';
@@ -42,4 +44,28 @@ test('an invalid circuit becomes a message for every variant, not a crash (revie
   const broken = reducer(s, { type: 'patchBlock', id: 'shuntArm', patch: { chain: [] } });
   const r = evaluateVariants(broken, evalGrid(broken.chain, broken.sweeps));
   assert.ok(r.every((v) => v.error !== null && /empty/.test(v.error) && v.landing === null));
+});
+
+test('the measured landing is null when the sweep has no point near 13.56 MHz (final review I2)', () => {
+  const s = exampleState(m, texts);
+  const real = measuredLanding(s.sweeps['o7-80-200']);
+  assertClose(real?.z ?? cx(Number.NaN), cx(5.0263, 4.3027), 1e-3);
+  assert.ok(Math.abs((real?.f ?? 0) - 13.5622e6) < 100);
+  const f = Array.from({ length: 10 }, (_, i) => 1e6 + i * 1e6);
+  assert.equal(measuredLanding({ id: 'n', name: 'n', f, gamma: f.map(() => gammaFromZ(cx(20, 5))) }), null);
+  const coarse = measuredLanding({ id: 'c', name: 'c', f: [13e6, 14.5e6], gamma: [cx(0.1), cx(0.2)] });
+  assert.equal(coarse?.f, 13e6);
+});
+
+test('points where a measured branch is read outside its sweep are marked per frequency (final review I5)', () => {
+  const s = exampleState(m, texts);
+  const g = evalGrid(s.chain, s.sweeps);
+  const k = (f: number): number => nearestIndex(g, f);
+  const base = evaluateVariants(s, g)[0];
+  assert.equal(base.clamped[k(13.56e6)], false);
+  assert.equal(base.clamped[g.length - 1], true);
+  const big = reducer(s, { type: 'setParam', ref: { blockId: 'branch', key: 'd' }, value: 0.5 });
+  const r = evaluateVariants(big, g)[0];
+  assert.equal(r.clamped[k(13.56e6)], false);
+  assert.equal(r.clamped[k(17e6)], true);
 });

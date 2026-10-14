@@ -1,4 +1,4 @@
-import { type Complex, abs, cx } from '../engine/complex.ts';
+import { type Complex, abs, cx, isFiniteC } from '../engine/complex.ts';
 import type { Window } from '../chain/types.ts';
 import { gammaFromZ } from '../io/sweep.ts';
 
@@ -36,3 +36,17 @@ export function rxExtent(values: number[]): number {
 
 /** Indices of f inside [lo, hi]. */
 export const spanIndices = (f: number[], lo: number, hi: number): number[] => f.map((_, i) => i).filter((i) => f[i] >= lo && f[i] <= hi);
+
+export type RectQuantity = 'r' | 'x' | 's11db' | 'vswr';
+
+/**
+ * Value to plot on a rectangular pane, or NaN (a gap in the line) when it is not a finite number, so an open or invalid Z
+ * never draws as 0 Ω or as a VSWR pinned to the axis top. |S11| of an open is a true 0 dB (final review I3).
+ */
+export function rectValue(q: RectQuantity, z: Complex): number {
+  if (Number.isNaN(z.re) || Number.isNaN(z.im)) return Number.NaN;
+  if (q === 's11db') return s11dB(z);
+  if (!isFiniteC(z)) return Number.NaN;
+  const v = q === 'r' ? z.re : q === 'x' ? z.im : vswr(z);
+  return Number.isFinite(v) ? v : Number.NaN;
+}

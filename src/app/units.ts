@@ -1,7 +1,8 @@
 import type { Complex } from '../engine/complex.ts';
 import { CAP_VALUES, type Counts, countsPf } from '../blocks/ht50.ts';
 import { type StateOverrides, findBlock } from '../chain/state.ts';
-import type { Block, Chain } from '../chain/types.ts';
+import type { Design } from '../blocks/design.ts';
+import type { Block, Chain, Param } from '../chain/types.ts';
 import type { ParamKey } from '../fit/params.ts';
 
 export interface DisplayUnit {
@@ -37,6 +38,16 @@ export function displayUnit(block: Block, key: ParamKey): DisplayUnit {
 
 /** SI value in display units, rounded to 8 significant figures (300e-9 shows as 300 nH). */
 export const toDisplay = (si: number, u: DisplayUnit): number => Number((si / u.scale).toPrecision(8));
+
+/**
+ * The SI value to commit for a typed display value, or null when it equals what is shown: a focus and blur with no edit
+ * must never retype a fitted value for every variant (final review C1).
+ */
+export function paramCommit(param: Param, u: DisplayUnit, typed: number): number | null {
+  return typed === toDisplay(param.value, u) ? null : typed * u.scale;
+}
+
+export const designEquals = (a: Design, b: Design): boolean => a.N_p === b.N_p && a.N_s === b.N_s && a.N_c === b.N_c && a.strap === b.strap;
 
 /** Impedance text; open and invalid never print as numbers. */
 export function fmtZ(z: Complex): string {

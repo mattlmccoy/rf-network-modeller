@@ -6,7 +6,7 @@ import { findBlock } from '../chain/state.ts';
 import { type Block, type Param, param } from '../chain/types.ts';
 import type { ParamKey } from '../fit/params.ts';
 import { type Action, type AppState, variantChain } from '../app/state.ts';
-import { blockSummary } from '../app/units.ts';
+import { blockSummary, designEquals } from '../app/units.ts';
 import { DraftNumberInput } from './DraftNumberInput.tsx';
 import { ParamField } from './ParamField.tsx';
 
@@ -54,7 +54,9 @@ function fields(b: Block, s: AppState, num: Num, field: Field, patch: Patch): Re
       ];
     case 'stack': {
       const d: Design = b.design ?? { N_p: b.unit.N_p, N_s: Math.round(b.unit.n * b.unit.N_p), N_c: b.unit.N_c, strap: false };
-      const set = (next: Design): void => patch({ design: next, unit: estimateUnit(next), source: 'estimate' });
+      const set = (next: Design): void => {
+        if (!designEquals(next, d)) patch({ design: next, unit: estimateUnit(next), source: 'estimate' }); // a no-change blur keeps a fitted model
+      };
       const u = b.unit;
       return [
         num('Primary turns', d.N_p, (n) => set({ ...d, N_p: Math.max(1, Math.round(n)) }), { min: '1', step: '1' }),
@@ -100,7 +102,7 @@ export function Inspector({ state, dispatch }: { state: AppState; dispatch: Disp
       onValue={(v) => dispatch({ type: 'setParam', ref: { blockId: b.id, key: k }, value: v })}
       onFree={(free) => dispatch({ type: 'setFree', ref: { blockId: b.id, key: k }, free })} />
   );
-  const num: Num = (label, value, onCommit, attrs = {}) => <div className="form-row" key={label}><label>{label}</label><DraftNumberInput {...attrs} value={value} onCommit={onCommit} /></div>;
+  const num: Num = (label, value, onCommit, attrs = {}) => <div className="form-row" key={label}><label>{label}</label><DraftNumberInput step="any" {...attrs} value={value} onCommit={onCommit} /></div>;
   return (
     <fieldset>
       <legend>Block</legend>

@@ -5,7 +5,8 @@ import { findBlock } from '../chain/state.ts';
 import { DEFAULT_VARIANTS, O7_FILES, O7_REFS, o7Chain } from '../chain/presets.ts';
 import type { Sweep } from '../io/sweep.ts';
 import { getParam } from '../fit/params.ts';
-import { type AppState, emptyState, reducer, snapshotState, uniqueSweepId, variantChain } from './state.ts';
+import { type AppState, emptyState, reducer, reservedIds, snapshotState, uniqueSweepId, variantChain } from './state.ts';
+import { newBlock } from './chainEdit.ts';
 import { loadFixtureSweep } from '../testutil.ts';
 
 const capfree = loadFixtureSweep('capfree', O7_FILES.capFree);
@@ -76,4 +77,14 @@ test('fitted values for blocks that no longer exist are ignored, and structural 
   assert.equal(getParam(variantChain(dangling, 0), ls).value, 330 * 1e-9);
   const s = reducer(base, { type: 'patchBlock', id: 'shuntArm', patch: { chain: [] } });
   assert.ok(Object.values(s.fits).every((f) => f.refs.every((r) => r.blockId !== 'sh') && f.x.length === f.refs.length));
+});
+
+test('new block ids never reuse an id that a sweep tag or a fit still refers to (final review I4)', () => {
+  let s = reducer(base, { type: 'insertInto', containerId: 'shuntArm', arm: 0, block: newBlock(base.chain, 'capBank') });
+  assert.ok(findBlock(s.chain, 'bank1'));
+  s = reducer(s, { type: 'patchBlock', id: 'bank1', patch: { counts: counts(3, 0, 0) } });
+  s = reducer(s, { type: 'addSweep', sweep: { id: 'mine', name: 'mine.s1p', f: [13.56e6], gamma: [{ re: 0, im: 0 }] }, label: 'mine' });
+  s = reducer(s, { type: 'remove', id: 'bank1' });
+  assert.ok(reservedIds(s).includes('bank1'));
+  assert.equal(newBlock(s.chain, 'capBank', '', reservedIds(s)).id, 'bank2');
 });

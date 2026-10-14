@@ -104,6 +104,14 @@ export function uniqueSweepId(sweeps: Record<string, Sweep>, filename: string): 
   return `${base}-${k}`;
 }
 
+/** Block ids that sweep tags or fits still refer to; new blocks must not reuse them (final review I4). */
+export function reservedIds(s: AppState): string[] {
+  const ids = new Set<string>();
+  for (const t of s.tagged) for (const id of Object.keys(t.state)) ids.add(id);
+  for (const f of Object.values(s.fits)) for (const r of f.refs) ids.add(r.blockId);
+  return [...ids];
+}
+
 const sameRef = (a: ParamRef, b: ParamRef): boolean => a.blockId === b.blockId && a.key === b.key;
 
 function filterFits(fits: Record<string, FitValues>, keep: (r: ParamRef) => boolean): Record<string, FitValues> {

@@ -5,7 +5,7 @@ import { counts } from '../blocks/ht50.ts';
 import { findBlock } from '../chain/state.ts';
 import { o7Chain, o7State } from '../chain/presets.ts';
 import type { Block } from '../chain/types.ts';
-import { blockSummary, displayUnit, fmtZ, partsText, tagSummary, toDisplay } from './units.ts';
+import { blockSummary, designEquals, displayUnit, fmtZ, paramCommit, partsText, tagSummary, toDisplay } from './units.ts';
 
 const chain = o7Chain('capfree');
 const get = (id: string): Block => findBlock(chain, id) as Block;
@@ -38,4 +38,13 @@ test('a sweep tag reads as bank values and the loop state', () => {
 test('card summaries round fitted values to 4 significant figures', () => {
   const l: Block = { id: 'l', label: 'l', type: 'inductor', L: { value: 586.84826e-9, badge: 'fit', free: true, lo: 0, hi: 1 }, R: 0 };
   assert.equal(blockSummary(l), '586.8 nH');
+});
+
+test('a commit equal to the displayed value is skipped, so focusing a fitted field never retypes it (final review C1)', () => {
+  const p = { value: 586.84842617e-9, badge: 'fit' as const, free: true, lo: 0, hi: 1 };
+  const u = { scale: 1e-9, unit: 'nH' };
+  assert.equal(paramCommit(p, u, toDisplay(p.value, u)), null);
+  assert.equal(paramCommit(p, u, 500), 500 * 1e-9);
+  assert.equal(designEquals({ N_p: 3, N_s: 15, N_c: 4, strap: false }, { N_p: 3, N_s: 15, N_c: 4, strap: false }), true);
+  assert.equal(designEquals({ N_p: 3, N_s: 15, N_c: 4, strap: false }, { N_p: 3, N_s: 16, N_c: 4, strap: false }), false);
 });

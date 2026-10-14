@@ -23,9 +23,12 @@ export const PALETTE: readonly { kind: NewBlockKind; label: string }[] = [
   { kind: 'ideal', label: 'Ideal transformer' },
 ];
 
-/** A new block with default values (typed badges), its ids unique against `chain`, nested blocks included. */
-export function newBlock(chain: Chain, kind: NewBlockKind, sweepId = ''): Block {
-  const used = new Set(allBlocks(chain.blocks).map((b) => b.id));
+/**
+ * A new block with default values (typed badges), its ids unique against `chain` (nested blocks included) and against
+ * `reserved`: ids that sweep tags or fits still refer to, which must never be reused (final review I4).
+ */
+export function newBlock(chain: Chain, kind: NewBlockKind, sweepId = '', reserved: Iterable<string> = []): Block {
+  const used = new Set([...allBlocks(chain.blocks).map((b) => b.id), ...reserved]);
   const id = (base: string): string => {
     let i = 1;
     while (used.has(`${base}${i}`)) i += 1;

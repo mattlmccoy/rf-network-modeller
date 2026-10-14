@@ -2415,4 +2415,10 @@ Written after Matt has used 2a, against this API:
 - **Project file:** `*.rfnm.json` (`schema: "rfnm/1"`) save / open, plus `localStorage` autosave with try/catch (spec §13).
 - **Primitives:** the generic Z(f) and explicit open primitives.
 - **Extra pane modes:** |Z|, phase, reflected power %, and stress bars (spec §12).
+- **Trust chip: fits whose basis changed.** Treat FIT values whose basis changed as not validated: a measured branch whose sweep was swapped, or a primitive whose kind changed (2a final review M7).
+- **Spec items found missing from both lists (2a final review M15):**
+  - §12 resizable 2×2 panes;
+  - §12 drag to reorder (2a has ◀/▶);
+  - §5 display and editing of fit bounds;
+  - §5 the Port block's reference-plane choice.
 - **Spec §14 walkthrough:** O7 preset → 5 sweeps → Fit → Recommend → Stress at 500 W → light/dark.

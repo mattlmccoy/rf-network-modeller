@@ -1,11 +1,12 @@
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import type { Complex } from '../engine/complex.ts';
+import { type Complex, isFiniteC } from '../engine/complex.ts';
 import type { Window } from '../chain/types.ts';
 import { gammaFromZ } from '../io/sweep.ts';
 import type { PaneMode } from '../app/state.ts';
-import { type XY, rxExtent, s11dB, smithXY, spanIndices, vswr, windowOutline } from '../app/plotmath.ts';
+import { type RectQuantity, type XY, rectValue, rxExtent, smithXY, spanIndices, windowOutline } from '../app/plotmath.ts';
 
-export interface Trace { key: string; label: string; color: string; f: number[]; z: Complex[]; role: 'primary' | 'variant' | 'measured' }
+/** `clamped[i]`: the measured branch is read outside its sweep at f[i]; drawn faint and dashed (spec §4). */
+export interface Trace { key: string; label: string; color: string; f: number[]; z: Complex[]; role: 'primary' | 'variant' | 'measured'; clamped?: boolean[] }
 export interface Dot { key: string; z: Complex; color: string }
 type Span = 'zoom' | 'full';
 interface Area { x: number; y: number; w: number; h: number }
@@ -20,9 +21,16 @@ const order = (t: Trace): number => (t.role === 'variant' ? 0 : t.role === 'meas
 const widthOf = (t: Trace): number => (t.role === 'primary' ? 2 : 1.2);
 /** Legend order: the chosen variant first (it must never be the entry clipped at the edge), then the others, then the measurement. */
 const legendRank = (t: Trace): number => (t.role === 'primary' ? 0 : t.role === 'variant' ? 1 : 2);
+/** Split a trace's points into its normal part and its clamped part (plus neighbours, so the two parts join). */
+const isClamped = (t: Trace, i: number): boolean => Boolean(t.clamped?.[i]);
+const nearClamped = (t: Trace, i: number): boolean => isClamped(t, i) || isClamped(t, i - 1) || isClamped(t, i + 1);
+const hasClamped = (t: Trace): boolean => Boolean(t.clamped?.some(Boolean));
+/** True when no point of the trace inside the span is a finite impedance (an open or invalid network). */
+const allOpen = (t: Trace, lo: number, hi: number): boolean => spanIndices(t.f, lo, hi).every((i) => !isFiniteC(t.z[i]));
 
-function strokePath(ctx: CanvasRenderingContext2D, pts: XY[], color: string, width: number, dashed: boolean): void {
+function strokePath(ctx: CanvasRenderingContext2D, pts: XY[], color: string, width: number, dashed: boolean, alpha = 1): void {
   ctx.save();
+  ctx.globalAlpha = alpha;
   ctx.strokeStyle = color;
   ctx.lineWidth = width;
   if (dashed) ctx.setLineDash([5, 3]);
@@ -74,7 +82,12 @@ function drawSmith(ctx: CanvasRenderingContext2D, p: DrawInput, traces: Trace[],
   ctx.fill();
   ctx.strokeStyle = '#aa9710';
   ctx.stroke();
-  for (const t of traces) strokePath(ctx, spanIndices(t.f, lo, hi).map((i) => smithXY(gammaFromZ(t.z[i]), cx0, cy0, radius)), t.color, widthOf(t), t.role === 'measured');
+  const nan: XY = { x: Number.NaN, y: Number.NaN };
+  for (const t of traces) {
+    const idx = spanIndices(t.f, lo, hi);
+    strokePath(ctx, idx.map((i) => (isClamped(t, i) ? nan : smithXY(gammaFromZ(t.z[i]), cx0, cy0, radius))), t.color, widthOf(t), t.role === 'measured');
+    if (hasClamped(t)) strokePath(ctx, idx.map((i) => (nearClamped(t, i) ? smithXY(gammaFromZ(t.z[i]), cx0, cy0, radius) : nan)), t.color, 1, true, 0.45);
+  }
   for (const d of p.dots) {
     const q = smithXY(gammaFromZ(d.z), cx0, cy0, radius);
     ctx.beginPath(); ctx.arc(q.x, q.y, 4.5, 0, Math.PI * 2);
@@ -85,23 +98,25 @@ function drawSmith(ctx: CanvasRenderingContext2D, p: DrawInput, traces: Trace[],
 }
 
 function drawRect(ctx: CanvasRenderingContext2D, p: DrawInput, traces: Trace[], lo: number, hi: number, area: Area, grid: string, text: string, W: number, H: number): void {
-  type Line = { pts: { f: number; v: number }[]; color: string; width: number; dashed: boolean };
+  type Line = { pts: { f: number; v: number }[]; color: string; width: number; dashed: boolean; alpha: number };
   const lines: Line[] = [];
   let min = -40;
   let max = 0;
   let unit = 'dB';
-  const sub = (t: Trace): number[] => spanIndices(t.f, lo, hi);
+  const push = (t: Trace, q: RectQuantity, color: string): void => {
+    const idx = spanIndices(t.f, lo, hi);
+    const value = (i: number): number => rectValue(q, t.z[i]);
+    lines.push({ pts: idx.map((i) => ({ f: t.f[i], v: isClamped(t, i) ? Number.NaN : value(i) })), color, width: widthOf(t), dashed: t.role === 'measured', alpha: 1 });
+    if (hasClamped(t)) lines.push({ pts: idx.map((i) => ({ f: t.f[i], v: nearClamped(t, i) ? value(i) : Number.NaN })), color, width: 1, dashed: true, alpha: 0.45 });
+  };
   if (p.mode === 's11db' || p.mode === 'vswr') {
     if (p.mode === 'vswr') { min = 1; max = 10; unit = 'VSWR'; }
-    const val = p.mode === 's11db' ? s11dB : vswr;
-    for (const t of traces) lines.push({ pts: sub(t).map((i) => ({ f: t.f[i], v: val(t.z[i]) })), color: t.color, width: widthOf(t), dashed: t.role === 'measured' });
+    for (const t of traces) push(t, p.mode, t.color);
   } else {
     unit = 'Ω';
     for (const t of traces.filter((x) => x.role !== 'variant')) {
-      const idx = sub(t);
-      const dashed = t.role === 'measured';
-      lines.push({ pts: idx.map((i) => ({ f: t.f[i], v: t.z[i].re })), color: CYAN, width: widthOf(t), dashed });
-      lines.push({ pts: idx.map((i) => ({ f: t.f[i], v: t.z[i].im })), color: RED, width: widthOf(t), dashed });
+      push(t, 'r', CYAN);
+      push(t, 'x', RED);
     }
     const ext = rxExtent(lines.flatMap((l) => l.pts.map((q) => q.v)));
     min = -ext;
@@ -126,10 +141,12 @@ function drawRect(ctx: CanvasRenderingContext2D, p: DrawInput, traces: Trace[], 
     ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = '#aa9710';
     ctx.beginPath(); ctx.moveTo(X(F0), area.y); ctx.lineTo(X(F0), area.y + area.h); ctx.stroke(); ctx.restore();
   }
-  for (const l of lines) strokePath(ctx, l.pts.map((q) => ({ x: X(q.f), y: Y(q.v) })), l.color, l.width, l.dashed);
+  for (const l of lines) strokePath(ctx, l.pts.map((q) => ({ x: X(q.f), y: Y(q.v) })), l.color, l.width, l.dashed, l.alpha);
   if (p.mode !== 'rx') {
     for (const d of p.dots) {
-      ctx.beginPath(); ctx.arc(X(F0), Y(p.mode === 's11db' ? s11dB(d.z) : vswr(d.z)), 3.5, 0, Math.PI * 2);
+      const v = rectValue(p.mode === 's11db' ? 's11db' : 'vswr', d.z);
+      if (!Number.isFinite(v)) continue;
+      ctx.beginPath(); ctx.arc(X(F0), Y(v), 3.5, 0, Math.PI * 2);
       ctx.fillStyle = d.color; ctx.fill();
     }
   }
@@ -165,8 +182,9 @@ function draw(canvas: HTMLCanvasElement, p: DrawInput): void {
   if (p.mode === 'smith') drawSmith(ctx, p, traces, lo, hi, area, grid);
   else drawRect(ctx, p, traces, lo, hi, area, grid, text, W, H);
   const items = p.mode === 'rx'
-    ? [{ label: 'R', color: CYAN, dashed: false }, { label: 'X', color: RED, dashed: false }, ...(traces.some((t) => t.role === 'measured') ? [{ label: 'measured', color: text, dashed: true }] : [])]
-    : [...traces].sort((a, b) => legendRank(a) - legendRank(b)).map((t) => ({ label: t.label, color: t.color, dashed: t.role === 'measured' }));
+    ? [{ label: 'R', color: CYAN, dashed: false }, { label: 'X', color: RED, dashed: false }, ...(traces.some((t) => t.role === 'measured') ? [{ label: 'measured', color: text, dashed: true }] : []),
+      ...(traces.some((t) => t.role === 'primary' && allOpen(t, lo, hi)) ? [{ label: 'open: no finite R or X', color: text, dashed: false }] : [])]
+    : [...traces].sort((a, b) => legendRank(a) - legendRank(b)).map((t) => ({ label: `${t.label}${allOpen(t, lo, hi) ? ' (open)' : ''}`, color: t.color, dashed: t.role === 'measured' }));
   legend(ctx, items, p.mode === 'smith' ? 8 : 46, text, W);
 }
 

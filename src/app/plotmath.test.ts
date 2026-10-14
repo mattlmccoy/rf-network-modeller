@@ -3,7 +3,7 @@ import test from 'node:test';
 import { OPEN, cx } from '../engine/complex.ts';
 import { AIT_WINDOW } from '../chain/presets.ts';
 import { gammaFromZ } from '../io/sweep.ts';
-import { rxExtent, s11dB, smithXY, spanIndices, vswr, windowOutline } from './plotmath.ts';
+import { rectValue, rxExtent, s11dB, smithXY, spanIndices, vswr, windowOutline } from './plotmath.ts';
 import { assertClose, assertNear } from '../testutil.ts';
 
 test('the AIT window outline is a closed loop inside the unit circle starting at 5 + j6', () => {
@@ -33,3 +33,11 @@ test('R/X extent stays between 50 and 500 Ω and ignores non-finite values', () 
 });
 
 test('spanIndices keeps the points inside [lo, hi]', () => assert.deepEqual(spanIndices([9e6, 10e6, 13e6, 17e6, 18e6], 10e6, 17e6), [1, 2, 3]));
+
+test('rectangular panes gap an open or invalid Z instead of drawing 0 Ω or a pinned VSWR (final review I3)', () => {
+  assert.ok(Number.isNaN(rectValue('x', OPEN)) && Number.isNaN(rectValue('r', OPEN)) && Number.isNaN(rectValue('vswr', OPEN)));
+  assert.equal(rectValue('s11db', OPEN), 0);
+  assert.ok(Number.isNaN(rectValue('s11db', cx(Number.NaN, Number.NaN))));
+  assert.equal(rectValue('x', cx(7, 18)), 18);
+  assertNear(rectValue('vswr', cx(150)), 3, 1e-12);
+});

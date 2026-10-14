@@ -2,7 +2,7 @@ import { type Dispatch, Fragment, useState } from 'react';
 import { findBlock } from '../chain/state.ts';
 import type { Block } from '../chain/types.ts';
 import { type NewBlockKind, PALETTE, newBlock } from '../app/chainEdit.ts';
-import { type Action, type AppState, variantChain } from '../app/state.ts';
+import { type Action, type AppState, reservedIds, variantChain } from '../app/state.ts';
 import { blockSummary } from '../app/units.ts';
 import { BlockArt } from './BlockArt.tsx';
 
@@ -38,7 +38,7 @@ export function CircuitStrip({ state, dispatch }: { state: AppState; dispatch: D
   const [kind, setKind] = useState<NewBlockKind>('capBank');
   const view = variantChain(state, state.primary);
   const sel = state.selected ? findBlock(state.chain, state.selected) : undefined;
-  const make = (): Block => newBlock(state.chain, kind, Object.keys(state.sweeps)[0] ?? '');
+  const make = (): Block => newBlock(state.chain, kind, Object.keys(state.sweeps)[0] ?? '', reservedIds(state));
   const pick: Pick = (id) => dispatch({ type: 'select', id: state.selected === id ? null : id });
   return (
     <div className="circuit full-row">
