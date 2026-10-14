@@ -32,3 +32,17 @@ export function loadFixtureSweep(id: string, file: string): Sweep {
   const t = parseS1p(readFileSync(new URL(`fixtures/sweeps/${file}`, ROOT), 'utf8'));
   return { id, name: file, f: t.f, gamma: t.gamma };
 }
+
+/** Deterministic uniform [0, 1) generator for reproducible synthetic noise. */
+export function mulberry32(seed: number): () => number {
+  let s = seed | 0;
+  return () => {
+    s = (s + 0x6d2b79f5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Standard normal sample by Box–Muller. */
+export const gauss = (rnd: () => number): number => Math.sqrt(-2 * Math.log(1 - rnd())) * Math.cos(2 * Math.PI * rnd());
