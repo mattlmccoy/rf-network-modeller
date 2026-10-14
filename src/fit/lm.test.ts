@@ -39,3 +39,11 @@ test('standard errors of a straight-line fit match the textbook formula', () => 
   const s2 = r.residual.reduce((a, v) => a + v * v, 0) / (t.length - 2);
   assertNear(s.stderr[1], Math.sqrt(s2 / sxx), 1e-6);
 });
+
+test('a parameter pinned at its bound does not stall the others (active set)', () => {
+  // x0 wants −5 but is bounded at 0; x1 is tightly coupled to x0. Optimum: x0 = 0, x1 = 1.
+  const r = levenbergMarquardt((x) => [100 * (x[1] - x[0] - 1), x[0] + 5], [0.5, 0], { lo: [0, -10], hi: [10, 10], maxIter: 50 });
+  assertNear(r.x[0], 0, 1e-9);
+  assertNear(r.x[1], 1, 1e-6);
+  assert.ok(r.converged, `not converged after ${r.iterations} iterations`);
+});

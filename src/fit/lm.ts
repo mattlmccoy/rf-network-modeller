@@ -64,13 +64,22 @@ export function levenbergMarquardt(res: Residual, x0: number[], opt: LmOptions =
   for (; it < maxIter && !converged; it += 1) {
     const A = normal(J, n);
     const g = Array.from({ length: n }, (_, a) => J.reduce((s, row, i) => s + row[a] * r[i], 0));
-    const dmax = Math.max(...A.map((row, i) => row[i]), 1e-300);
+    // Active set: a parameter on a bound whose descent direction (−g) points outward stays fixed this iteration,
+    // so its clamped step cannot corrupt the step of the parameters coupled to it.
+    const free = x.map((_, i) => i).filter((i) => !((x[i] <= lo[i] && g[i] > 0) || (x[i] >= hi[i] && g[i] < 0)));
+    if (!free.length) {
+      converged = true; // pinned in a corner of the box with every descent direction pointing outward
+      break;
+    }
+    const dmax = Math.max(...free.map((i) => A[i][i]), 1e-300);
     let accepted = false;
     for (let tries = 0; tries < 12 && !accepted; tries += 1) {
-      const M = A.map((row, i) => row.map((v, j) => (i === j ? v + lambda * Math.max(v, 1e-12 * dmax) : v)));
-      let step: number[];
+      const M = free.map((i) => free.map((j) => (i === j ? A[i][i] + lambda * Math.max(A[i][i], 1e-12 * dmax) : A[i][j])));
+      const step = x.map(() => 0);
       try {
-        step = solveReal(M, g.map((v) => -v));
+        solveReal(M, free.map((i) => -g[i])).forEach((s, k) => {
+          step[free[k]] = s;
+        });
       } catch (e) {
         if (e instanceof SingularMatrixError) {
           lambda *= 10;
