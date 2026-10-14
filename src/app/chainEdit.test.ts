@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { counts } from '../blocks/ht50.ts';
+import { estimateUnit } from '../blocks/design.ts';
 import { compile } from '../chain/compile.ts';
 import { DEFAULT_VARIANTS, O7_FILES, o7Chain } from '../chain/presets.ts';
 import { allBlocks, duplicateIds, findBlock } from '../chain/state.ts';
 import { type Block, type Chain, param } from '../chain/types.ts';
-import { insertAfter, insertInto, moveBlock, removeBlock } from './chainEdit.ts';
+import { PALETTE, insertAfter, insertInto, moveBlock, newBlock, removeBlock } from './chainEdit.ts';
 import { loadFixtureSweep } from '../testutil.ts';
 
 const base = o7Chain('capfree');
@@ -45,5 +46,31 @@ test('edited chains keep unique ids and still compile', () => {
   for (const c of [insertAfter(base, 'Ls', bank('x')), removeBlock(base, 'sh'), moveBlock(base, 'Ls', -1), insertInto(base, 'branchArm', 0, bank('z'))]) {
     assert.deepEqual(duplicateIds(c), []);
     compile(c, ctx);
+  }
+});
+
+test('new blocks get ids unique against the chain, nested ones included', () => {
+  assert.equal(newBlock(base, 'capBank').id, 'bank1');
+  const c1 = insertAfter(base, null, newBlock(base, 'shunt'));
+  const c2 = insertAfter(c1, null, newBlock(c1, 'parallel'));
+  assert.deepEqual(duplicateIds(c2), []);
+  assert.equal(newBlock(c2, 'capBank').id, 'bank2');
+});
+
+test('every palette entry makes a block that compiles at the end of the O7 chain', () => {
+  for (const { kind } of PALETTE) {
+    const c = insertAfter(base, null, newBlock(base, kind, 'capfree'));
+    assert.deepEqual(duplicateIds(c), [], kind);
+    compile(c, ctx);
+  }
+});
+
+test('a new stack is estimated from its design with the design.py scaling laws', () => {
+  const s = newBlock(base, 'stack');
+  assert.equal(s.type, 'stack');
+  if (s.type === 'stack') {
+    assert.deepEqual(s.design, { N_p: 3, N_s: 15, N_c: 4, strap: false });
+    assert.deepEqual(s.unit, estimateUnit({ N_p: 3, N_s: 15, N_c: 4, strap: false }));
+    assert.equal(s.source, 'estimate');
   }
 });

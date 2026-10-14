@@ -2,6 +2,7 @@ import type { Complex } from '../engine/complex.ts';
 import type { Cable } from '../engine/coax.ts';
 import type { Unit } from '../engine/transformer.ts';
 import type { Counts } from '../blocks/ht50.ts';
+import type { Design } from '../blocks/design.ts';
 import type { Sweep } from '../io/sweep.ts';
 
 /** Where a number came from: fitted to sweeps, estimated from geometry, or typed by the user (spec §5). */
@@ -37,7 +38,7 @@ export interface CapBankBlock extends Base {
 export interface InductorBlock extends Base { type: 'inductor'; L: Param; R: number }
 export interface WireBlock extends Base { type: 'wire'; lengthMm: number; awg: number; strands: number }
 export interface MeasuredBranchBlock extends Base { type: 'measuredBranch'; sweepId: string; kr: Param; d: Param; dLb: Param; loop: boolean }
-export interface StackBlock extends Base { type: 'stack'; unit: Unit; source: 'preset' | 'estimate' | 'fit' }
+export interface StackBlock extends Base { type: 'stack'; unit: Unit; source: 'preset' | 'estimate' | 'fit'; design?: Design }
 export interface PlatesBlock extends Base { type: 'plates'; C: Param; G_cube: Param; G_fix: Param }
 export interface PrimitiveBlock extends Base { type: 'primitive'; kind: 'R' | 'L' | 'C' | 'short'; value: Param }
 export interface IdealBlock extends Base { type: 'ideal'; n: number }
