@@ -294,7 +294,7 @@ Red-green TDD for all non-UI logic. Each layer gates the next.
    - the T-model stage-1 fit on the O7 cap-free sweep reaches `calib.fit_one_port`'s cost within 2 %.
 4. **Recommend and Stress:**
    - the candidate count equals the Python enumeration for the same stock and slots;
-   - the ranking on the captured fitted models puts 80/180 in the top picks for the loop state;
+   - the ranking on the captured fitted models equals the Python ranking (all 209 candidates, top 12 in the same order). 80/180 lands in the window for the two well-fitting cable variants. Where it ranks is reported, not gated: `o7_loopstate.py` scored a fixed candidate list, not the full enumeration;
    - drift room for 80/180 matches the recorded +1.3–1.4 % up / +0.6–0.8 % down (`SWEEP_NOTES.md` L523);
    - Stress matches `solve_chain` per part.
 5. **Blind replay on real data (`npm run validate`), the v1 acceptance gate.** It replays the history with the TypeScript tool:
