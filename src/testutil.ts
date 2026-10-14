@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import type { Complex } from './engine/complex.ts';
+import { parseS1p } from './io/s1p.ts';
+import type { Sweep } from './io/sweep.ts';
 
 /** Passes when |a - b| <= rel * max(|b|, 1), measured on the complex magnitude. */
 export function assertClose(a: Complex, b: Complex, rel = 1e-9, msg = ''): void {
@@ -24,4 +26,9 @@ export const ROOT = new URL('../', import.meta.url);
 
 export function readFixtureJson<T>(name: string): T {
   return JSON.parse(readFileSync(new URL(`fixtures/python/${name}`, ROOT), 'utf8')) as T;
+}
+
+export function loadFixtureSweep(id: string, file: string): Sweep {
+  const t = parseS1p(readFileSync(new URL(`fixtures/sweeps/${file}`, ROOT), 'utf8'));
+  return { id, name: file, f: t.f, gamma: t.gamma };
 }
