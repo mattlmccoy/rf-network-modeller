@@ -1,0 +1,124 @@
+{
+ "name": "O7 parallel 3:15 (2026-10-13 sweeps)",
+ "capFree": "capfree.s1p",
+ "sweeps": [
+  {
+   "id": "o7-130-230",
+   "file": "130-230.s1p",
+   "label": "130/230",
+   "series": [
+    1,
+    0,
+    1
+   ],
+   "shunt": [
+    2,
+    0,
+    1
+   ],
+   "loop": false
+  },
+  {
+   "id": "o7-100-200",
+   "file": "100-200.s1p",
+   "label": "100/200",
+   "series": [
+    1,
+    0,
+    0
+   ],
+   "shunt": [
+    2,
+    0,
+    0
+   ],
+   "loop": false
+  },
+  {
+   "id": "o7-80-200",
+   "file": "80-200.s1p",
+   "label": "80/200",
+   "series": [
+    0,
+    1,
+    1
+   ],
+   "shunt": [
+    2,
+    0,
+    0
+   ],
+   "loop": false
+  },
+  {
+   "id": "o7-80-200-loop",
+   "file": "80-200-loop.s1p",
+   "label": "80/200 + loop",
+   "series": [
+    0,
+    1,
+    1
+   ],
+   "shunt": [
+    2,
+    0,
+    0
+   ],
+   "loop": true
+  },
+  {
+   "id": "o7-80-180-loop",
+   "file": "80-180-loop.s1p",
+   "label": "80/180 + loop",
+   "series": [
+    0,
+    1,
+    1
+   ],
+   "shunt": [
+    1,
+    1,
+    1
+   ],
+   "loop": true
+  }
+ ],
+ "fits": [
+  {
+   "variant": "1.245 m + 342 nH",
+   "x": [
+    586.8484288760071,
+    73.7983910454566,
+    0.9269027581081584,
+    1.2343684026772443,
+    0.49490286991550037
+   ],
+   "q": 3.3078752644474334,
+   "source": "3-sweep fit + loop shift (o7_loopstate.py recipe, Python), captured by tools/capture_fixtures.py"
+  },
+  {
+   "variant": "1.2825 m + 329 nH",
+   "x": [
+    536.1512801417874,
+    86.11120268114492,
+    0.931753649835839,
+    1.219079659308596,
+    0.49333928814272476
+   ],
+   "q": 3.4141655727881988,
+   "source": "3-sweep fit + loop shift (o7_loopstate.py recipe, Python), captured by tools/capture_fixtures.py"
+  },
+  {
+   "variant": "1.5094 m + 256 nH",
+   "x": [
+    203.68126528728234,
+    158.95855611358968,
+    0.9758225082639225,
+    1.1162201818915414,
+    0.5083562797469391
+   ],
+   "q": 4.157587995264539,
+   "source": "3-sweep fit + loop shift (o7_loopstate.py recipe, Python), captured by tools/capture_fixtures.py"
+  }
+ ]
+}
