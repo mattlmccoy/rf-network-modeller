@@ -34,3 +34,8 @@ test('block and part summaries', () => {
 test('a sweep tag reads as bank values and the loop state', () => {
   assert.equal(tagSummary(chain, o7State(counts(1, 0, 1), counts(2, 0, 1), false)), 'Series bank 130 pF · Shunt bank 230 pF · loop off');
 });
+
+test('card summaries round fitted values to 4 significant figures', () => {
+  const l: Block = { id: 'l', label: 'l', type: 'inductor', L: { value: 586.84826e-9, badge: 'fit', free: true, lo: 0, hi: 1 }, R: 0 };
+  assert.equal(blockSummary(l), '586.8 nH');
+});

@@ -45,6 +45,9 @@ export function fmtZ(z: Complex): string {
   return `${z.re.toFixed(2)} ${z.im < 0 ? '−' : '+'} j${Math.abs(z.im).toFixed(2)} Ω`;
 }
 
+/** SI value in display units at 4 significant figures, for compact card text. */
+const short = (si: number, u: DisplayUnit): number => Number((si / u.scale).toPrecision(4));
+
 export const partsText = (c: Counts): string => CAP_VALUES.filter((v) => c[v] > 0).map((v) => `${c[v]}×${v}`).join(' + ') || 'empty';
 
 /** One-line description of a block for its card. */
@@ -56,7 +59,7 @@ export function blockSummary(b: Block): string {
       return `${partsText(b.counts)}${custom} = ${Number(pf.toPrecision(6))} pF${b.nSeries === 2 ? ' (2 in series)' : ''}`;
     }
     case 'inductor':
-      return `${toDisplay(b.L.value, NH)} nH`;
+      return `${short(b.L.value, NH)} nH`;
     case 'wire':
       return `${b.lengthMm} mm, ${b.awg} AWG ×${b.strands}`;
     case 'measuredBranch':
@@ -64,11 +67,11 @@ export function blockSummary(b: Block): string {
     case 'stack':
       return `${b.unit.N_p}:${Math.round(b.unit.n * b.unit.N_p)}, ${b.unit.N_c} cores`;
     case 'plates':
-      return `${toDisplay(b.C.value, PF)} pF`;
+      return `${short(b.C.value, PF)} pF`;
     case 'primitive': {
       if (b.kind === 'short') return 'short';
       const u = displayUnit(b, 'value');
-      return `${toDisplay(b.value.value, u)} ${u.unit}`;
+      return `${short(b.value.value, u)} ${u.unit}`;
     }
     case 'ideal':
       return `1:${b.n}`;

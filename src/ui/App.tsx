@@ -6,6 +6,7 @@ import { loadExample } from '../app/example.ts';
 import { evalGrid } from '../app/grid.ts';
 import { type PaneMode, emptyState, reducer } from '../app/state.ts';
 import { LandingStrip } from './LandingStrip.tsx';
+import { CircuitStrip } from './CircuitStrip.tsx';
 import { type Dot, PlotPane, type Trace } from './PlotPane.tsx';
 
 type Theme = 'light' | 'dark';
@@ -77,7 +78,7 @@ export default function App() {
           <fieldset><legend>Block</legend><small>The block inspector arrives in Task 7.</small></fieldset>
         </section>
         <section className="charts-grid">
-          <div className="circuit full-row"><small>The circuit editor arrives in Task 6.</small></div>
+          <CircuitStrip state={state} dispatch={dispatch} />
           <LandingStrip names={state.variants.map((v) => v.name)} colors={colors} results={results} measured={measured} />
           {state.panes.map((mode, i) => <PlotPane key={i} mode={mode} traces={traces} dots={dots} aitWindow={state.window} theme={theme} onMode={(m: PaneMode) => dispatch({ type: 'setPane', index: i, mode: m })} />)}
         </section>
