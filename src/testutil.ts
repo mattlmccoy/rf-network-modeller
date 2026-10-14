@@ -3,6 +3,7 @@ import type { Complex } from './engine/complex.ts';
 
 /** Passes when |a - b| <= rel * max(|b|, 1), measured on the complex magnitude. */
 export function assertClose(a: Complex, b: Complex, rel = 1e-9, msg = ''): void {
+  if (a.re === b.re && a.im === b.im) return; // identical, including OPEN (Infinity) values
   const err = Math.hypot(a.re - b.re, a.im - b.im);
   const tol = rel * Math.max(Math.hypot(b.re, b.im), 1);
   assert.ok(err <= tol, `${msg} got ${fmt(a)}, want ${fmt(b)} (|err| ${err.toExponential(2)} > ${tol.toExponential(2)})`);
