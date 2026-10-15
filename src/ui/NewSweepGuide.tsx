@@ -7,7 +7,7 @@ import { type Action, type AppState, variantChain } from '../app/state.ts';
 import { sweepFromFile, sweepLabel } from '../app/sweepFile.ts';
 import { tagSummary } from '../app/units.ts';
 import { type Agreement, agreementFor, agreementText } from '../present/agreement.ts';
-import { sameState, snapshotState, structureKey } from '../present/circuit.ts';
+import { hasModel, sameState, snapshotState, structureKey } from '../present/circuit.ts';
 import { newSweepStatus } from '../present/guide.ts';
 import { type Level, PROFILES } from '../present/level.ts';
 import { type RecRow, type RecView, noChangeNeeded, picksState, shapeRecs } from '../present/recs.ts';
@@ -21,6 +21,8 @@ function rowText(r: RecRow, level: Level, watts: number): string {
   const st = r.stressPct === null ? 'capacitor stress unknown' : r.stress === 'red' ? `over a capacitor rating at ${watts} W (${r.stressPct.toFixed(0)} %)` : `capacitors at ${r.stressPct.toFixed(0)} % of rating at ${watts} W`;
   return `${v} · ${st}`;
 }
+
+const MEASURED_ONLY = <p>This project holds measured sweeps only, so there is no model to compare with or to suggest changes from.</p>;
 
 export interface GuideProps {
   state: AppState;
@@ -49,12 +51,13 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
   const last = state.tagged.at(-1);
   const sameAsLast = last !== undefined && last.structure === structureKey(state.chain) && sameState(state.chain, last.state, snapshotState(state.chain));
   const activeTag = state.tagged.find((t) => t.sweepId === state.activeSweep);
-  const agreement = useMemo(() => (loaded ? agreementFor(state, grid, caches) : null), [loaded, state.chain, state.fits, state.sweeps, state.tagged, state.activeSweep, state.variants, state.window, grid]);
+  const model = hasModel(state.chain);
+  const agreement = useMemo(() => (loaded && model ? agreementFor(state, grid, caches) : null), [loaded, model, state.chain, state.fits, state.sweeps, state.tagged, state.activeSweep, state.variants, state.window, grid]);
 
   useEffect(() => {
     setRecs(null);
     setRecError(null);
-    if (!loaded) return undefined;
+    if (!loaded || !model) return undefined;
     const t = setTimeout(() => {
       try {
         const out = recommend({ fitted: state.variants.map((variant, i) => ({ variant, chain: variantChain(state, i) })), sweeps: state.sweeps, grid, window: state.window, stock: state.stock, stressWatts: state.powerW });
@@ -102,6 +105,7 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
   };
 
   const recBody = (): ReactNode => {
+    if (!model) return MEASURED_ONLY;
     if (recError) return <small className="bad">Couldn't work out changes: {recError}</small>;
     if (!recs) return <small>Working out changes from your parts…</small>;
     const heads: string[] = [];
@@ -162,7 +166,7 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
           {PROFILES[level].sheets.includes('sweeps') ? <small>Tagged with the wrong build? Fix it in Sweeps (top bar).</small> : null}
         </>
       ))}
-      {step(2, 'Does the model agree?', (
+      {step(2, 'Does the model agree?', !model ? MEASURED_ONLY : (
         <>
           {blind ? <p><b>Before refit (blind check):</b> {agreementText(blind, level, state.primary)}</p> : null}
           {agreement ? <p>{agreementText(agreement, level, state.primary)}</p> : <p>Can't compare: no sweep is shown.</p>}

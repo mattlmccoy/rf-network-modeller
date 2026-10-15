@@ -4,6 +4,7 @@ import { evaluateVariants } from '../app/evaluate.ts';
 import { loadExample } from '../app/example.ts';
 import { evalGrid } from '../app/grid.ts';
 import { emptyState, reducer } from '../app/state.ts';
+import { hasModel } from '../present/circuit.ts';
 import { type Level, PROFILES, type SheetKind, parseLevel } from '../present/level.ts';
 import { fromProjectJson, toProjectJson } from '../project/file.ts';
 import { getCurrentId, getProject, putProject, setCurrentId } from '../project/store.ts';
@@ -137,7 +138,7 @@ export default function App() {
   };
 
   const grid = useMemo(() => evalGrid(state.chain, state.sweeps), [state.chain, state.sweeps]);
-  const results = useMemo(() => evaluateVariants(state, grid, caches.current), [state.chain, state.variants, state.fits, state.sweeps, state.window, grid]);
+  const results = useMemo(() => (hasModel(state.chain) ? evaluateVariants(state, grid, caches.current) : []), [state.chain, state.variants, state.fits, state.sweeps, state.window, grid]);
 
   return (
     <div className="application">

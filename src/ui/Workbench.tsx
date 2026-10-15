@@ -7,7 +7,7 @@ import { zFromGamma } from '../io/sweep.ts';
 import { type VariantResult, evaluateVariants, measuredLanding } from '../app/evaluate.ts';
 import { type Action, type AppState, variantChain } from '../app/state.ts';
 import { plainRX } from '../app/units.ts';
-import { trust, trustText } from '../present/circuit.ts';
+import { hasModel, trust, trustText } from '../present/circuit.ts';
 import { modelVerdict, shownResult } from '../present/show.ts';
 import { DRAWING_LABEL, type DrawingKind, type Level, PROFILES, RESULT_LABEL, type ResultKind } from '../present/level.ts';
 import { UNKNOWN, landingNearF0, toneOf, verdictOf, verdictText } from '../present/verdict.ts';
@@ -84,10 +84,11 @@ export function Workbench({ task, onTask, state, dispatch, level, grid, results,
             <label className="override">Result <select value={rKind} onChange={(e) => setResult(e.target.value as ResultKind)}>{RESULTS.map((k) => <option key={k} value={k}>{RESULT_LABEL[k]}</option>)}</select></label>
           </header>
           {modelError ? <p className="bad">The model can't evaluate this circuit: {modelError}</p> : null}
+          {hasModel(state.chain) ? null : <p>This project holds measured sweeps only; there is no circuit model to predict from.</p>}
           {rKind === 'verdict' ? <VerdictCard text={verdictText(shown.v, 'beginner')} tone={tone} source={shown.source} trustNote={trustText(t, 'beginner')} state={shown.v.state} /> : null}
           {rKind === 'target' ? <TargetBox window={state.window} measured={active ? measuredLanding(active)?.z ?? null : null} measuredLabel={tag?.label ?? active?.name ?? ''} predicted={results[state.primary]?.landing?.z ?? null} ghost={task === 'tryChange' ? before : ghost} ghostLabel={task === 'tryChange' ? 'before the change' : 'with the change'} /> : null}
           {rKind !== 'verdict' ? <p className={`verdict-line ${tone}`}>{line}</p> : null}
-          {rKind === 'target' ? <p className="rx-readout">At the tuner, 13.56 MHz. {active ? `Your sweep: ${plainRX(measuredLanding(active)?.z ?? null)}. ` : ''}Model: {plainRX(results[state.primary]?.landing?.z ?? null)}.</p> : null}
+          {rKind === 'target' ? <p className="rx-readout">At the tuner, 13.56 MHz. {active ? `Your sweep: ${plainRX(measuredLanding(active)?.z ?? null)}. ` : ''}{hasModel(state.chain) ? `Model: ${plainRX(results[state.primary]?.landing?.z ?? null)}.` : ''}</p> : null}
           {rKind === 'plots' ? <EngineerPanel state={state} dispatch={dispatch} grid={grid} results={results} theme={theme} /> : null}
           {rKind !== 'verdict' && trustText(t, 'builder') ? <small>{trustText(t, 'builder')}</small> : null}
           {rKind !== 'verdict' && clamped ? <small className="warn-text"> The model reads the measured part outside its sweep here; treat it as rough.</small> : null}
@@ -97,7 +98,8 @@ export function Workbench({ task, onTask, state, dispatch, level, grid, results,
         {state.selected ? <PartEditor state={state} dispatch={dispatch} level={level} /> : null}
         {task === 'newSweep' ? <NewSweepGuide state={state} dispatch={dispatch} level={level} grid={grid} caches={caches} verdict={shown.v.state} preview={preview} onPreview={setPreview} onSafePower={() => onTask('safePower')} /> : null}
         {task === 'tryChange' && baseline ? <TryChangeGuide state={state} dispatch={dispatch} level={level} baseline={baseline} onKeep={() => setBaseline({ chain: state.chain, fits: state.fits })} verdictLine={verdictText(shown.v, level, shown.c)} beforeLine={beforeVerdict ? verdictText(beforeVerdict.v, level, beforeVerdict.c) : null} /> : null}
-        {task === 'safePower' ? <SafePowerGuide state={state} dispatch={dispatch} level={level} grid={grid} caches={caches} /> : null}
+        {task === 'safePower' && hasModel(state.chain) ? <SafePowerGuide state={state} dispatch={dispatch} level={level} grid={grid} caches={caches} /> : null}
+        {task === 'safePower' && !hasModel(state.chain) ? <section className="panel guide"><h3>Guide</h3><p>This project holds measured sweeps only, so there is no circuit to check at full power.</p></section> : null}
       </aside>
     </main>
   );
