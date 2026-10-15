@@ -5,8 +5,8 @@ import type { Level } from './level.ts';
 
 /** Fields a sweep's circuit state sets: bank parts and the sense-loop flag (spec §7.3). */
 const STATE_FIELDS: Partial<Record<Block['type'], readonly string[]>> = { capBank: ['counts', 'nSeries', 'customPf'], measuredBranch: ['loop'] };
-/** Fields that do not change the circuit: names and recommender settings. */
-const NON_CIRCUIT: readonly string[] = ['label', 'slots', 'searchable'];
+/** Fields that do not change the circuit's impedance: names, recommender settings, and the turns only flux reads. */
+const NON_CIRCUIT: readonly string[] = ['label', 'slots', 'searchable', 'transformer'];
 
 const isParam = (o: Record<string, unknown>): boolean => 'value' in o && 'badge' in o && 'free' in o;
 

@@ -64,3 +64,13 @@ test('trustText says nothing for measured and words the rest by level', () => {
   assert.equal(trustText('beyond', 'engineer'), "Beyond anything you've measured: the model is extrapolating");
   assert.equal(trustText('within', 'builder'), "Within what you've measured");
 });
+
+test('entering transformer turns on a project saved without them keeps every sweep measured (Plan 3B review C1)', () => {
+  const plain = updateBlock(chain, 'branch', { transformer: undefined });
+  const key3a = structureKey(plain);
+  const tags3a = tags.map((t) => ({ ...t, structure: key3a }));
+  const withTurns = updateBlock(plain, 'branch', { transformer: { nP: 3, nS: 15, nC: 4 } });
+  assert.equal(structureKey(withTurns), key3a, 'turns change flux, not impedance');
+  assert.equal(trust(withTurns, tags3a), 'measured');
+  assert.ok(activeIsMeasured(withTurns, tags3a, 'e'));
+});
