@@ -5,6 +5,9 @@ import type { Block, Chain, Param, Variant, Window } from '../chain/types.ts';
 import { type ParamRef, fromFitVars, getParam, withParamValue } from '../fit/params.ts';
 import type { Sweep } from '../io/sweep.ts';
 import { insertAfter, insertInto, moveBlock, removeBlock } from './chainEdit.ts';
+import { knownState, snapshotState, structureKey } from '../present/circuit.ts';
+
+export { snapshotState };
 
 export type PaneMode = 'smith' | 's11db' | 'rx' | 'vswr';
 
@@ -13,14 +16,19 @@ export interface FitValues {
   refs: ParamRef[];
   x: number[];
   source: string;
+  /** null for fits imported from the Python, which carry no flag. */
+  converged: boolean | null;
+  rms: number | null;
+  illDetermined: [string, string][];
 }
 
-/** A loaded caps-in sweep, the circuit state it was taken in, and whether fits use it. */
+/** A loaded caps-in sweep, the circuit state it was taken in, the circuit's structure then, and whether fits use it. */
 export interface TagRef {
   sweepId: string;
   label: string;
   state: StateOverrides;
   include: boolean;
+  structure: string;
 }
 
 export interface AppState {
@@ -33,6 +41,7 @@ export interface AppState {
   activeSweep: string | null;
   stock: Counts;
   window: Window;
+  powerW: number;
   selected: string | null;
   view: 'physical' | 'symbol';
   panes: PaneMode[];
@@ -56,7 +65,10 @@ export type Action =
   | { type: 'removeSweep'; sweepId: string }
   | { type: 'setActiveSweep'; sweepId: string | null }
   | { type: 'applySweepState'; sweepId: string }
-  | { type: 'setStock'; stock: Counts };
+  | { type: 'setStock'; stock: Counts }
+  | { type: 'retagSweep'; sweepId: string }
+  | { type: 'setFits'; fits: Record<string, FitValues> }
+  | { type: 'setCircuitState'; state: StateOverrides };
 
 export function emptyState(): AppState {
   return {
@@ -69,6 +81,7 @@ export function emptyState(): AppState {
     activeSweep: null,
     stock: DEFAULT_STOCK,
     window: AIT_WINDOW,
+    powerW: 500,
     selected: null,
     view: 'physical',
     panes: ['smith', 's11db', 'rx', 'vswr'],
@@ -83,16 +96,6 @@ export function variantChain(s: AppState, index: number): Chain {
   // A fitted value whose block is gone is meaningless; skip it rather than fail the whole prediction.
   const idx = f.refs.map((_, i) => i).filter((i) => findBlock(s.chain, f.refs[i].blockId) !== undefined);
   return idx.length ? fromFitVars(s.chain, idx.map((i) => f.refs[i]), idx.map((i) => f.x[i]), 'fit') : s.chain;
-}
-
-/** The circuit state a new sweep is tagged with: every bank's parts and every measured branch's loop flag. */
-export function snapshotState(chain: Chain): StateOverrides {
-  const out: StateOverrides = {};
-  for (const b of allBlocks(chain.blocks)) {
-    if (b.type === 'capBank') out[b.id] = { counts: { ...b.counts }, nSeries: b.nSeries, customPf: b.customPf };
-    if (b.type === 'measuredBranch') out[b.id] = { loop: b.loop };
-  }
-  return out;
 }
 
 /** A sweep id from a file name: letters, digits, '-' and '_' only, made unique against the loaded sweeps. */
@@ -160,7 +163,7 @@ export function reducer(s: AppState, a: Action): AppState {
       return {
         ...s,
         sweeps: { ...s.sweeps, [a.sweep.id]: a.sweep },
-        tagged: [...s.tagged, { sweepId: a.sweep.id, label: a.label, state: snapshotState(s.chain), include: true }],
+        tagged: [...s.tagged, { sweepId: a.sweep.id, label: a.label, state: snapshotState(s.chain), include: true, structure: structureKey(s.chain) }],
         activeSweep: a.sweep.id,
       };
     case 'toggleInclude':
@@ -176,10 +179,15 @@ export function reducer(s: AppState, a: Action): AppState {
     case 'applySweepState': {
       const tag = s.tagged.find((t) => t.sweepId === a.sweepId);
       if (!tag) return s;
-      const known = Object.fromEntries(Object.entries(tag.state).filter(([id]) => findBlock(s.chain, id)));
-      return { ...s, chain: applyState(s.chain, known) };
+      return { ...s, chain: applyState(s.chain, knownState(s.chain, tag.state)) };
     }
     case 'setStock':
       return { ...s, stock: a.stock };
+    case 'retagSweep':
+      return { ...s, tagged: s.tagged.map((t) => (t.sweepId === a.sweepId ? { ...t, state: snapshotState(s.chain), structure: structureKey(s.chain) } : t)) };
+    case 'setFits':
+      return { ...s, fits: a.fits };
+    case 'setCircuitState':
+      return { ...s, chain: applyState(s.chain, knownState(s.chain, a.state)) };
   }
 }

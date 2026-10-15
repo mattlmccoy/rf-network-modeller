@@ -8,6 +8,7 @@ import { getParam } from '../fit/params.ts';
 import { type AppState, emptyState, reducer, reservedIds, snapshotState, uniqueSweepId, variantChain } from './state.ts';
 import { newBlock } from './chainEdit.ts';
 import { loadFixtureSweep } from '../testutil.ts';
+import { structureKey } from '../present/circuit.ts';
 
 const capfree = loadFixtureSweep('capfree', O7_FILES.capFree);
 const base: AppState = {
@@ -16,8 +17,8 @@ const base: AppState = {
   variants: DEFAULT_VARIANTS,
   sweeps: { capfree },
   fits: {
-    [DEFAULT_VARIANTS[0].name]: { refs: O7_REFS, x: [330, 92, 1.07, 1.2, 0.49], source: 'test' },
-    [DEFAULT_VARIANTS[1].name]: { refs: O7_REFS, x: [250, 108, 1.1, 1.17, 0.49], source: 'test' },
+    [DEFAULT_VARIANTS[0].name]: { refs: O7_REFS, x: [330, 92, 1.07, 1.2, 0.49], source: 'test', converged: null, rms: null, illDetermined: [] },
+    [DEFAULT_VARIANTS[1].name]: { refs: O7_REFS, x: [250, 108, 1.1, 1.17, 0.49], source: 'test', converged: null, rms: null, illDetermined: [] },
   },
 };
 const ls = { blockId: 'Ls', key: 'L' as const };
@@ -87,4 +88,24 @@ test('new block ids never reuse an id that a sweep tag or a fit still refers to 
   s = reducer(s, { type: 'remove', id: 'bank1' });
   assert.ok(reservedIds(s).includes('bank1'));
   assert.equal(newBlock(s.chain, 'capBank', '', reservedIds(s)).id, 'bank2');
+});
+
+test('addSweep tags the sweep with the circuit structure; retagSweep re-tags it with the current circuit', () => {
+  const sweep: Sweep = { id: 'n', name: 'n.s1p', f: [13.56e6], gamma: [{ re: 0, im: 0 }] };
+  let s = reducer(base, { type: 'addSweep', sweep, label: 'n' });
+  assert.equal(s.tagged.at(-1)?.structure, structureKey(base.chain));
+  s = reducer(s, { type: 'setCircuitState', state: { ser: { counts: counts(2, 0, 0) } } });
+  s = reducer(s, { type: 'retagSweep', sweepId: 'n' });
+  assert.deepEqual((s.tagged.at(-1)?.state.ser as { counts: unknown }).counts, counts(2, 0, 0));
+});
+
+test('setCircuitState applies bank picks and skips blocks that are gone; setFits replaces the fits', () => {
+  const s = reducer(base, { type: 'setCircuitState', state: { ser: { counts: counts(1, 0, 0), nSeries: 1 }, gone: { loop: true } } });
+  const ser = findBlock(s.chain, 'ser');
+  assert.ok(ser?.type === 'capBank' && ser.counts[100] === 1);
+  assert.deepEqual(reducer(base, { type: 'setFits', fits: {} }).fits, {});
+});
+
+test('emptyState plans for 500 W', () => {
+  assert.equal(emptyState().powerW, 500);
 });

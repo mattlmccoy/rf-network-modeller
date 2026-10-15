@@ -2,6 +2,7 @@ import { DEFAULT_STOCK, counts } from '../blocks/ht50.ts';
 import { AIT_WINDOW, DEFAULT_VARIANTS, O7_LOOP_REF, O7_REFS, o7Chain, o7State } from '../chain/presets.ts';
 import { parseS1p } from '../io/s1p.ts';
 import type { Sweep } from '../io/sweep.ts';
+import { structureKey } from '../present/circuit.ts';
 import type { AppState } from './state.ts';
 
 export interface ExampleSweep { id: string; file: string; label: string; series: number[]; shunt: number[]; loop: boolean }
@@ -19,16 +20,18 @@ const c3 = (n: number[]) => counts(n[0], n[1], n[2]);
 export function exampleState(m: ExampleManifest, texts: Record<string, string>): AppState {
   const sweeps: Record<string, Sweep> = { capfree: sweepOf('capfree', m.capFree, texts[m.capFree]) };
   for (const s of m.sweeps) sweeps[s.id] = sweepOf(s.id, s.file, texts[s.file]);
+  const chain = { ...o7Chain('capfree'), name: m.name };
   return {
-    chain: { ...o7Chain('capfree'), name: m.name },
+    chain,
     variants: DEFAULT_VARIANTS,
     primary: 0,
-    fits: Object.fromEntries(m.fits.map((f) => [f.variant, { refs: [...O7_REFS, O7_LOOP_REF], x: [...f.x, f.q], source: f.source }])),
+    fits: Object.fromEntries(m.fits.map((f) => [f.variant, { refs: [...O7_REFS, O7_LOOP_REF], x: [...f.x, f.q], source: f.source, converged: null, rms: null, illDetermined: [] }])),
     sweeps,
-    tagged: m.sweeps.map((s) => ({ sweepId: s.id, label: s.label, state: o7State(c3(s.series), c3(s.shunt), s.loop), include: true })),
+    tagged: m.sweeps.map((s) => ({ sweepId: s.id, label: s.label, state: o7State(c3(s.series), c3(s.shunt), s.loop), include: true, structure: structureKey(chain) })),
     activeSweep: m.sweeps.at(-1)?.id ?? null,
     stock: DEFAULT_STOCK,
     window: AIT_WINDOW,
+    powerW: 500,
     selected: null,
     view: 'physical',
     panes: ['smith', 's11db', 'rx', 'vswr'],
