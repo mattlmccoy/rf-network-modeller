@@ -29,6 +29,34 @@ function need(ok: boolean, problem: string): asserts ok {
   if (!ok) throw new ProjectFileError(problem);
 }
 
+const BLOCK_TYPES: ReadonlySet<string> = new Set(['coax', 'capBank', 'inductor', 'wire', 'measuredBranch', 'stack', 'plates', 'primitive', 'ideal', 'shunt', 'parallel']);
+
+/** Every block has an id and a known type; containers hold arrays of blocks (review I5: a bad tree crashed the workbench). */
+function checkBlocks(blocks: unknown[], where: string): void {
+  for (const b of blocks) {
+    need(isObj(b) && typeof b.id === 'string' && typeof b.type === 'string' && BLOCK_TYPES.has(b.type), `a block in ${where} is malformed`);
+    if (b.type === 'shunt') {
+      need(Array.isArray(b.chain), `block "${b.id}" is malformed`);
+      checkBlocks(b.chain, `block "${b.id}"`);
+    }
+    if (b.type === 'parallel') {
+      need(Array.isArray(b.chains) && b.chains.every((c: unknown) => Array.isArray(c)), `block "${b.id}" is malformed`);
+      for (const c of b.chains) checkBlocks(c, `block "${b.id}"`);
+    }
+  }
+}
+
+const isStrings = (v: unknown): boolean => Array.isArray(v) && v.every((x) => typeof x === 'string');
+
+function checkFits(fits: J): void {
+  for (const [name, f] of Object.entries(fits)) {
+    need(isObj(f) && Array.isArray(f.refs) && f.refs.every((r: unknown) => isObj(r) && typeof r.blockId === 'string' && typeof r.key === 'string')
+      && Array.isArray(f.x) && f.x.length === f.refs.length && f.x.every(isNum) && typeof f.source === 'string'
+      && (f.converged === null || typeof f.converged === 'boolean') && (f.rms === null || isNum(f.rms))
+      && Array.isArray(f.illDetermined) && (f.sweeps === undefined || isStrings(f.sweeps)), `a fit is malformed ("${name}")`);
+  }
+}
+
 function sweepsOf(raw: J): Record<string, Sweep> {
   const out: Record<string, Sweep> = {};
   for (const [id, w] of Object.entries(raw)) {
@@ -54,9 +82,11 @@ export function fromProjectJson(text: string): OpenedProject {
   const p = raw.project;
   need(isObj(p) && typeof p.name === 'string', 'it has no project name');
   need(isObj(p.chain) && Array.isArray(p.chain.blocks), 'it has no circuit');
+  checkBlocks(p.chain.blocks, 'the circuit');
   need(Array.isArray(p.variants) && p.variants.length > 0, 'it has no cable assumptions');
   need(Number.isInteger(p.primary) && p.primary >= 0 && p.primary < p.variants.length, 'its chosen cable assumption is out of range');
   need(isObj(p.fits), 'its fits are malformed');
+  checkFits(p.fits);
   need(isObj(p.sweeps), 'it has no sweeps table');
   const sweeps = sweepsOf(p.sweeps);
   need(Array.isArray(p.tagged) && p.tagged.every((t: unknown) => isObj(t) && typeof t.sweepId === 'string' && typeof t.label === 'string' && isObj(t.state) && typeof t.include === 'boolean' && typeof t.structure === 'string'), 'a tagged sweep is malformed');

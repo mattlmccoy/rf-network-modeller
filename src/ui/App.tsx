@@ -7,6 +7,7 @@ import { emptyState, reducer } from '../app/state.ts';
 import { type Level, PROFILES, type SheetKind, parseLevel } from '../present/level.ts';
 import { fromProjectJson, toProjectJson } from '../project/file.ts';
 import { getCurrentId, getProject, putProject, setCurrentId } from '../project/store.ts';
+import { ErrorBoundary } from './ErrorBoundary.tsx';
 import { Home, type Task } from './Home.tsx';
 import { Sheet } from './Sheet.tsx';
 import { StockPanel } from './StockPanel.tsx';
@@ -105,6 +106,16 @@ export default function App() {
     return () => clearTimeout(t);
   }, [state, projectId]);
 
+  const openExample = async (): Promise<void> => {
+    try {
+      dispatch({ type: 'load', state: await loadExample() });
+      setProjectId(newId());
+      setTask('home');
+    } catch (e) {
+      setNotice(`Couldn't load the O7 example: ${message(e)}`);
+    }
+  };
+
   const saveFile = (): void => {
     const url = URL.createObjectURL(new Blob([toProjectJson(state, new Date().toISOString())], { type: 'application/json' }));
     const a = document.createElement('a');
@@ -134,7 +145,11 @@ export default function App() {
         save={save} sheets={PROFILES[level].sheets} onSheet={setSheet} onSave={saveFile} onOpen={(f) => { void openFile(f); }}
         theme={theme} onTheme={() => setTheme((t) => (t === 'light' ? 'dark' : 'light'))} />
       {notice ? <div className="notice" role="status"><span>{notice}</span><button onClick={() => setNotice(null)} aria-label="Dismiss">×</button></div> : null}
-      {task === 'home' ? <Home onTask={setTask} /> : <Workbench state={state} dispatch={dispatch} level={level} grid={grid} results={results} caches={caches.current} theme={theme} />}
+      {task === 'home' ? <Home onTask={setTask} /> : (
+        <ErrorBoundary onReset={() => { void openExample(); }}>
+          <Workbench state={state} dispatch={dispatch} level={level} grid={grid} results={results} caches={caches.current} theme={theme} />
+        </ErrorBoundary>
+      )}
       {sheet ? (
         <Sheet title={sheet === 'parts' ? 'Parts on hand' : 'Sweeps'} onClose={() => setSheet(null)}>
           {sheet === 'parts' ? <StockPanel state={state} dispatch={dispatch} /> : <SweepsPanel state={state} dispatch={dispatch} />}

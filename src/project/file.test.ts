@@ -43,3 +43,14 @@ test('open reports what is wrong, never crashes', () => {
   assert.throws(() => fromProjectJson(bad((j) => { j.project.activeSweep = 'missing'; })), /its shown sweep is missing/);
   assert.throws(() => fromProjectJson(bad((j) => { j.project.primary = 9; })), /cable assumption is out of range/);
 });
+
+test('open rejects fits and blocks that would crash the workbench (review I5)', () => {
+  const good = (): Record<string, any> => JSON.parse(toProjectJson(ex, T));
+  const bad = (mut: (j: Record<string, any>) => void): string => { const j = good(); mut(j); return JSON.stringify(j); };
+  assert.throws(() => fromProjectJson(bad((j) => { const k = Object.keys(j.project.fits)[0]; delete j.project.fits[k].refs; })), /a fit is malformed/);
+  assert.throws(() => fromProjectJson(bad((j) => { const k = Object.keys(j.project.fits)[0]; j.project.fits[k].x.pop(); })), /a fit is malformed/);
+  assert.throws(() => fromProjectJson(bad((j) => { j.project.chain.blocks.push({ id: 'S9', label: '', type: 'shunt' }); })), /block "S9" is malformed/);
+  assert.throws(() => fromProjectJson(bad((j) => { j.project.chain.blocks.push({ id: 'Q', label: '', type: 'gizmo' }); })), /a block in the circuit is malformed/);
+  const withSweeps = bad((j) => { const k = Object.keys(j.project.fits)[0]; j.project.fits[k].sweeps = ['o7-80-200']; });
+  assert.doesNotThrow(() => fromProjectJson(withSweeps), 'a fit may record the sweeps it was made from');
+});
