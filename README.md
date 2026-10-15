@@ -2,7 +2,8 @@
 
 Browser tool for designing and tuning the RFAM matching network. Pick a level (Beginner, Builder, Engineer), then a task.
 "I measured a new sweep" walks you through: confirm what's installed, load the `.s1p`, see whether the model agrees, and get
-changes you can make from the parts on hand. The circuit is drawn as a power-flow diagram, the hardware in its cage, or a
+changes you can make from the parts on hand. "Try a change first" previews a change before you build it; "Safe at full power?" checks each capacitor against its
+rating and the transformer's flux at your planned power. The circuit is drawn as a power-flow diagram, the hardware in its cage, or a
 schematic. Work autosaves in the browser; Save project / Open project move it between machines. Design:
 `docs/superpowers/specs/2026-10-15-rf-network-modeller-ux-design.md`.
 
