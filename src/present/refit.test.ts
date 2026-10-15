@@ -19,6 +19,7 @@ test('refit fits the free values and converges on the five O7 sweeps (spec §8.1
   assert.equal(f.converged, true);
   assert.ok(f.rms !== null && f.rms < 0.1, `rms ${f.rms}`);
   assert.equal(f.source, 'in-app refit (5 sweeps)');
+  assert.deepEqual(f.sweeps, ex.tagged.map((t) => t.sweepId), 'a refit records the sweeps it was fitted to');
   const ls = f.x[f.refs.findIndex((r) => r.blockId === 'Ls' && r.key === 'L')];
   assert.ok(ls > 550 && ls < 650, `wiring L ${ls} nH`);
 });

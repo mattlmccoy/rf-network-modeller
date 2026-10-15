@@ -20,6 +20,8 @@ export interface FitValues {
   converged: boolean | null;
   rms: number | null;
   illDetermined: [string, string][];
+  /** The sweeps the fit was made from; absent for imported fits, which do not record them. */
+  sweeps?: string[];
 }
 
 /** A loaded caps-in sweep, the circuit state it was taken in, the circuit's structure then, and whether fits use it. */

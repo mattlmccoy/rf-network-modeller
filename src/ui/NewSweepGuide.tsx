@@ -79,14 +79,15 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, combined, 
   };
 
   const doRefit = async (): Promise<void> => {
-    setBlind(agreement);
+    const before = blind;
+    setBlind((b) => b ?? agreement);
     setBusy(true);
     setRefitMsg(null);
     const r = await refitAll(state, (i, n) => setRefitMsg(`Refitting ${i + 1} of ${n}…`));
     setBusy(false);
     if ('error' in r) {
       setRefitMsg(`The refit failed, so the previous fit is kept: ${r.error}`);
-      setBlind(null);
+      setBlind(before);
       return;
     }
     dispatch({ type: 'setFits', fits: r.fits });
@@ -162,7 +163,7 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, combined, 
       {step(2, 'Does the model agree?', (
         <>
           {blind ? <p><b>Before refit (blind check):</b> {agreementText(blind, level, state.primary)}</p> : null}
-          {agreement ? <p>{blind ? <b>Fit to this sweep: </b> : null}{agreementText(agreement, level, state.primary)}</p> : <p>Can't compare: no sweep is shown.</p>}
+          {agreement ? <p>{agreementText(agreement, level, state.primary)}</p> : <p>Can't compare: no sweep is shown.</p>}
           <button onClick={() => { void doRefit(); }} disabled={busy}>Refit the model with this sweep</button>
           {refitMsg ? <small>{refitMsg}</small> : null}
         </>

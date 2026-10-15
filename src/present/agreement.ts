@@ -33,7 +33,8 @@ export function combineGrades(gs: readonly Grade[]): Grade {
 /** A fit that did not converge can never be reported as agreeing. */
 export const capUnsettled = (g: Grade, unsettled: boolean): Grade => (unsettled && g === 'agrees' ? 'rough' : g);
 
-export interface Agreement { perVariant: GradeResult[]; combined: Grade; unsettled: boolean }
+/** inSample: the active sweep is one the current fit was made from, so agreement is a fit, not a blind check (review I1). */
+export interface Agreement { perVariant: GradeResult[]; combined: Grade; unsettled: boolean; inSample: boolean }
 
 /** The active sweep against the model in that sweep's own tagged state; null without an active tagged sweep. */
 export function agreementFor(s: AppState, grid: number[], caches: BranchCache[] = []): Agreement | null {
@@ -44,13 +45,19 @@ export function agreementFor(s: AppState, grid: number[], caches: BranchCache[] 
   const results = evaluateVariants({ ...s, chain: applyState(s.chain, knownState(s.chain, tag.state)) }, grid, caches);
   const perVariant = results.map((r) => gradeOf(meas, r.landing?.z ?? null));
   const unsettled = Object.values(s.fits).some((f) => f.converged === false);
-  return { perVariant, combined: capUnsettled(combineGrades(perVariant.map((g) => g.grade)), unsettled), unsettled };
+  const inSample = Object.values(s.fits).some((f) => f.sweeps?.includes(tag.sweepId) ?? false);
+  return { perVariant, combined: capUnsettled(combineGrades(perVariant.map((g) => g.grade)), unsettled), unsettled, inSample };
 }
 
 const ohm = (v: number | null): string => (v === null ? '?' : `${v < 0 ? '−' : '+'}${Math.abs(v).toFixed(1)} Ω`);
 
 /** Agreement wording by level, with the near-edge warning on rough (spec §7.2). */
 export function agreementText(a: Agreement, level: Level, primary: number): string {
+  const head = a.inSample ? 'Fit to this sweep (it is part of the fit): ' : '';
+  return head + gradeText(a, level, primary);
+}
+
+function gradeText(a: Agreement, level: Level, primary: number): string {
   const tail = a.unsettled ? " The last refit didn't settle." : '';
   const g = a.perVariant[primary] ?? a.perVariant[0];
   switch (a.combined) {

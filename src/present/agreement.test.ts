@@ -47,8 +47,17 @@ test('no active tagged sweep: nothing to compare', () => {
 });
 
 test('agreement wording carries the near-edge warning for rough and the unsettled note', () => {
-  const a = { perVariant: [{ grade: 'rough' as const, dR: -0.57, dX: -9.89 }], combined: 'rough' as const, unsettled: true };
+  const a = { perVariant: [{ grade: 'rough' as const, dR: -0.57, dX: -9.89 }], combined: 'rough' as const, unsettled: true, inSample: false };
   assert.equal(agreementText(a, 'beginner', 0), "The model is close, not exact. The last refit didn't settle.");
   assert.equal(agreementText(a, 'builder', 0),
     "Close enough to rank changes, not exact: resistance −0.6 Ω, reactance −9.9 Ω (model minus sweep). Near the edge of the tuner's range it can be wrong about matching. The last refit didn't settle.");
+});
+
+test('a sweep the fit was made from reads as "fit to this sweep", never as a blind check (review I1)', () => {
+  const grid = evalGrid(ex.chain, ex.sweeps);
+  assert.equal(agreementFor(ex, grid)?.inSample, false, 'the imported fits record no sweeps');
+  const fitted = { ...ex, fits: Object.fromEntries(Object.entries(ex.fits).map(([k, f]) => [k, { ...f, sweeps: ['o7-80-180-loop'] }])) };
+  const a = agreementFor(fitted, grid);
+  assert.ok(a?.inSample);
+  assert.match(agreementText(a, 'builder', 0), /^Fit to this sweep \(it is part of the fit\): /);
 });

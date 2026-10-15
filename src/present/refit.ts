@@ -10,7 +10,8 @@ export const refitRefs = (s: AppState): ParamRef[] => freeRefs(s.chain);
 export function refitVariant(s: AppState, i: number, refs: ParamRef[]): FitValues {
   const sweeps = s.tagged.map((t) => ({ sweep: s.sweeps[t.sweepId], state: knownState(s.chain, t.state), include: t.include }));
   const fit = fitNetwork({ chain: variantChain(s, i), refs, sweeps, variant: s.variants[i], allSweeps: s.sweeps });
-  return { refs, x: fit.x, source: `in-app refit (${sweeps.filter((t) => t.include).length} sweeps)`, converged: fit.converged, rms: fit.rms, illDetermined: fit.illDetermined };
+  const used = s.tagged.filter((t) => t.include).map((t) => t.sweepId);
+  return { refs, x: fit.x, source: `in-app refit (${used.length} sweeps)`, converged: fit.converged, rms: fit.rms, illDetermined: fit.illDetermined, sweeps: used };
 }
 
 const nextFrame = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
