@@ -56,6 +56,12 @@ export function fmtZ(z: Complex): string {
   return `${z.re.toFixed(2)} ${z.im < 0 ? '−' : '+'} j${Math.abs(z.im).toFixed(2)} Ω`;
 }
 
+/** Builder readout: resistance and reactance at 3 significant figures with plain names; no finite value prints no number. */
+export function plainRX(z: Complex | null): string {
+  if (!z || !Number.isFinite(z.re) || !Number.isFinite(z.im)) return 'no value at 13.56 MHz';
+  return `resistance ${z.re.toPrecision(3)} Ω, reactance ${z.im < 0 ? '−' : '+'}${Math.abs(z.im).toPrecision(3)} Ω`;
+}
+
 /** SI value in display units at 4 significant figures, for compact card text. */
 const short = (si: number, u: DisplayUnit): number => Number((si / u.scale).toPrecision(4));
 

@@ -135,3 +135,4 @@ html[data-theme='dark'] .verdict-line.warn, html[data-theme='dark'] .verdict-car
 .stress-amber { color: #8a5a00; }
 .stress-unknown { color: #666; }
 html[data-theme='dark'] .stress-red { color: #ff8a80; }
+.rx-readout { margin: 2px 0 6px; font-size: 12px; }

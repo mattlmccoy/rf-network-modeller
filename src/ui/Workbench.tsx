@@ -6,6 +6,7 @@ import { applyPicks } from '../recommend/recommend.ts';
 import { zFromGamma } from '../io/sweep.ts';
 import { type VariantResult, evaluateVariants, measuredLanding } from '../app/evaluate.ts';
 import { type Action, type AppState, variantChain } from '../app/state.ts';
+import { plainRX } from '../app/units.ts';
 import { trust, trustText } from '../present/circuit.ts';
 import { shownResult } from '../present/show.ts';
 import { DRAWING_LABEL, type DrawingKind, type Level, PROFILES, RESULT_LABEL, type ResultKind } from '../present/level.ts';
@@ -73,6 +74,7 @@ export function Workbench({ state, dispatch, level, grid, results, caches, theme
           {rKind === 'verdict' ? <VerdictCard text={verdictText(shown.v, 'beginner')} tone={tone} source={shown.source} trustNote={trustText(t, 'beginner')} state={shown.v.state} /> : null}
           {rKind === 'target' ? <TargetBox window={state.window} measured={active ? measuredLanding(active)?.z ?? null : null} measuredLabel={tag?.label ?? active?.name ?? ''} predicted={results[state.primary]?.landing?.z ?? null} ghost={ghost} /> : null}
           {rKind !== 'verdict' ? <p className={`verdict-line ${tone}`}>{line}</p> : null}
+          {rKind === 'target' ? <p className="rx-readout">At the tuner, 13.56 MHz. {active ? `Your sweep: ${plainRX(measuredLanding(active)?.z ?? null)}. ` : ''}Model: {plainRX(results[state.primary]?.landing?.z ?? null)}.</p> : null}
           {rKind === 'plots' ? <EngineerPanel state={state} dispatch={dispatch} grid={grid} results={results} theme={theme} /> : null}
           {rKind !== 'verdict' && trustText(t, 'builder') ? <small>{trustText(t, 'builder')}</small> : null}
           {rKind !== 'verdict' && clamped ? <small className="warn-text"> The model reads the measured part outside its sweep here; treat it as rough.</small> : null}

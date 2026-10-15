@@ -5,7 +5,7 @@ import { counts } from '../blocks/ht50.ts';
 import { findBlock } from '../chain/state.ts';
 import { o7Chain, o7State } from '../chain/presets.ts';
 import type { Block } from '../chain/types.ts';
-import { blockSummary, designEquals, displayUnit, fmtZ, paramCommit, partsText, tagSummary, toDisplay } from './units.ts';
+import { blockSummary, designEquals, displayUnit, fmtZ, paramCommit, partsText, plainRX, tagSummary, toDisplay } from './units.ts';
 
 const chain = o7Chain('capfree');
 const get = (id: string): Block => findBlock(chain, id) as Block;
@@ -47,4 +47,12 @@ test('a commit equal to the displayed value is skipped, so focusing a fitted fie
   assert.equal(paramCommit(p, u, 500), 500 * 1e-9);
   assert.equal(designEquals({ N_p: 3, N_s: 15, N_c: 4, strap: false }, { N_p: 3, N_s: 15, N_c: 4, strap: false }), true);
   assert.equal(designEquals({ N_p: 3, N_s: 15, N_c: 4, strap: false }, { N_p: 3, N_s: 16, N_c: 4, strap: false }), false);
+});
+
+test('plainRX names resistance and reactance at 3 significant figures; no value never prints a number (spec §5, review I4)', () => {
+  assert.equal(plainRX(cx(7.81, 27.89)), 'resistance 7.81 Ω, reactance +27.9 Ω');
+  assert.equal(plainRX(cx(5.03, -4.3)), 'resistance 5.03 Ω, reactance −4.30 Ω');
+  assert.equal(plainRX(cx(715.8, 184.68)), 'resistance 716 Ω, reactance +185 Ω');
+  assert.equal(plainRX(null), 'no value at 13.56 MHz');
+  assert.equal(plainRX(OPEN), 'no value at 13.56 MHz');
 });
