@@ -1,8 +1,10 @@
 # RF Network Modeller
 
-Browser tool for designing and tuning the RFAM matching network: build a chain of blocks, see the predicted VNA
-response, fit it to measured sweeps, get stock-cap recommendations and part stress. Design:
-`docs/superpowers/specs/2026-10-14-rf-network-modeller-design.md`.
+Browser tool for designing and tuning the RFAM matching network. Pick a level (Beginner, Builder, Engineer), then a task.
+"I measured a new sweep" walks you through: confirm what's installed, load the `.s1p`, see whether the model agrees, and get
+changes you can make from the parts on hand. The circuit is drawn as a power-flow diagram, the hardware in its cage, or a
+schematic. Work autosaves in the browser; Save project / Open project move it between machines. Design:
+`docs/superpowers/specs/2026-10-15-rf-network-modeller-ux-design.md`.
 
 **Live:** https://mattlmccoy.github.io/rf-network-modeller/ (every push to `main` runs the tests, builds and redeploys).
 
