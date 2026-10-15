@@ -5,7 +5,7 @@ import { type StateOverrides, allBlocks, applyState, findBlock, updateBlock } fr
 import type { Block, Chain, Param, Variant, Window } from '../chain/types.ts';
 import { type ParamRef, fromFitVars, getParam, withParamValue } from '../fit/params.ts';
 import type { Sweep } from '../io/sweep.ts';
-import { insertAfter, insertInto, moveBlock, removeBlock } from './chainEdit.ts';
+import { type Placement, insertAfter, insertInto, moveBlock, placeBlock, removeBlock } from './chainEdit.ts';
 import { knownState, snapshotState, structureKey } from '../present/circuit.ts';
 
 export { snapshotState };
@@ -75,7 +75,11 @@ export type Action =
   | { type: 'setFits'; fits: Record<string, FitValues> }
   | { type: 'setCircuitState'; state: StateOverrides }
   | { type: 'setPower'; watts: number }
-  | { type: 'setTModel'; tmodel: TModel | null };
+  | { type: 'setTModel'; tmodel: TModel | null }
+  | { type: 'place'; targetId: string | null; where: Placement; block: Block }
+  | { type: 'setVariants'; variants: Variant[] }
+  | { type: 'setWindow'; window: Window }
+  | { type: 'setName'; name: string };
 
 export function emptyState(): AppState {
   return {
@@ -133,6 +137,21 @@ function filterFits(fits: Record<string, FitValues>, keep: (r: ParamRef) => bool
 
 /** Drops fitted values whose block no longer exists in the chain. */
 const pruneFits = (fits: Record<string, FitValues>, chain: Chain): Record<string, FitValues> => filterFits(fits, (r) => findBlock(chain, r.blockId) !== undefined);
+
+/** A cable assumption's physics: fits and the transformer model belong to it, not to its name or position. */
+const physics = (v: Variant): string => JSON.stringify([v.cable, v.Lj]);
+
+/** New cable assumptions, carrying each fit and the transformer model to the assumption with the same physics (review focus 5). */
+function withVariants(s: AppState, variants: Variant[]): AppState {
+  const fits: Record<string, FitValues> = {};
+  let tmodel: TModel | null = null;
+  for (const v of variants) {
+    const old = s.variants.find((o) => physics(o) === physics(v));
+    if (old && s.fits[old.name]) fits[v.name] = s.fits[old.name];
+    if (old && s.tmodel?.variant === old.name) tmodel = { ...s.tmodel, variant: v.name };
+  }
+  return { ...s, variants, fits, tmodel, primary: Math.min(s.primary, variants.length - 1) };
+}
 
 export function reducer(s: AppState, a: Action): AppState {
   switch (a.type) {
@@ -198,5 +217,13 @@ export function reducer(s: AppState, a: Action): AppState {
       return Number.isFinite(a.watts) && a.watts > 0 ? { ...s, powerW: a.watts } : s;
     case 'setTModel':
       return { ...s, tmodel: a.tmodel };
+    case 'place':
+      return { ...s, chain: placeBlock(s.chain, a.targetId, a.where, a.block, reservedIds(s)), selected: a.block.id };
+    case 'setVariants':
+      return a.variants.length ? withVariants(s, a.variants) : s;
+    case 'setWindow':
+      return { ...s, window: a.window };
+    case 'setName':
+      return { ...s, chain: { ...s.chain, name: a.name } };
   }
 }

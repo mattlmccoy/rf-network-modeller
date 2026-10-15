@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs';
 import type { Complex } from './engine/complex.ts';
 import { parseS1p } from './io/s1p.ts';
 import type { Sweep } from './io/sweep.ts';
+import { type ExampleManifest, exampleState } from './app/example.ts';
+import type { AppState } from './app/state.ts';
 
 /** Passes when |a - b| <= rel * max(|b|, 1), measured on the complex magnitude. */
 export function assertClose(a: Complex, b: Complex, rel = 1e-9, msg = ''): void {
@@ -46,3 +48,10 @@ export function mulberry32(seed: number): () => number {
 
 /** Standard normal sample by Box–Muller. */
 export const gauss = (rnd: () => number): number => Math.sqrt(-2 * Math.log(1 - rnd())) * Math.cos(2 * Math.PI * rnd());
+
+/** The bundled O7 example as the app loads it (public/examples/o7). */
+export function loadExampleState(): AppState {
+  const read = (p: string): string => readFileSync(new URL(`public/examples/o7/${p}`, ROOT), 'utf8');
+  const m = JSON.parse(read('o7.json')) as ExampleManifest;
+  return exampleState(m, Object.fromEntries([m.capFree, ...m.sweeps.map((s) => s.file)].map((f) => [f, read(f)])));
+}

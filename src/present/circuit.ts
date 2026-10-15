@@ -88,3 +88,6 @@ export function trustText(t: Trust, level: Level): string | null {
   if (level === 'beginner') return '(prediction: not measured yet)';
   return t === 'within' ? "Within what you've measured" : "Beyond anything you've measured: the model is extrapolating";
 }
+
+/** A project has a circuit model when it holds any part besides the cable; a cable-only project is "measured only". */
+export const hasModel = (chain: Chain): boolean => allBlocks(chain.blocks).some((b) => b.type !== 'coax' && b.type !== 'shunt' && b.type !== 'parallel');

@@ -122,3 +122,27 @@ test('setTModel stores or clears the transformer model', () => {
   assert.equal(reducer(s, { type: 'setTModel', tmodel: null }).tmodel, null);
   assert.equal(emptyState().tmodel, null);
 });
+
+test('place puts a new part where asked and selects it; setWindow and setName', () => {
+  const add = newBlock(base.chain, 'inductor');
+  const s = reducer(base, { type: 'place', targetId: 'Ls', where: 'ground', block: add });
+  assert.equal(s.selected, add.id);
+  assert.ok(findBlock(s.chain, add.id));
+  assert.deepEqual(reducer(base, { type: 'setWindow', window: { rLo: 4, rHi: 18, xLo: 5, xHi: 50 } }).window, { rLo: 4, rHi: 18, xLo: 5, xHi: 50 });
+  assert.equal(reducer(base, { type: 'setName', name: 'Pass 6' }).chain.name, 'Pass 6');
+});
+
+test('setVariants: a fit follows an unchanged cable and jumper L, even renamed; a changed one loses it (review focus 5)', () => {
+  const tm = { variant: DEFAULT_VARIANTS[0].name, sweepId: 'capfree', unit: { n: 5, L_leak: 1e-6, f_pri: 0, L_m: 1e-6, G_core: 0, R1: 0, R2: 0, C_w: 0, N_p: 3, N_c: 4 }, load: { C: 3e-12, G_cube: 0, G_fix: 0 }, rmsRel: 0.01 };
+  const s0 = { ...base, tmodel: tm };
+  const renamed = reducer(s0, { type: 'setVariants', variants: [{ ...DEFAULT_VARIANTS[0], name: 'Cage cable' }, DEFAULT_VARIANTS[1], DEFAULT_VARIANTS[2]] });
+  assert.deepEqual(Object.keys(renamed.fits).sort(), ['1.2825 m + 329 nH', 'Cage cable']);
+  assert.equal(renamed.tmodel?.variant, 'Cage cable');
+  const longer = reducer(s0, { type: 'setVariants', variants: [{ ...DEFAULT_VARIANTS[0], cable: { ...DEFAULT_VARIANTS[0].cable, length: 1.3 } }, DEFAULT_VARIANTS[1], DEFAULT_VARIANTS[2]] });
+  assert.deepEqual(Object.keys(longer.fits), [DEFAULT_VARIANTS[1].name]);
+  assert.equal(longer.tmodel, null);
+  const fewer = reducer({ ...s0, primary: 2 }, { type: 'setVariants', variants: [DEFAULT_VARIANTS[1]] });
+  assert.equal(fewer.primary, 0, 'the chosen assumption stays in range');
+  assert.deepEqual(Object.keys(fewer.fits), [DEFAULT_VARIANTS[1].name]);
+  assert.equal(reducer(base, { type: 'setVariants', variants: [] }), base, 'at least one cable assumption is kept');
+});

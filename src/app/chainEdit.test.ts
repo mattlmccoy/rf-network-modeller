@@ -6,7 +6,7 @@ import { compile } from '../chain/compile.ts';
 import { DEFAULT_VARIANTS, O7_FILES, o7Chain } from '../chain/presets.ts';
 import { allBlocks, duplicateIds, findBlock } from '../chain/state.ts';
 import { type Block, type Chain, param } from '../chain/types.ts';
-import { PALETTE, insertAfter, insertInto, moveBlock, newBlock, removeBlock } from './chainEdit.ts';
+import { PALETTE, insertAfter, insertInto, moveBlock, newBlock, placeBlock, removeBlock, wrapParallel } from './chainEdit.ts';
 import { loadFixtureSweep } from '../testutil.ts';
 
 const base = o7Chain('capfree');
@@ -73,4 +73,31 @@ test('a new stack is estimated from its design with the design.py scaling laws',
     assert.deepEqual(s.unit, estimateUnit({ N_p: 3, N_s: 15, N_c: 4, strap: false }));
     assert.equal(s.source, 'estimate');
   }
+});
+
+test('placeBlock: in line after a part, from that point to ground, or at the end (spec §8.4)', () => {
+  const add = newBlock(base, 'inductor');
+  const inline = placeBlock(base, 'Ls', 'inline', add);
+  assert.equal(inline.blocks[inline.blocks.findIndex((b) => b.id === 'Ls') + 1].id, add.id);
+  const ground = placeBlock(base, 'Ls', 'ground', add);
+  const sh = ground.blocks[ground.blocks.findIndex((b) => b.id === 'Ls') + 1];
+  assert.ok(sh.type === 'shunt' && sh.chain.length === 1 && sh.chain[0].id === add.id);
+  assert.equal(placeBlock(base, null, 'inline', add).blocks.at(-1)?.id, add.id);
+  const endGround = placeBlock(base, null, 'ground', add).blocks.at(-1);
+  assert.ok(endGround?.type === 'shunt' && endGround.chain[0].id === add.id);
+  compile(ground, ctx);
+});
+
+test('wrapParallel wraps exactly the target, even inside a branch, and leaves its siblings (review focus 2)', () => {
+  const add = newBlock(base, 'C');
+  const out = wrapParallel(base, 'Lb', add);
+  const arm = findBlock(out, 'branchArm');
+  assert.ok(arm?.type === 'shunt');
+  assert.equal(arm.chain.length, 2, 'Lb is wrapped in place; the measured branch stays beside it');
+  const par = arm.chain[0];
+  assert.ok(par.type === 'parallel');
+  assert.deepEqual(par.chains.map((ch) => ch.map((b) => b.id)), [['Lb'], [add.id]]);
+  assert.equal(arm.chain[1].id, 'branch');
+  assert.deepEqual(duplicateIds(out), []);
+  compile(out, ctx);
 });

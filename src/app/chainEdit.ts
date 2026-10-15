@@ -138,3 +138,19 @@ export function moveBlock(chain: Chain, id: string, dir: -1 | 1): Chain {
   });
   return next ? { ...chain, blocks: next } : chain;
 }
+
+export type Placement = 'inline' | 'ground' | 'parallel';
+
+/** Wraps the target in a parallel group whose second path is `block` ("in parallel with it", spec §8.4). */
+export function wrapParallel(chain: Chain, targetId: string, block: Block, reserved: Iterable<string> = []): Chain {
+  const { id } = newBlock(chain, 'parallel', '', reserved);
+  const next = editList(chain.blocks, targetId, (list, i) => list.map((x, j): Block => (j === i ? { id, label: 'Parallel', type: 'parallel', chains: [[x], [block]] } : x)));
+  return next ? { ...chain, blocks: next } : chain;
+}
+
+/** Puts `block` after the target (or at the end), on a new branch from there to ground, or in parallel with the target. */
+export function placeBlock(chain: Chain, targetId: string | null, where: Placement, block: Block, reserved: Iterable<string> = []): Chain {
+  if (where === 'parallel' && targetId !== null) return wrapParallel(chain, targetId, block, reserved);
+  if (where === 'ground') return insertAfter(chain, targetId, { id: newBlock(chain, 'shunt', '', reserved).id, label: 'To ground', type: 'shunt', chain: [block] });
+  return insertAfter(chain, targetId, block);
+}
