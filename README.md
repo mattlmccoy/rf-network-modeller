@@ -4,6 +4,8 @@ Browser tool for designing and tuning the RFAM matching network: build a chain o
 response, fit it to measured sweeps, get stock-cap recommendations and part stress. Design:
 `docs/superpowers/specs/2026-10-14-rf-network-modeller-design.md`.
 
+**Live:** https://mattlmccoy.github.io/rf-network-modeller/ (every push to `main` runs the tests, builds and redeploys).
+
 ```bash
 npm install
 npm run dev         # the app at http://localhost:5181 (opens on the O7 example)
