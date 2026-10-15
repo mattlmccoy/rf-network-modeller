@@ -33,7 +33,6 @@ export function exampleState(m: ExampleManifest, texts: Record<string, string>):
     window: AIT_WINDOW,
     powerW: 500,
     selected: null,
-    view: 'physical',
     panes: ['smith', 's11db', 'rx', 'vswr'],
   };
 }

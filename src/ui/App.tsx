@@ -1,24 +1,42 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { BranchCache } from '../chain/types.ts';
-import { zFromGamma } from '../io/sweep.ts';
-import { evaluateVariants, measuredLanding } from '../app/evaluate.ts';
+import { evaluateVariants } from '../app/evaluate.ts';
 import { loadExample } from '../app/example.ts';
 import { evalGrid } from '../app/grid.ts';
-import { type PaneMode, emptyState, reducer } from '../app/state.ts';
-import { LandingStrip } from './LandingStrip.tsx';
-import { CircuitStrip } from './CircuitStrip.tsx';
-import { Inspector } from './Inspector.tsx';
-import { type Dot, PlotPane, type Trace } from './PlotPane.tsx';
+import { emptyState, reducer } from '../app/state.ts';
+import { type Level, PROFILES, type SheetKind, parseLevel } from '../present/level.ts';
+import { fromProjectJson, toProjectJson } from '../project/file.ts';
+import { getCurrentId, getProject, putProject, setCurrentId } from '../project/store.ts';
+import { Home, type Task } from './Home.tsx';
+import { Sheet } from './Sheet.tsx';
 import { StockPanel } from './StockPanel.tsx';
 import { SweepsPanel } from './SweepsPanel.tsx';
+import { type SaveStatus, TopBar } from './TopBar.tsx';
+import { Workbench } from './Workbench.tsx';
 
 type Theme = 'light' | 'dark';
-const VARIANT_COLORS = ['#a9008b', '#173de3', '#20aa35'];
+const LEVEL_KEY = 'rfnm-level';
+const TASK_TITLE: Record<Task, string> = { home: '', newSweep: 'I measured a new sweep' };
+const message = (e: unknown): string => (e instanceof Error ? e.message : String(e));
+const newId = (): string => `p-${Date.now().toString(36)}`;
+
+function readLevel(): Level {
+  try {
+    return parseLevel(localStorage.getItem(LEVEL_KEY));
+  } catch {
+    return 'builder';
+  }
+}
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, undefined, emptyState);
+  const [level, setLevel] = useState<Level>(readLevel);
+  const [task, setTask] = useState<Task>('home');
+  const [sheet, setSheet] = useState<SheetKind | null>(null);
   const [theme, setTheme] = useState<Theme>(() => (document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'));
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [save, setSave] = useState<SaveStatus>('idle');
+  const [notice, setNotice] = useState<string | null>(null);
   const caches = useRef<BranchCache[]>([]);
 
   useEffect(() => {
@@ -31,67 +49,97 @@ export default function App() {
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#1d1e20' : '#cfcfcd');
   }, [theme]);
 
-  const openExample = (): void => {
-    setLoadError(null);
-    loadExample()
-      .then((s) => dispatch({ type: 'load', state: s }))
-      .catch((e: unknown) => setLoadError(e instanceof Error ? e.message : String(e)));
+  useEffect(() => {
+    try {
+      localStorage.setItem(LEVEL_KEY, level);
+    } catch {
+      // the level is a per-viewer convenience; it still applies for this session
+    }
+    setSheet((s) => (s && PROFILES[level].sheets.includes(s) ? s : null));
+  }, [level]);
+
+  // Reopen the last project; fall back to the O7 example with a notice (review focus 1).
+  useEffect(() => {
+    let live = true;
+    const start = async (): Promise<void> => {
+      try {
+        const id = await getCurrentId();
+        const entry = id ? await getProject(id) : undefined;
+        if (entry) {
+          const p = fromProjectJson(entry.json);
+          if (live) {
+            dispatch({ type: 'load', state: p.state });
+            setProjectId(entry.id);
+          }
+          return;
+        }
+      } catch (e) {
+        if (live) setNotice(`Couldn't reopen your saved project (${message(e)}). Showing the O7 example instead.`);
+      }
+      try {
+        const s = await loadExample();
+        if (live) {
+          dispatch({ type: 'load', state: s });
+          setProjectId(newId());
+        }
+      } catch (e) {
+        if (live) setNotice(`Couldn't load the O7 example: ${message(e)}`);
+      }
+    };
+    void start();
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  // Autosave one second after the last change; "Saved ✓" only after a confirmed write (spec §9).
+  useEffect(() => {
+    if (!projectId) return undefined;
+    setSave('pending');
+    const t = setTimeout(() => {
+      const savedAt = new Date().toISOString();
+      putProject({ id: projectId, name: state.chain.name, savedAt, json: toProjectJson(state, savedAt) })
+        .then(() => setCurrentId(projectId))
+        .then(() => setSave('saved'), () => setSave('failed'));
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [state, projectId]);
+
+  const saveFile = (): void => {
+    const url = URL.createObjectURL(new Blob([toProjectJson(state, new Date().toISOString())], { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${state.chain.name.replace(/[^A-Za-z0-9_-]+/g, '-') || 'project'}.rfnm.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
   };
-  useEffect(openExample, []);
+  const openFile = async (file: File): Promise<void> => {
+    try {
+      const p = fromProjectJson(await file.text());
+      dispatch({ type: 'load', state: p.state });
+      setProjectId(newId());
+      setTask('home');
+      setNotice(null);
+    } catch (e) {
+      setNotice(message(e));
+    }
+  };
 
   const grid = useMemo(() => evalGrid(state.chain, state.sweeps), [state.chain, state.sweeps]);
   const results = useMemo(() => evaluateVariants(state, grid, caches.current), [state.chain, state.variants, state.fits, state.sweeps, state.window, grid]);
-  const colors = state.variants.map((_, i) => VARIANT_COLORS[i % VARIANT_COLORS.length]);
-  const active = state.activeSweep ? state.sweeps[state.activeSweep] : undefined;
-  const traces = useMemo<Trace[]>(() => {
-    const out: Trace[] = [];
-    results.forEach((r, i) => {
-      if (r.z.length) out.push({ key: `v${i}`, label: state.variants[i].name, color: colors[i], f: grid, z: r.z, role: i === state.primary ? 'primary' : 'variant', clamped: r.clamped });
-    });
-    if (active) out.push({ key: 'measured', label: `${active.name} (measured)`, color: theme === 'dark' ? '#b0b0aa' : '#777777', f: active.f, z: active.gamma.map((g) => zFromGamma(g)), role: 'measured' });
-    return out;
-  }, [results, active, grid, state.primary, state.variants, theme]);
-  const dots = useMemo<Dot[]>(() => results.flatMap((r, i) => (r.landing ? [{ key: `d${i}`, z: r.landing.z, color: colors[i] }] : [])), [results]);
-  const measured = active ? { label: state.tagged.find((t) => t.sweepId === active.id)?.label ?? active.name, color: theme === 'dark' ? '#b0b0aa' : '#777777', landing: measuredLanding(active) } : null;
-  const clampNote = useMemo(() => {
-    let lo = Infinity;
-    let hi = -Infinity;
-    for (const r of results) r.clamped.forEach((c, i) => { if (c) { lo = Math.min(lo, grid[i]); hi = Math.max(hi, grid[i]); } });
-    return Number.isFinite(lo) ? `The measured branch is read outside its sweep from ${(lo / 1e6).toFixed(2)} to ${(hi / 1e6).toFixed(2)} MHz (values clamped to the sweep's end); those parts of the traces are drawn faint and dashed.` : null;
-  }, [results, grid]);
 
   return (
     <div className="application">
-      <div className="window-title">
-        <span>RF NETWORK MODELLER — {state.chain.name}</span>
-        <div className="window-actions">
-          <label className="title-select">Variant
-            <select value={state.primary} onChange={(e) => dispatch({ type: 'setPrimary', index: Number(e.target.value) })}>
-              {state.variants.map((v, i) => <option key={v.name} value={i}>{v.name}{v.flag ? ' (poor fit)' : ''}</option>)}
-            </select>
-          </label>
-          <button className="theme-toggle" onClick={() => setTheme((t) => (t === 'light' ? 'dark' : 'light'))}>{theme === 'light' ? 'Dark' : 'Light'}</button>
-        </div>
-      </div>
-      <main className="main-grid">
-        <aside className="controls-column">
-          <fieldset>
-            <legend>Project</legend>
-            {loadError ? <small className="bad">Could not load the O7 example: {loadError}</small> : <small>{state.chain.name}</small>}
-            <button className="wide" onClick={openExample}>Reload O7 example</button>
-          </fieldset>
-          <SweepsPanel state={state} dispatch={dispatch} />
-          <StockPanel state={state} dispatch={dispatch} />
-        </aside>
-        <section className="readouts-column">
-          <Inspector state={state} dispatch={dispatch} />
-        </section>
-        <section className="charts-grid">
-          <CircuitStrip state={state} dispatch={dispatch} />
-          <LandingStrip names={state.variants.map((v) => v.name)} colors={colors} results={results} measured={measured} clampNote={clampNote} />
-          {state.panes.map((mode, i) => <PlotPane key={i} mode={mode} traces={traces} dots={dots} aitWindow={state.window} theme={theme} onMode={(m: PaneMode) => dispatch({ type: 'setPane', index: i, mode: m })} />)}
-        </section>
-      </main>
+      <TopBar name={state.chain.name} taskTitle={TASK_TITLE[task]} onHome={task === 'home' ? null : () => setTask('home')} level={level} onLevel={setLevel}
+        save={save} sheets={PROFILES[level].sheets} onSheet={setSheet} onSave={saveFile} onOpen={(f) => { void openFile(f); }}
+        theme={theme} onTheme={() => setTheme((t) => (t === 'light' ? 'dark' : 'light'))} />
+      {notice ? <div className="notice" role="status"><span>{notice}</span><button onClick={() => setNotice(null)} aria-label="Dismiss">×</button></div> : null}
+      {task === 'home' ? <Home onTask={setTask} /> : <Workbench state={state} dispatch={dispatch} level={level} grid={grid} results={results} caches={caches.current} theme={theme} />}
+      {sheet ? (
+        <Sheet title={sheet === 'parts' ? 'Parts on hand' : 'Sweeps'} onClose={() => setSheet(null)}>
+          {sheet === 'parts' ? <StockPanel state={state} dispatch={dispatch} /> : <SweepsPanel state={state} dispatch={dispatch} />}
+        </Sheet>
+      ) : null}
     </div>
   );
 }

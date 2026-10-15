@@ -43,14 +43,12 @@ export interface AppState {
   window: Window;
   powerW: number;
   selected: string | null;
-  view: 'physical' | 'symbol';
   panes: PaneMode[];
 }
 
 export type Action =
   | { type: 'load'; state: AppState }
   | { type: 'select'; id: string | null }
-  | { type: 'setView'; view: 'physical' | 'symbol' }
   | { type: 'setPrimary'; index: number }
   | { type: 'setPane'; index: number; mode: PaneMode }
   | { type: 'patchBlock'; id: string; patch: Record<string, unknown> }
@@ -83,7 +81,6 @@ export function emptyState(): AppState {
     window: AIT_WINDOW,
     powerW: 500,
     selected: null,
-    view: 'physical',
     panes: ['smith', 's11db', 'rx', 'vswr'],
   };
 }
@@ -133,8 +130,6 @@ export function reducer(s: AppState, a: Action): AppState {
       return a.state;
     case 'select':
       return { ...s, selected: a.id };
-    case 'setView':
-      return { ...s, view: a.view };
     case 'setPrimary':
       return a.index >= 0 && a.index < s.variants.length ? { ...s, primary: a.index } : s;
     case 'setPane':
