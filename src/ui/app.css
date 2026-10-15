@@ -118,3 +118,20 @@ html[data-theme='dark'] .target { color: #d6d6d0; }
 html[data-theme='dark'] .verdict-line.good, html[data-theme='dark'] .verdict-card.good b { color: #8be39b; }
 html[data-theme='dark'] .verdict-line.bad, html[data-theme='dark'] .verdict-card.bad b { color: #ff8a80; }
 html[data-theme='dark'] .verdict-line.warn, html[data-theme='dark'] .verdict-card.warn b { color: #f3cf86; }
+.guide .step { padding: 6px 0; border-bottom: 1px solid var(--edge); }
+.guide .step:last-child { border-bottom: none; }
+.guide .step h4 { display: flex; align-items: center; gap: 6px; margin: 0 0 4px; font-size: 12px; }
+.guide .step.waiting h4 { opacity: .5; }
+.step-mark { display: inline-grid; place-items: center; width: 18px; height: 18px; border: 1px solid var(--edge); border-radius: 50%; font-size: 10px; }
+.guide .step.done .step-mark { border-color: #34c759; background: #34c759; color: #fff; }
+.guide .step.current .step-mark { border-color: #aa9710; background: #f1d51c; color: #1d1d1f; }
+.guide p { margin: 4px 0; font-size: 12px; }
+.guide .row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.recs ol { margin: 4px 0; padding-left: 18px; }
+.recs li { margin-bottom: 6px; font-size: 12px; }
+.recs li small { display: block; }
+.recs li.previewing { background: rgba(241,213,28,.17); }
+.stress-red { color: #a11414; }
+.stress-amber { color: #8a5a00; }
+.stress-unknown { color: #666; }
+html[data-theme='dark'] .stress-red { color: #ff8a80; }
