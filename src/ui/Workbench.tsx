@@ -6,6 +6,7 @@ import { DRAWING_LABEL, type DrawingKind, type Level, PROFILES } from '../presen
 import { UNKNOWN, combine, representative, toneOf, verdictOf, verdictText } from '../present/verdict.ts';
 import { Drawing } from './drawing/Drawing.tsx';
 import { EngineerPanel } from './EngineerPanel.tsx';
+import { PartEditor } from './PartEditor.tsx';
 
 export interface WorkbenchProps { state: AppState; dispatch: Dispatch<Action>; level: Level; grid: number[]; results: VariantResult[]; caches: BranchCache[]; theme: 'light' | 'dark' }
 
@@ -36,7 +37,9 @@ export function Workbench({ state, dispatch, level, grid, results, theme }: Work
           {clamped ? <small className="warn-text">The model reads the measured part outside its sweep here; treat it as rough.</small> : null}
         </section>
       </div>
-      <aside className="wb-side" />
+      <aside className="wb-side">
+        {state.selected ? <PartEditor state={state} dispatch={dispatch} level={level} /> : null}
+      </aside>
     </main>
   );
 }

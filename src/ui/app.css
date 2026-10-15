@@ -97,3 +97,5 @@ html[data-theme='dark'] .drawing, html[data-theme='dark'] .stage-icon { color: #
 html[data-theme='dark'] .stage small { color: #c7c7c2; }
 .drawing-scroll { overflow-x: auto; }
 .stage.fixed { cursor: default; }
+.part-editor .inspector-body { margin-top: 6px; }
+.check-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
