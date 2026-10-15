@@ -8,7 +8,7 @@ import { type VariantResult, evaluateVariants, measuredLanding } from '../app/ev
 import { type Action, type AppState, variantChain } from '../app/state.ts';
 import { plainRX } from '../app/units.ts';
 import { trust, trustText } from '../present/circuit.ts';
-import { shownResult } from '../present/show.ts';
+import { modelVerdict, shownResult } from '../present/show.ts';
 import { DRAWING_LABEL, type DrawingKind, type Level, PROFILES, RESULT_LABEL, type ResultKind } from '../present/level.ts';
 import { UNKNOWN, landingNearF0, toneOf, verdictOf, verdictText } from '../present/verdict.ts';
 import { Drawing } from './drawing/Drawing.tsx';
@@ -41,10 +41,12 @@ export function Workbench({ task, onTask, state, dispatch, level, grid, results,
   useEffect(() => {
     setBaseline(task === 'tryChange' ? { chain: state.chain, fits: state.fits } : null);
   }, [task]);
-  const before = useMemo(
-    () => (baseline && (baseline.chain !== state.chain || baseline.fits !== state.fits) ? evaluateVariants({ ...state, chain: baseline.chain, fits: baseline.fits }, grid)[state.primary]?.landing?.z ?? null : null),
-    [baseline, state.chain, state.fits, state.primary, grid],
+  const baseResults = useMemo(
+    () => (baseline && (baseline.chain !== state.chain || baseline.fits !== state.fits) ? evaluateVariants({ ...state, chain: baseline.chain, fits: baseline.fits }, grid) : null),
+    [baseline, state.chain, state.fits, grid],
   );
+  const before = baseResults?.[state.primary]?.landing?.z ?? null;
+  const beforeVerdict = baseResults ? modelVerdict(baseResults, state.window, state.primary) : null;
   const ghost = useMemo(() => (preview ? evaluateVariants({ ...state, chain: applyPicks(state.chain, preview) }, grid)[state.primary]?.landing?.z ?? null : null), [preview, state, grid]);
   const highlight = preview
     ? Object.keys(preview).filter((id) => {
@@ -94,7 +96,7 @@ export function Workbench({ task, onTask, state, dispatch, level, grid, results,
       <aside className="wb-side">
         {state.selected ? <PartEditor state={state} dispatch={dispatch} level={level} /> : null}
         {task === 'newSweep' ? <NewSweepGuide state={state} dispatch={dispatch} level={level} grid={grid} caches={caches} verdict={shown.v.state} preview={preview} onPreview={setPreview} onSafePower={() => onTask('safePower')} /> : null}
-        {task === 'tryChange' && baseline ? <TryChangeGuide state={state} dispatch={dispatch} level={level} baseline={baseline} onKeep={() => setBaseline({ chain: state.chain, fits: state.fits })} verdictLine={verdictText(shown.v, level, shown.c)} /> : null}
+        {task === 'tryChange' && baseline ? <TryChangeGuide state={state} dispatch={dispatch} level={level} baseline={baseline} onKeep={() => setBaseline({ chain: state.chain, fits: state.fits })} verdictLine={verdictText(shown.v, level, shown.c)} beforeLine={beforeVerdict ? verdictText(beforeVerdict.v, level, beforeVerdict.c) : null} /> : null}
         {task === 'safePower' ? <SafePowerGuide state={state} dispatch={dispatch} level={level} grid={grid} caches={caches} /> : null}
       </aside>
     </main>

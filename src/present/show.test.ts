@@ -10,7 +10,7 @@ import { type ExampleManifest, exampleState } from '../app/example.ts';
 import { evalGrid } from '../app/grid.ts';
 import { ROOT } from '../testutil.ts';
 import { noChangeNeeded } from './recs.ts';
-import { shownResult } from './show.ts';
+import { modelVerdict, shownResult } from './show.ts';
 import { type Verdict, landingNearF0, verdictOf } from './verdict.ts';
 
 const read = (p: string): string => readFileSync(new URL(p, ROOT), 'utf8');
@@ -37,4 +37,13 @@ test('"No change needed" follows the shown verdict: measured outside beats a mod
   const s = shownResult(ex, [plenty, plenty, plenty], out);
   assert.equal(s.v.state, 'outside');
   assert.equal(noChangeNeeded(s.v.state, 50), false);
+});
+
+test('the model verdict of any set of results: the baseline before a change and the circuit after it (Plan 3B review I2)', () => {
+  const grid = evalGrid(ex.chain, ex.sweeps);
+  assert.equal(modelVerdict(evaluateVariants(ex, grid), ex.window, ex.primary).v.state, 'some');
+  const after = { ...ex, chain: updateBlock(ex.chain, 'ser', { counts: counts(0, 0, 1) }) };
+  const v = modelVerdict(evaluateVariants(after, grid), after.window, after.primary);
+  assert.equal(v.v.state, 'outside');
+  assert.equal(v.c.state, 'outside');
 });
