@@ -173,7 +173,7 @@ function draw(canvas: HTMLCanvasElement, p: DrawInput): void {
   ctx.lineWidth = 1;
   if (!p.traces.length) {
     ctx.fillStyle = text;
-    ctx.fillText('No prediction: the landing strip says why.', 12, 24);
+    ctx.fillText('No prediction: see the message above the plots.', 12, 24);
     return;
   }
   const lo = p.span === 'zoom' ? ZOOM[0] : Math.min(...p.traces.map((t) => t.f[0]));

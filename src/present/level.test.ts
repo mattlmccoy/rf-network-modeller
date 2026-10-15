@@ -41,3 +41,14 @@ test('wrapWords packs words into lines of at most the given length; a long singl
   assert.deepEqual(wrapWords('Supercalifragilistic', 8), ['Supercalifragilistic']);
   assert.deepEqual(wrapWords('', 8), ['']);
 });
+
+test('no text drawn on a canvas uses internal jargon; page-text checks cannot see it (review I6)', async () => {
+  const { readdirSync, readFileSync } = await import('node:fs');
+  const { ROOT } = await import('../testutil.ts');
+  const dir = new URL('src/ui/', ROOT);
+  for (const f of readdirSync(dir).filter((n) => n.endsWith('.tsx'))) {
+    for (const m of readFileSync(new URL(f, dir), 'utf8').matchAll(/fillText\(\s*(['`])(.*?)\1/g)) {
+      assert.doesNotMatch(m[2], /AIT|variant|landing/i, `${f}: "${m[2]}"`);
+    }
+  }
+});
