@@ -3,7 +3,7 @@ import test from 'node:test';
 import { cdChain, o7Chain } from '../chain/presets.ts';
 import { findBlock } from '../chain/state.ts';
 import { LEVELS, PROFILES, parseLevel } from './level.ts';
-import { WORDS } from './words.ts';
+import { WORDS, wrapWords } from './words.ts';
 
 test('each level sets the drawing, the result view and the field set (spec §5)', () => {
   assert.deepEqual(LEVELS, ['beginner', 'builder', 'engineer']);
@@ -33,4 +33,11 @@ test('preset parts carry plain names', () => {
   assert.equal(findBlock(o7, 'branch')?.label, 'Transformer pair + plates');
   assert.equal(findBlock(cdChain(), 'Ls')?.label, 'Wiring inductance');
   assert.equal(findBlock(cdChain(), 'Lb')?.label, 'Loop inductance');
+});
+
+test('wrapWords packs words into lines of at most the given length; a long single word stays whole', () => {
+  assert.deepEqual(wrapWords('Transformer pair + plates', 16), ['Transformer pair', '+ plates']);
+  assert.deepEqual(wrapWords('1×100 + 1×50 + 1×30 = 180 pF', 20), ['1×100 + 1×50 + 1×30', '= 180 pF']);
+  assert.deepEqual(wrapWords('Supercalifragilistic', 8), ['Supercalifragilistic']);
+  assert.deepEqual(wrapWords('', 8), ['']);
 });

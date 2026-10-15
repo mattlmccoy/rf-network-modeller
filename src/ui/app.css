@@ -57,3 +57,43 @@ html[data-theme='dark'] .panel, html[data-theme='dark'] .notice, html[data-theme
 .window-title { flex-wrap: wrap; }
 .window-actions { flex-wrap: wrap; align-items: center; }
 .window-actions button, .window-actions .file-picker, .topbar-left button { white-space: nowrap; }
+.override { display: flex; align-items: center; gap: 4px; font-size: 10px; }
+.drawing { display: block; color: #2c2c2a; }
+.drawing text { fill: currentColor; font-family: 'Avenir Next', 'Helvetica Neue', Arial, sans-serif; }
+.drawing .t { font-size: 12px; font-weight: 700; }
+.drawing .s { font-size: 11px; opacity: .78; }
+.drawing .sym { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.drawing .dot { fill: currentColor; }
+.drawing .hit { fill: transparent; stroke: none; }
+.drawing .part { cursor: pointer; }
+.drawing .part.selected .hit { stroke: #f1d51c; stroke-width: 3; }
+.drawing .part.highlight .hit { stroke: #f1d51c; stroke-width: 2; stroke-dasharray: 5 3; }
+.drawing .puck { fill: #3b6fb6; stroke: #2a4f86; }
+.drawing .ferrite { fill: #5a5a5e; stroke: #3a3a3e; }
+.drawing .bed, .stage-icon .bed { fill: #d8c8a0; opacity: .8; }
+.drawing .cube, .stage-icon .cube { fill: #4a4a48; }
+.drawing .dashed { fill: none; stroke: currentColor; stroke-dasharray: 4 3; }
+.drawing .cage { fill: none; stroke: currentColor; stroke-dasharray: 6 4; opacity: .5; }
+.drawing .floor { stroke: #8a8a8e; stroke-width: 4; }
+.drawing .genbox { fill: rgba(127,127,120,.12); stroke: currentColor; opacity: .8; }
+.flow { display: grid; gap: 8px; }
+.flow-row { display: flex; flex-wrap: wrap; align-items: stretch; gap: 4px; }
+.flow-arrow { align-self: center; color: #777; }
+.stage { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 112px; padding: 6px; font-weight: 400; }
+.stage b { font-size: 11px; text-align: center; }
+.stage small { color: #555; font-size: 10px; text-align: center; }
+.stage.open { border-color: #aa9710; box-shadow: 0 0 0 2px rgba(241,213,28,.55); }
+.stage.highlight { outline: 2px dashed #f1d51c; }
+.stage-icon { width: 60px; height: 40px; color: #2c2c2a; }
+.stage-icon .sym { fill: none; stroke: currentColor; stroke-width: 2; }
+.stage-parts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.stage-parts button.selected { border-color: #aa9710; box-shadow: 0 0 0 2px rgba(241,213,28,.55); }
+.tuner-tag { justify-self: start; padding: 4px 10px; border: 1px solid #aaa; border-radius: 12px; font-size: 11px; font-weight: 700; }
+.tuner-tag.good { border-color: #34c759; color: #067723; }
+.tuner-tag.warn { border-color: #ff9f0a; color: #8a5a00; }
+.tuner-tag.bad { border-color: #ff3b30; color: #a11414; }
+.tuner-tag.unknown { color: #666; }
+html[data-theme='dark'] .drawing, html[data-theme='dark'] .stage-icon { color: #d6d6d0; }
+html[data-theme='dark'] .stage small { color: #c7c7c2; }
+.drawing-scroll { overflow-x: auto; }
+.stage.fixed { cursor: default; }

@@ -9,9 +9,11 @@ export interface Seg { a: Pt; b: Pt }
 export interface Layout { parts: PartBox[]; wires: Seg[]; junctions: Pt[]; grounds: Pt[]; port: Pt; minX: number; minY: number; maxX: number; maxY: number }
 
 /** Each series part takes PITCH along its line; its box is BOX long and 1 wide. */
-export const PITCH = 2;
+export const PITCH = 2.4;
 export const BOX = 1.4;
 const GAP = (PITCH - BOX) / 2;
+/** Room left after a hanging branch for the labels drawn to its right. */
+const LABEL_ROOM = 2.2;
 
 function kindOf(b: Block): PartKind {
   switch (b.type) {
@@ -69,7 +71,7 @@ function run(acc: Acc, blocks: readonly Block[], l: Line, cursor: Pt, u0: number
       acc.grounds.push(g);
       extent = Math.max(extent, r.u + GAP);
       cur = j;
-      u += 0.5 + Math.max(1, r.extent + 0.5);
+      u += 0.5 + Math.max(1, r.extent + 0.5) + LABEL_ROOM;
     } else if (b.type === 'parallel') {
       const a = at(l, u + 0.5, 0);
       acc.wires.push({ a: cur, b: a });
