@@ -3,7 +3,7 @@ import test from 'node:test';
 import { OPEN, cx } from '../engine/complex.ts';
 import { AIT_WINDOW } from '../chain/presets.ts';
 import { gammaFromZ } from '../io/sweep.ts';
-import { rectValue, rxExtent, s11dB, smithXY, spanIndices, vswr, windowOutline } from './plotmath.ts';
+import { dbRange, rectValue, rxExtent, s11dB, smithXY, spanIndices, targetPos, vswr, windowOutline } from './plotmath.ts';
 import { assertClose, assertNear } from '../testutil.ts';
 
 test('the AIT window outline is a closed loop inside the unit circle starting at 5 + j6', () => {
@@ -40,4 +40,19 @@ test('rectangular panes gap an open or invalid Z instead of drawing 0 Ω or a pi
   assert.ok(Number.isNaN(rectValue('s11db', cx(Number.NaN, Number.NaN))));
   assert.equal(rectValue('x', cx(7, 18)), 18);
   assertNear(rectValue('vswr', cx(150)), 3, 1e-12);
+});
+
+test('|S11| axis follows the data: 5 dB below the lowest value, between −60 and −5 dB; no data gives −5…0 (review focus 5)', () => {
+  assert.deepEqual(dbRange([-0.3, -1.2]), [-10, 0]);
+  assert.deepEqual(dbRange([-23]), [-30, 0]);
+  assert.deepEqual(dbRange([-100]), [-60, 0]);
+  assert.deepEqual(dbRange([Number.NaN, Number.NaN]), [-5, 0]);
+  assert.deepEqual(dbRange([]), [-5, 0]);
+});
+
+test('target box positions are fractions of 25 Ω × 60 Ω, pinned to the edge beyond them, absent when not finite', () => {
+  assert.deepEqual(targetPos(cx(12.5, 30)), { u: 0.5, v: 0.5, pinned: false });
+  assert.deepEqual(targetPos(cx(715.8, 184.7)), { u: 1, v: 1, pinned: true });
+  assert.deepEqual(targetPos(cx(5, -3)), { u: 0.2, v: 0, pinned: true });
+  assert.equal(targetPos(cx(Number.POSITIVE_INFINITY, 0)), null);
 });

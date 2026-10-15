@@ -1,26 +1,47 @@
 import { type Dispatch, useEffect, useMemo, useState } from 'react';
 import type { BranchCache } from '../chain/types.ts';
-import type { VariantResult } from '../app/evaluate.ts';
+import { zFromGamma } from '../io/sweep.ts';
+import { type VariantResult, measuredLanding } from '../app/evaluate.ts';
 import { type Action, type AppState, variantChain } from '../app/state.ts';
-import { DRAWING_LABEL, type DrawingKind, type Level, PROFILES } from '../present/level.ts';
-import { UNKNOWN, combine, representative, toneOf, verdictOf, verdictText } from '../present/verdict.ts';
+import { activeIsMeasured, trust, trustText } from '../present/circuit.ts';
+import { DRAWING_LABEL, type DrawingKind, type Level, PROFILES, RESULT_LABEL, type ResultKind } from '../present/level.ts';
+import { UNKNOWN, combine, landingNearF0, representative, toneOf, verdictOf, verdictText } from '../present/verdict.ts';
 import { Drawing } from './drawing/Drawing.tsx';
 import { EngineerPanel } from './EngineerPanel.tsx';
 import { PartEditor } from './PartEditor.tsx';
+import { TargetBox } from './TargetBox.tsx';
+import { VerdictCard } from './VerdictCard.tsx';
 
 export interface WorkbenchProps { state: AppState; dispatch: Dispatch<Action>; level: Level; grid: number[]; results: VariantResult[]; caches: BranchCache[]; theme: 'light' | 'dark' }
 
 const DRAWINGS: readonly DrawingKind[] = ['flow', 'hardware', 'schematic'];
+const RESULTS: readonly ResultKind[] = ['verdict', 'target', 'plots'];
 
 export function Workbench({ state, dispatch, level, grid, results, theme }: WorkbenchProps) {
   const [drawing, setDrawing] = useState<DrawingKind | null>(null);
-  useEffect(() => { setDrawing(null); }, [level]);
+  const [result, setResult] = useState<ResultKind | null>(null);
+  useEffect(() => {
+    setDrawing(null);
+    setResult(null);
+  }, [level]);
   const view = useMemo(() => variantChain(state, state.primary), [state]);
-  const verdicts = results.map((r) => (r.error ? UNKNOWN : verdictOf(r.landing, state.window)));
+  const verdicts = useMemo(() => results.map((r) => (r.error ? UNKNOWN : verdictOf(r.landing, state.window))), [results, state.window]);
   const combined = combine(verdicts.map((v) => v.state));
-  const rep = representative(verdicts, state.primary, combined.state);
-  const dKind = drawing ?? PROFILES[level].drawing;
+  const active = state.activeSweep ? state.sweeps[state.activeSweep] : undefined;
+  const measuredV = useMemo(() => (active ? verdictOf(landingNearF0(active.f, active.gamma.map((g) => zFromGamma(g)), state.window), state.window) : null), [active, state.window]);
+  // The measured verdict applies only while the circuit is the one the active sweep was taken on (spec §7.4).
+  const shown = activeIsMeasured(state.chain, state.tagged, state.activeSweep) && measuredV
+    ? { v: measuredV, c: undefined, source: 'measured' as const }
+    : { v: representative(verdicts, state.primary, combined.state), c: combined, source: 'predicted' as const };
+  const t = trust(state.chain, state.tagged);
+  const modelError = results.find((r) => r.error)?.error ?? null;
   const clamped = results.some((r) => r.outOfRange);
+  const dKind = drawing ?? PROFILES[level].drawing;
+  const rKind = result ?? PROFILES[level].result;
+  const tone = toneOf(shown.v.state);
+  const line = verdictText(shown.v, level === 'beginner' ? 'builder' : level, shown.c);
+  const tag = state.tagged.find((x) => x.sweepId === state.activeSweep);
+
   return (
     <main className="workbench">
       <div className="wb-main">
@@ -29,12 +50,20 @@ export function Workbench({ state, dispatch, level, grid, results, theme }: Work
             <h3>Your circuit{dKind === 'flow' ? '' : ': click any part to change it'}</h3>
             <label className="override">Drawing <select value={dKind} onChange={(e) => setDrawing(e.target.value as DrawingKind)}>{DRAWINGS.map((k) => <option key={k} value={k}>{DRAWING_LABEL[k]}</option>)}</select></label>
           </header>
-          <Drawing kind={dKind} chain={view} selected={state.selected} highlight={[]} onSelect={(id) => dispatch({ type: 'select', id })} cableM={state.variants[state.primary].cable.length} tuner={{ text: verdictText(rep, 'beginner'), tone: toneOf(rep.state) }} />
+          <Drawing kind={dKind} chain={view} selected={state.selected} highlight={[]} onSelect={(id) => dispatch({ type: 'select', id })} cableM={state.variants[state.primary].cable.length} tuner={{ text: verdictText(shown.v, 'beginner'), tone }} />
         </section>
         <section className="panel">
-          <header className="panel-head"><h3>Where the tuner lands at 13.56 MHz</h3></header>
-          <EngineerPanel state={state} dispatch={dispatch} grid={grid} results={results} theme={theme} />
-          {clamped ? <small className="warn-text">The model reads the measured part outside its sweep here; treat it as rough.</small> : null}
+          <header className="panel-head">
+            <h3>{shown.source === 'measured' ? 'Your sweep' : 'Predicted'}: where the tuner lands at 13.56 MHz</h3>
+            <label className="override">Result <select value={rKind} onChange={(e) => setResult(e.target.value as ResultKind)}>{RESULTS.map((k) => <option key={k} value={k}>{RESULT_LABEL[k]}</option>)}</select></label>
+          </header>
+          {modelError ? <p className="bad">The model can't evaluate this circuit: {modelError}</p> : null}
+          {rKind === 'verdict' ? <VerdictCard text={verdictText(shown.v, 'beginner')} tone={tone} source={shown.source} trustNote={trustText(t, 'beginner')} state={shown.v.state} /> : null}
+          {rKind === 'target' ? <TargetBox window={state.window} measured={active ? measuredLanding(active)?.z ?? null : null} measuredLabel={tag?.label ?? active?.name ?? ''} predicted={results[state.primary]?.landing?.z ?? null} ghost={null} /> : null}
+          {rKind !== 'verdict' ? <p className={`verdict-line ${tone}`}>{line}</p> : null}
+          {rKind === 'plots' ? <EngineerPanel state={state} dispatch={dispatch} grid={grid} results={results} theme={theme} /> : null}
+          {rKind !== 'verdict' && trustText(t, 'builder') ? <small>{trustText(t, 'builder')}</small> : null}
+          {rKind !== 'verdict' && clamped ? <small className="warn-text"> The model reads the measured part outside its sweep here; treat it as rough.</small> : null}
         </section>
       </div>
       <aside className="wb-side">

@@ -50,3 +50,23 @@ export function rectValue(q: RectQuantity, z: Complex): number {
   const v = q === 'r' ? z.re : q === 'x' ? z.im : vswr(z);
   return Number.isFinite(v) ? v : Number.NaN;
 }
+
+/** |S11| axis: 0 dB down to 5 dB below the lowest finite value, rounded to 5 dB and kept within −60…−5 dB (no fixed −40 floor). */
+export function dbRange(values: number[]): [number, number] {
+  const lo = values.reduce((m, v) => (Number.isFinite(v) ? Math.min(m, v) : m), 0);
+  return [Math.max(-60, Math.min(-5, Math.floor(lo / 5) * 5 - 5)), 0];
+}
+
+export interface TargetAxes { rMax: number; xMax: number }
+/** The Builder target box spans R 0–25 Ω and X 0–60 Ω (spec §7.4). */
+export const TARGET: TargetAxes = { rMax: 25, xMax: 60 };
+
+/** z on the target box as fractions of its axes, pinned to the edge (pinned: true) beyond them; null when z is not finite. */
+export function targetPos(z: Complex, a: TargetAxes = TARGET): { u: number; v: number; pinned: boolean } | null {
+  if (!Number.isFinite(z.re) || !Number.isFinite(z.im)) return null;
+  const u = z.re / a.rMax;
+  const v = z.im / a.xMax;
+  const cu = Math.min(1, Math.max(0, u));
+  const cv = Math.min(1, Math.max(0, v));
+  return { u: cu, v: cv, pinned: cu !== u || cv !== v };
+}

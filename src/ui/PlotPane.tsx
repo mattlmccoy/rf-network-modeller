@@ -3,7 +3,7 @@ import { type Complex, isFiniteC } from '../engine/complex.ts';
 import type { Window } from '../chain/types.ts';
 import { gammaFromZ } from '../io/sweep.ts';
 import type { PaneMode } from '../app/state.ts';
-import { type RectQuantity, type XY, rectValue, rxExtent, smithXY, spanIndices, windowOutline } from '../app/plotmath.ts';
+import { type RectQuantity, type XY, rectValue, rxExtent, smithXY, spanIndices, windowOutline, dbRange } from '../app/plotmath.ts';
 
 /** `clamped[i]`: the measured branch is read outside its sweep at f[i]; drawn faint and dashed (spec §4). */
 export interface Trace { key: string; label: string; color: string; f: number[]; z: Complex[]; role: 'primary' | 'variant' | 'measured'; clamped?: boolean[] }
@@ -16,7 +16,7 @@ const ZOOM: [number, number] = [10e6, 17e6];
 const F0 = 13.56e6;
 const CYAN = '#009d9a';
 const RED = '#d7191c';
-const LABELS: Record<PaneMode, string> = { smith: 'Smith chart (S11)', s11db: '|S11| (dB)', rx: 'R and X (Ω), chosen variant', vswr: 'VSWR' };
+const LABELS: Record<PaneMode, string> = { smith: 'Smith chart (S11)', s11db: '|S11| (dB)', rx: 'R and X (Ω), chosen cable assumption', vswr: 'VSWR' };
 const order = (t: Trace): number => (t.role === 'variant' ? 0 : t.role === 'measured' ? 1 : 2);
 const widthOf = (t: Trace): number => (t.role === 'primary' ? 2 : 1.2);
 /** Legend order: the chosen variant first (it must never be the entry clipped at the edge), then the others, then the measurement. */
@@ -112,6 +112,7 @@ function drawRect(ctx: CanvasRenderingContext2D, p: DrawInput, traces: Trace[], 
   if (p.mode === 's11db' || p.mode === 'vswr') {
     if (p.mode === 'vswr') { min = 1; max = 10; unit = 'VSWR'; }
     for (const t of traces) push(t, p.mode, t.color);
+    if (p.mode === 's11db') [min, max] = dbRange(lines.flatMap((l) => l.pts.map((q) => q.v)));
   } else {
     unit = 'Ω';
     for (const t of traces.filter((x) => x.role !== 'variant')) {
