@@ -6,7 +6,7 @@ import { compile } from '../chain/compile.ts';
 import { DEFAULT_VARIANTS, O7_FILES, o7Chain } from '../chain/presets.ts';
 import { allBlocks, duplicateIds, findBlock } from '../chain/state.ts';
 import { type Block, type Chain, param } from '../chain/types.ts';
-import { PALETTE, insertAfter, insertInto, moveBlock, newBlock, placeBlock, removeBlock, wrapParallel } from './chainEdit.ts';
+import { PALETTE, canMove, insertAfter, insertInto, moveBlock, moveTarget, newBlock, placeBlock, removeBlock, wrapParallel } from './chainEdit.ts';
 import { loadFixtureSweep } from '../testutil.ts';
 
 const base = o7Chain('capfree');
@@ -100,4 +100,18 @@ test('wrapParallel wraps exactly the target, even inside a branch, and leaves it
   assert.equal(arm.chain[1].id, 'branch');
   assert.deepEqual(duplicateIds(out), []);
   compile(out, ctx);
+});
+
+test('moving the only part of a branch to ground moves the branch; a move that changes nothing is reported', () => {
+  const add = newBlock(base, 'inductor');
+  const g = placeBlock(base, 'Ls', 'ground', add);
+  const sh = g.blocks[g.blocks.findIndex((b) => b.id === 'Ls') + 1];
+  assert.equal(moveTarget(g, add.id), sh.id);
+  assert.equal(moveTarget(base, 'sh'), 'shuntArm');
+  assert.equal(moveTarget(base, 'Lb'), 'Lb', 'Lb shares its branch with the measured part');
+  assert.equal(canMove(g, add.id, -1), true);
+  assert.equal(canMove(base, 'coax', -1), false);
+  assert.equal(canMove(base, 'branchArm', 1), false);
+  assert.equal(canMove(base, 'Lb', -1), false);
+  assert.equal(canMove(base, 'branch', 1), false);
 });

@@ -64,3 +64,12 @@ test('an empty chain is just the port', () => {
   const l = layoutChain({ name: 'blank', blocks: [] });
   assert.deepEqual([l.parts.length, l.wires.length, l.minX, l.maxX, l.minY, l.maxY], [0, 0, 0, 0, 0, 0]);
 });
+
+test('parallel arms leave room between them for the labels: below and above on a line, beside in a branch', () => {
+  const cap: Block = { id: 'Cx', label: 'Capacitor', type: 'primitive', kind: 'C', value: param(100e-12) };
+  const box = (l: ReturnType<typeof layoutChain>, id: string) => l.parts.find((p) => p.id === id)!;
+  const onLine = layoutChain({ name: 'h', blocks: [{ id: 'P', label: '', type: 'parallel', chains: [[{ ...cap, id: 'A' }], [{ ...cap, id: 'B' }]] }] });
+  assert.ok(box(onLine, 'B').y - (box(onLine, 'A').y + box(onLine, 'A').h) >= 1.2 - EPS, 'a value label below A and a title above B fit');
+  const inBranch = layoutChain({ name: 'v', blocks: [{ id: 'S', label: '', type: 'shunt', chain: [{ id: 'P', label: '', type: 'parallel', chains: [[{ ...cap, id: 'A' }], [{ ...cap, id: 'B' }]] }] }, { ...cap, id: 'Z' }] });
+  assert.ok(box(inBranch, 'B').x - (box(inBranch, 'A').x + box(inBranch, 'A').w) >= 2.2 - EPS, "A's labels to its right fit before B");
+});

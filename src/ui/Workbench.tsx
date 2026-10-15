@@ -13,7 +13,8 @@ import { DRAWING_LABEL, type DrawingKind, type Level, PROFILES, RESULT_LABEL, ty
 import { UNKNOWN, landingNearF0, toneOf, verdictOf, verdictText } from '../present/verdict.ts';
 import { Drawing } from './drawing/Drawing.tsx';
 import { EngineerPanel } from './EngineerPanel.tsx';
-import type { Task } from './Home.tsx';
+import type { Task, WorkTask } from './Home.tsx';
+import { NewNetworkGuide } from './NewNetworkGuide.tsx';
 import { NewSweepGuide } from './NewSweepGuide.tsx';
 import { SafePowerGuide } from './SafePowerGuide.tsx';
 import { type Baseline, TryChangeGuide } from './TryChangeGuide.tsx';
@@ -21,12 +22,12 @@ import { PartEditor } from './PartEditor.tsx';
 import { TargetBox } from './TargetBox.tsx';
 import { VerdictCard } from './VerdictCard.tsx';
 
-export interface WorkbenchProps { task: Exclude<Task, 'home'>; onTask: (t: Task) => void; state: AppState; dispatch: Dispatch<Action>; level: Level; grid: number[]; results: VariantResult[]; caches: BranchCache[]; theme: 'light' | 'dark' }
+export interface WorkbenchProps { task: WorkTask; onTask: (t: Task) => void; onNewProject: (s: AppState, next: Task) => void; state: AppState; dispatch: Dispatch<Action>; level: Level; grid: number[]; results: VariantResult[]; caches: BranchCache[]; theme: 'light' | 'dark' }
 
 const DRAWINGS: readonly DrawingKind[] = ['flow', 'hardware', 'schematic'];
 const RESULTS: readonly ResultKind[] = ['verdict', 'target', 'plots'];
 
-export function Workbench({ task, onTask, state, dispatch, level, grid, results, caches, theme }: WorkbenchProps) {
+export function Workbench({ task, onTask, onNewProject, state, dispatch, level, grid, results, caches, theme }: WorkbenchProps) {
   const [drawing, setDrawing] = useState<DrawingKind | null>(null);
   const [result, setResult] = useState<ResultKind | null>(null);
   useEffect(() => {
@@ -59,7 +60,9 @@ export function Workbench({ task, onTask, state, dispatch, level, grid, results,
   const active = state.activeSweep ? state.sweeps[state.activeSweep] : undefined;
   const measuredV = useMemo(() => (active ? verdictOf(landingNearF0(active.f, active.gamma.map((g) => zFromGamma(g)), state.window), state.window) : null), [active, state.window]);
   const shown = shownResult(state, verdicts, measuredV);
+  const model = hasModel(state.chain);
   const t = trust(state.chain, state.tagged);
+  const note = model ? trustText(t, 'builder') : null;
   const modelError = results.find((r) => r.error)?.error ?? null;
   const clamped = results.some((r) => r.outOfRange);
   const dKind = drawing ?? PROFILES[level].drawing;
@@ -80,17 +83,17 @@ export function Workbench({ task, onTask, state, dispatch, level, grid, results,
         </section>
         <section className="panel">
           <header className="panel-head">
-            <h3>{shown.source === 'measured' ? 'Your sweep' : 'Predicted'}: where the tuner lands at 13.56 MHz</h3>
+            <h3>{shown.source === 'measured' ? 'Your sweep: where' : model ? 'Predicted: where' : 'Where'} the tuner lands at 13.56 MHz</h3>
             <label className="override">Result <select value={rKind} onChange={(e) => setResult(e.target.value as ResultKind)}>{RESULTS.map((k) => <option key={k} value={k}>{RESULT_LABEL[k]}</option>)}</select></label>
           </header>
           {modelError ? <p className="bad">The model can't evaluate this circuit: {modelError}</p> : null}
-          {hasModel(state.chain) ? null : <p>This project holds measured sweeps only; there is no circuit model to predict from.</p>}
-          {rKind === 'verdict' ? <VerdictCard text={verdictText(shown.v, 'beginner')} tone={tone} source={shown.source} trustNote={trustText(t, 'beginner')} state={shown.v.state} /> : null}
+          {model ? null : <p>This project holds measured sweeps only; there is no circuit model to predict from.</p>}
+          {rKind === 'verdict' && (model || shown.source === 'measured') ? <VerdictCard text={verdictText(shown.v, 'beginner')} tone={tone} source={shown.source} trustNote={model ? trustText(t, 'beginner') : null} state={shown.v.state} /> : null}
           {rKind === 'target' ? <TargetBox window={state.window} measured={active ? measuredLanding(active)?.z ?? null : null} measuredLabel={tag?.label ?? active?.name ?? ''} predicted={results[state.primary]?.landing?.z ?? null} ghost={task === 'tryChange' ? before : ghost} ghostLabel={task === 'tryChange' ? 'before the change' : 'with the change'} /> : null}
           {rKind !== 'verdict' ? <p className={`verdict-line ${tone}`}>{line}</p> : null}
-          {rKind === 'target' ? <p className="rx-readout">At the tuner, 13.56 MHz. {active ? `Your sweep: ${plainRX(measuredLanding(active)?.z ?? null)}. ` : ''}{hasModel(state.chain) ? `Model: ${plainRX(results[state.primary]?.landing?.z ?? null)}.` : ''}</p> : null}
+          {rKind === 'target' ? <p className="rx-readout">At the tuner, 13.56 MHz. {active ? `Your sweep: ${plainRX(measuredLanding(active)?.z ?? null)}. ` : ''}{model ? `Model: ${plainRX(results[state.primary]?.landing?.z ?? null)}.` : ''}</p> : null}
           {rKind === 'plots' ? <EngineerPanel state={state} dispatch={dispatch} grid={grid} results={results} theme={theme} /> : null}
-          {rKind !== 'verdict' && trustText(t, 'builder') ? <small>{trustText(t, 'builder')}</small> : null}
+          {rKind !== 'verdict' && note ? <small>{note}</small> : null}
           {rKind !== 'verdict' && clamped ? <small className="warn-text"> The model reads the measured part outside its sweep here; treat it as rough.</small> : null}
         </section>
       </div>
@@ -98,8 +101,9 @@ export function Workbench({ task, onTask, state, dispatch, level, grid, results,
         {state.selected ? <PartEditor state={state} dispatch={dispatch} level={level} /> : null}
         {task === 'newSweep' ? <NewSweepGuide state={state} dispatch={dispatch} level={level} grid={grid} caches={caches} verdict={shown.v.state} preview={preview} onPreview={setPreview} onSafePower={() => onTask('safePower')} /> : null}
         {task === 'tryChange' && baseline ? <TryChangeGuide state={state} dispatch={dispatch} level={level} baseline={baseline} onKeep={() => setBaseline({ chain: state.chain, fits: state.fits })} verdictLine={verdictText(shown.v, level, shown.c)} beforeLine={beforeVerdict ? verdictText(beforeVerdict.v, level, beforeVerdict.c) : null} /> : null}
-        {task === 'safePower' && hasModel(state.chain) ? <SafePowerGuide state={state} dispatch={dispatch} level={level} grid={grid} caches={caches} /> : null}
-        {task === 'safePower' && !hasModel(state.chain) ? <section className="panel guide"><h3>Guide</h3><p>This project holds measured sweeps only, so there is no circuit to check at full power.</p></section> : null}
+        {task === 'safePower' && model ? <SafePowerGuide state={state} dispatch={dispatch} level={level} grid={grid} caches={caches} /> : null}
+        {task === 'safePower' && !model ? <section className="panel guide"><h3>Guide</h3><p>This project holds measured sweeps only, so there is no circuit to check at full power.</p></section> : null}
+        {task === 'newNetwork' ? <NewNetworkGuide state={state} dispatch={dispatch} level={level} onNewProject={onNewProject} verdictLine={verdictText(shown.v, level, shown.c)} /> : null}
       </aside>
     </main>
   );

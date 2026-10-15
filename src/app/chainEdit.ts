@@ -154,3 +154,28 @@ export function placeBlock(chain: Chain, targetId: string | null, where: Placeme
   if (where === 'ground') return insertAfter(chain, targetId, { id: newBlock(chain, 'shunt', '', reserved).id, label: 'To ground', type: 'shunt', chain: [block] });
   return insertAfter(chain, targetId, block);
 }
+
+/** The list holding `id`, its index there, and the block that owns the list (null for the main chain). */
+function locate(blocks: Block[], id: string, owner: Block | null = null): { list: Block[]; i: number; owner: Block | null } | null {
+  const i = blocks.findIndex((b) => b.id === id);
+  if (i >= 0) return { list: blocks, i, owner };
+  for (const b of blocks) {
+    for (const arm of b.type === 'shunt' ? [b.chain] : b.type === 'parallel' ? b.chains : []) {
+      const hit = locate(arm, id, b);
+      if (hit) return hit;
+    }
+  }
+  return null;
+}
+
+/** What a move of `id` moves: the part, or its branch to ground when the part is that branch's only one. */
+export function moveTarget(chain: Chain, id: string): string {
+  const at = locate(chain.blocks, id);
+  return at?.owner?.type === 'shunt' && at.list.length === 1 ? at.owner.id : id;
+}
+
+/** Whether moving `id` one step in `dir` changes the circuit. */
+export function canMove(chain: Chain, id: string, dir: -1 | 1): boolean {
+  const at = locate(chain.blocks, moveTarget(chain, id));
+  return at !== null && at.i + dir >= 0 && at.i + dir < at.list.length;
+}

@@ -146,3 +146,8 @@ test('setVariants: a fit follows an unchanged cable and jumper L, even renamed; 
   assert.deepEqual(Object.keys(fewer.fits), [DEFAULT_VARIANTS[1].name]);
   assert.equal(reducer(base, { type: 'setVariants', variants: [] }), base, 'at least one cable assumption is kept');
 });
+
+test('move on the only part of a branch moves the branch (what the drawing shows)', () => {
+  const s = reducer(base, { type: 'move', id: 'sh', dir: -1 });
+  assert.deepEqual(s.chain.blocks.map((b) => b.id), ['coax', 'ser', 'shuntArm', 'Ls', 'branchArm']);
+});

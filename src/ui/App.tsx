@@ -3,13 +3,13 @@ import type { BranchCache } from '../chain/types.ts';
 import { evaluateVariants } from '../app/evaluate.ts';
 import { loadExample } from '../app/example.ts';
 import { evalGrid } from '../app/grid.ts';
-import { emptyState, reducer } from '../app/state.ts';
+import { type AppState, emptyState, reducer } from '../app/state.ts';
 import { hasModel } from '../present/circuit.ts';
 import { type Level, PROFILES, type SheetKind, parseLevel } from '../present/level.ts';
 import { fromProjectJson, toProjectJson } from '../project/file.ts';
 import { getCurrentId, getProject, putProject, setCurrentId } from '../project/store.ts';
 import { ErrorBoundary } from './ErrorBoundary.tsx';
-import { Home, type Task } from './Home.tsx';
+import { Home, type Task, type WorkTask } from './Home.tsx';
 import { Sheet } from './Sheet.tsx';
 import { StockPanel } from './StockPanel.tsx';
 import { SweepsPanel } from './SweepsPanel.tsx';
@@ -18,7 +18,8 @@ import { Workbench } from './Workbench.tsx';
 
 type Theme = 'light' | 'dark';
 const LEVEL_KEY = 'rfnm-level';
-const TASK_TITLE: Record<Task, string> = { home: '', newSweep: 'I measured a new sweep', tryChange: 'Try a change first', safePower: 'Safe at full power?' };
+const TASK_TITLE: Record<Task, string> = { home: '', newSweep: 'I measured a new sweep', tryChange: 'Try a change first', safePower: 'Safe at full power?', newNetwork: 'Start a new network', pastBuilds: 'Look back at past builds', rigHistory: 'Rig history' };
+const WORK: readonly Task[] = ['newSweep', 'tryChange', 'safePower', 'newNetwork'];
 const message = (e: unknown): string => (e instanceof Error ? e.message : String(e));
 const newId = (): string => `p-${Date.now().toString(36)}`;
 
@@ -117,6 +118,13 @@ export default function App() {
     }
   };
 
+  /** Makes `s` a new current project; the previous one stays in the library. */
+  const newProject = (s: AppState, next: Task): void => {
+    dispatch({ type: 'load', state: s });
+    setProjectId(newId());
+    setTask(next);
+  };
+
   const saveFile = (): void => {
     const url = URL.createObjectURL(new Blob([toProjectJson(state, new Date().toISOString())], { type: 'application/json' }));
     const a = document.createElement('a');
@@ -146,11 +154,12 @@ export default function App() {
         save={save} sheets={PROFILES[level].sheets} onSheet={setSheet} onSave={saveFile} onOpen={(f) => { void openFile(f); }}
         theme={theme} onTheme={() => setTheme((t) => (t === 'light' ? 'dark' : 'light'))} />
       {notice ? <div className="notice" role="status"><span>{notice}</span><button onClick={() => setNotice(null)} aria-label="Dismiss">×</button></div> : null}
-      {task === 'home' ? <Home onTask={setTask} /> : (
+      {task === 'home' ? <Home onTask={setTask} /> : null}
+      {WORK.includes(task) ? (
         <ErrorBoundary onReset={() => { void openExample(); }}>
-          <Workbench task={task} onTask={setTask} state={state} dispatch={dispatch} level={level} grid={grid} results={results} caches={caches.current} theme={theme} />
+          <Workbench task={task as WorkTask} onTask={setTask} onNewProject={newProject} state={state} dispatch={dispatch} level={level} grid={grid} results={results} caches={caches.current} theme={theme} />
         </ErrorBoundary>
-      )}
+      ) : null}
       {sheet ? (
         <Sheet title={sheet === 'parts' ? 'Parts on hand' : 'Sweeps'} onClose={() => setSheet(null)}>
           {sheet === 'parts' ? <StockPanel state={state} dispatch={dispatch} /> : <SweepsPanel state={state} dispatch={dispatch} />}

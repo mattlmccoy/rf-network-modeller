@@ -5,7 +5,7 @@ import { type StateOverrides, allBlocks, applyState, findBlock, updateBlock } fr
 import type { Block, Chain, Param, Variant, Window } from '../chain/types.ts';
 import { type ParamRef, fromFitVars, getParam, withParamValue } from '../fit/params.ts';
 import type { Sweep } from '../io/sweep.ts';
-import { type Placement, insertAfter, insertInto, moveBlock, placeBlock, removeBlock } from './chainEdit.ts';
+import { type Placement, insertAfter, insertInto, moveBlock, moveTarget, placeBlock, removeBlock } from './chainEdit.ts';
 import { knownState, snapshotState, structureKey } from '../present/circuit.ts';
 
 export { snapshotState };
@@ -182,7 +182,7 @@ export function reducer(s: AppState, a: Action): AppState {
       return { ...s, chain, fits: pruneFits(s.fits, chain), selected: s.selected && findBlock(chain, s.selected) ? s.selected : null };
     }
     case 'move':
-      return { ...s, chain: moveBlock(s.chain, a.id, a.dir) };
+      return { ...s, chain: moveBlock(s.chain, moveTarget(s.chain, a.id), a.dir) };
     case 'addSweep':
       return {
         ...s,

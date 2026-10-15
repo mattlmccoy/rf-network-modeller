@@ -14,6 +14,8 @@ export const BOX = 1.4;
 const GAP = (PITCH - BOX) / 2;
 /** Room left after a hanging branch for the labels drawn to its right. */
 const LABEL_ROOM = 2.2;
+/** Room between parallel arms on a horizontal line for a value label below one arm and a title above the next. */
+const ARM_LABEL_ROOM = 1.2;
 
 function kindOf(b: Block): PartKind {
   switch (b.type) {
@@ -84,7 +86,7 @@ function run(acc: Acc, blocks: readonly Block[], l: Line, cursor: Pt, u0: number
         if (off !== 0) acc.wires.push({ a, b: start });
         const r = run(acc, arm, armLine, start, u + 0.5, false);
         arms.push({ r, off });
-        off += r.extent + 1;
+        off += r.extent + 0.5 + (l.dir === 'h' ? ARM_LABEL_ROOM : LABEL_ROOM);
       }
       const uB = Math.max(u + 1, ...arms.map((x) => x.r.u)) + GAP;
       const bj = at(l, uB, 0);
