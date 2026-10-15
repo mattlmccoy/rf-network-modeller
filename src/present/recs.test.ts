@@ -62,7 +62,7 @@ test('O7 example: four rows rank, the current build is first and over its rating
   const ex = exampleState(m, Object.fromEntries([m.capFree, ...m.sweeps.map((s) => s.file)].map((f) => [f, read(`public/examples/o7/${f}`)])));
   const o = recommend({ fitted: ex.variants.map((variant, i) => ({ variant, chain: variantChain(ex, i) })), sweeps: ex.sweeps, grid: evalGrid(ex.chain, ex.sweeps), window: ex.window, stock: ex.stock, stressWatts: ex.powerW });
   const v = shapeRecs(o, ex.window);
-  assert.equal(v.rows.length, 4);
+  assert.equal(v.rows.length, 1, 'the three alternatives have less room and more stress than keeping what you have');
   assert.ok(v.rows[0].isCurrent && v.notes.includes('nothing-beats'));
   assert.ok(v.currentStressPct !== null && v.currentStressPct > 100);
 });
@@ -78,4 +78,11 @@ test('try-a-change steps: pick, then change; the result opens once something cha
   assert.deepEqual(tryChangeStatus(true, false), ['done', 'current', 'waiting']);
   assert.deepEqual(tryChangeStatus(true, true), ['done', 'done', 'current']);
   assert.deepEqual(tryChangeStatus(false, true), ['done', 'done', 'current']);
+});
+
+test('alternatives worse than keeping what you have on every count are dropped; a trade-off stays (reviewer pass)', () => {
+  const some = [land(10, 20, true), land(10, 20, true), land(2, 2, false)];
+  const little = [land(10, 20, true, 0.5), land(10, 20, true, 0.5), land(2, 2, false)];
+  const v = shapeRecs(out([rec(0, 111, some), rec(1, 129, little), rec(2, 120, some), rec(3, 90, little)]), AIT_WINDOW);
+  assert.deepEqual(v.rows.map((r) => r.stressPct), [111, 90], 'less stress for less room is a real choice; more stress for the same or less room is not');
 });

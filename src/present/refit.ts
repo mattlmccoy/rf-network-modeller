@@ -1,6 +1,7 @@
 import { fitNetwork } from '../fit/network.ts';
 import { type ParamRef, freeRefs } from '../fit/params.ts';
 import { type AppState, type FitValues, variantChain } from '../app/state.ts';
+import { buildsOf } from './builds.ts';
 import { knownState } from './circuit.ts';
 
 /** The parameters to refit: every value marked free, so the Engineer "fit" toggle governs refits (review I2). */
@@ -31,4 +32,14 @@ export async function refitAll(s: AppState, progress: (i: number, n: number) => 
     }
   }
   return { fits };
+}
+
+/**
+ * A warning before a refit that cannot pin the values down: sweeps of a single build fit closely and can still get the
+ * parts wrong (reviewer pass M3). Null when the included sweeps cover two or more builds.
+ */
+export function refitNote(s: AppState): string | null {
+  const included = s.tagged.filter((t) => t.include);
+  if (!included.length) return 'No sweep is ticked for refits.';
+  return buildsOf({ ...s, tagged: included }).length > 1 ? null : 'These sweeps are all of one build: a refit can match them closely and still get the parts wrong. Refits are steadier with sweeps of two or more builds.';
 }

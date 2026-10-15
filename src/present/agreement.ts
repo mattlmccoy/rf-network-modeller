@@ -66,7 +66,7 @@ function gradeText(a: Agreement, level: Level, primary: number): string {
     case 'rough':
       return level === 'beginner'
         ? `The model is close, not exact.${tail}`
-        : `Close enough to rank changes, not exact: resistance ${ohm(g?.dR ?? null)}, reactance ${ohm(g?.dX ?? null)} (model minus sweep). Near the edge of the tuner's range it can be wrong about matching.${tail}`;
+        : `Roughly: resistance ${ohm(g?.dR ?? null)}, reactance ${ohm(g?.dX ?? null)} (model minus sweep). A miss this size can change which suggestion is best and whether the tuner matches near the edge of its range, so treat the ranking as a direction.${tail}`;
     case 'off':
       return `The model doesn't agree with this sweep: refit before trusting suggestions.${tail}`;
     case 'unknown':

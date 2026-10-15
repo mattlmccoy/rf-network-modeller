@@ -47,3 +47,13 @@ test('the model verdict of any set of results: the baseline before a change and 
   assert.equal(v.v.state, 'outside');
   assert.equal(v.c.state, 'outside');
 });
+
+test('unfitted cable assumptions are left out of the vote when any is fitted; with none fitted the verdict is an estimate (reviewer pass C1)', () => {
+  const v: Verdict[] = [{ ...measured, state: 'some' }, { ...measured, state: 'some' }, { ...measured, state: 'outside' }];
+  const twoFitted = { ...ex, activeSweep: null, fits: { [ex.variants[0].name]: ex.fits[ex.variants[0].name], [ex.variants[1].name]: ex.fits[ex.variants[1].name] } };
+  const s = shownResult(twoFitted, v, null);
+  assert.deepEqual([s.v.state, s.c?.agree, s.c?.total, s.estimate], ['some', 2, 2, false]);
+  const none = shownResult({ ...ex, activeSweep: null, fits: {} }, v, null);
+  assert.deepEqual([none.c?.total, none.estimate], [3, true]);
+  assert.equal(shownResult(ex, v, measured).estimate, false, 'a measured verdict is never an estimate');
+});

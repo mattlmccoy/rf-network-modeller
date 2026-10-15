@@ -141,6 +141,12 @@ const pruneFits = (fits: Record<string, FitValues>, chain: Chain): Record<string
 /** A cable assumption's physics: what a fit and the transformer model were made for. */
 const physics = (v: Variant): string => JSON.stringify([v.cable, v.Lj]);
 
+/** A cable assumption's default name, from its values (as DEFAULT_VARIANTS are named). */
+const autoName = (v: Variant): string => `${v.cable.length} m + ${Math.round(v.Lj * 1e9)} nH`;
+
+/** An edited assumption: one still carrying its default name is renamed for its new values; a chosen name is kept (reviewer pass). */
+export const retitled = (old: Variant, next: Variant): Variant => (old.name === autoName(old) && next.name === old.name ? { ...next, name: autoName(next) } : next);
+
 /**
  * New cable assumptions. A fit and the transformer model follow an assumption that is untouched (the same object) or only
  * renamed in place; any other change drops them, and the chosen assumption stays chosen (final review I1, I2). Names stay

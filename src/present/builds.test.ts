@@ -11,7 +11,7 @@ const ex = loadExampleState();
 test('the O7 example has five builds, one per tagged state, labelled by their parts (spec §9)', () => {
   const b = buildsOf(ex);
   assert.equal(b.length, 5);
-  assert.equal(b[4].label, 'Series bank 80 pF · Shunt bank 180 pF · loop on');
+  assert.equal(b[4].label, 'Series bank 80 pF · Shunt bank 180 pF · sense loop on');
   assert.deepEqual(b[4].sweepIds, ['o7-80-180-loop']);
 });
 

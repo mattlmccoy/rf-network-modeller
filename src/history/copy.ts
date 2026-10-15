@@ -18,6 +18,7 @@ export function historyCopy(s: IndexSession, texts: Record<string, string>): App
   for (const w of s.sweeps) {
     const text = texts[w.path];
     if (text === undefined) throw new Error(`${w.path} was not fetched`);
+    if (/^\s*</.test(text)) throw new Error(`${w.path}: the server sent a web page, not the sweep file`);
     const sweep = sweepFromFile(w.path.slice(w.path.lastIndexOf('/') + 1), text, sweeps);
     sweeps[sweep.id] = sweep;
     if (w.kind === 'network') tagged.push({ sweepId: sweep.id, label: w.label, state: {}, include: true, structure: structureKey(chain) });

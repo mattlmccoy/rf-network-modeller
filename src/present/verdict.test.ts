@@ -61,10 +61,10 @@ test('windowDistance is the distance in ohms to the window rectangle', () => {
 
 test('verdict wording by level; Beginner shows no ohms; Builder notes when the assumptions disagree', () => {
   const out = verdictOf({ z: cx(5.03, 4.3), f: 13.56e6, inWindow: false, roomUp: -99, roomDown: -99 }, AIT_WINDOW);
-  assert.equal(verdictText(out, 'beginner'), "The tuner can't match this (reactance too low)");
+  assert.equal(verdictText(out, 'beginner'), "Outside the tuner's good range (reactance too low)");
   const little = verdictOf({ z: cx(7.8, 27.9), f: 13.56e6, inWindow: true, roomUp: 0.82, roomDown: 1.04 }, AIT_WINDOW);
-  assert.equal(verdictText(little, 'beginner'), 'Matches, but with little room: warming up may push it out');
-  assert.equal(verdictText(little, 'builder', { state: 'little', agree: 2, total: 3 }), 'The tuner can match it, with little room (room to drift up 0.8 %) (depends on the cable assumption)');
+  assert.equal(verdictText(little, 'beginner'), "In the tuner's good range, with little room: warming up may push it out");
+  assert.equal(verdictText(little, 'builder', { state: 'little', agree: 2, total: 3 }), 'Inside where the tuner has matched well, with little room (room to drift up 0.8 %, about 110 kHz) (depends on the cable assumption)');
   assert.equal(verdictText(verdictOf(null, AIT_WINDOW), 'engineer'), "Can't tell yet");
 });
 
@@ -72,4 +72,9 @@ test('a landing with no impedance (the recommender\'s empty band) is unknown, ne
   const l = { z: undefined as unknown as ReturnType<typeof cx>, f: Number.NaN, inWindow: false, roomUp: -99, roomDown: -99 };
   assert.equal(verdictOf(l, AIT_WINDOW).state, 'unknown');
   assert.equal(windowDistance(undefined as unknown as ReturnType<typeof cx>, AIT_WINDOW), Number.POSITIVE_INFINITY);
+});
+
+test('outside the window is worded as outside where the tuner has matched well, not as a reach limit (reviewer pass)', () => {
+  const out = verdictOf({ z: cx(5.03, 4.3), f: 13.56e6, inWindow: false, roomUp: -99, roomDown: -99 }, AIT_WINDOW);
+  assert.equal(verdictText(out, 'builder'), 'Outside where the tuner has matched well: reactance too low');
 });

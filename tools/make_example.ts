@@ -35,6 +35,8 @@ const manifest: ExampleManifest = {
     x: v.fit3.x,
     q: v.loop.q,
     source: '3-sweep fit + loop shift (o7_loopstate.py recipe, Python), captured by tools/capture_fixtures.py',
+    // stage 3 fits 130/230, 100/200 and 80/200 (capture_fixtures.py st3); the loop shift fits 80/200 + loop (S80L)
+    sweeps: ['o7-130-230', 'o7-100-200', 'o7-80-200', 'o7-80-200-loop'],
   })),
 };
 const tm = JSON.parse(readFileSync(new URL('fixtures/python/tmodel_short.json', root), 'utf8')).tmodel as { variant: string; unit: TModel['unit']; load: TModel['load']; rms_rel: number };

@@ -28,11 +28,12 @@ test('block and part summaries', () => {
   assert.equal(partsText(counts()), 'empty');
   assert.equal(blockSummary(get('ser')), '1×50 + 1×30 = 80 pF');
   assert.equal(blockSummary(get('Ls')), '300 nH');
+  assert.equal(blockSummary(get('coax')), 'cable from the tuner');
   assert.equal(blockSummary(get('branch')), 'measured, loop on');
 });
 
 test('a sweep tag reads as bank values and the loop state', () => {
-  assert.equal(tagSummary(chain, o7State(counts(1, 0, 1), counts(2, 0, 1), false)), 'Series bank 130 pF · Shunt bank 230 pF · loop off');
+  assert.equal(tagSummary(chain, o7State(counts(1, 0, 1), counts(2, 0, 1), false)), 'Series bank 130 pF · Shunt bank 230 pF · sense loop off');
 });
 
 test('card summaries round fitted values to 4 significant figures', () => {

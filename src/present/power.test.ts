@@ -57,3 +57,14 @@ test('an unrated capacitor carrying current is never shown as healthy (Plan 3B r
 test('the safe power rounds down to 10 W, since it is a limit', () => {
   assert.deepEqual([402, 405, 409.9, 410].map(roundSafe), [400, 400, 400, 410]);
 });
+
+test('stress leaves out unfitted cable assumptions when any is fitted; with none fitted it is labelled an estimate (reviewer pass C1)', () => {
+  const v0 = ex.variants[0].name;
+  const one = capStress({ ...ex, fits: { [v0]: ex.fits[v0] } }, grid, 500);
+  const alone = capStress({ ...ex, variants: [ex.variants[0]], fits: { [v0]: ex.fits[v0] } }, grid, 500);
+  assert.equal(one.worstPct, alone.worstPct);
+  assert.equal(one.estimate, false);
+  const none = capStress({ ...ex, fits: {} }, grid, 500);
+  assert.equal(none.estimate, true);
+  assert.match(powerText(none, 'builder'), /^Estimate \(not fitted to a sweep of this circuit\): /);
+});

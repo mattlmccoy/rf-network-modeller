@@ -5,7 +5,7 @@ import { findBlock } from '../chain/state.ts';
 import { DEFAULT_VARIANTS, O7_FILES, O7_REFS, o7Chain } from '../chain/presets.ts';
 import type { Sweep } from '../io/sweep.ts';
 import { getParam } from '../fit/params.ts';
-import { type AppState, emptyState, reducer, reservedIds, snapshotState, uniqueSweepId, variantChain } from './state.ts';
+import { type AppState, emptyState, reducer, reservedIds, retitled, snapshotState, uniqueSweepId, variantChain } from './state.ts';
 import { newBlock } from './chainEdit.ts';
 import { loadFixtureSweep } from '../testutil.ts';
 import { structureKey } from '../present/circuit.ts';
@@ -171,4 +171,11 @@ test('setVariants: removing an earlier assumption keeps the chosen one chosen (f
   const s = reducer({ ...base, primary: 1 }, { type: 'setVariants', variants: [base.variants[1], base.variants[2]] });
   assert.equal(s.variants[s.primary].name, DEFAULT_VARIANTS[1].name);
   assert.ok(s.fits[DEFAULT_VARIANTS[1].name]);
+});
+
+test('an assumption still carrying its default name is renamed when its values change; a name the user chose is kept (reviewer pass)', () => {
+  const v = DEFAULT_VARIANTS[2];
+  const longer = { ...v, cable: { ...v.cable, length: 1.6 }, Lj: 250e-9 };
+  assert.equal(retitled(v, longer).name, '1.6 m + 250 nH');
+  assert.equal(retitled({ ...v, name: 'Cage cable' }, { ...longer, name: 'Cage cable' }).name, 'Cage cable');
 });

@@ -6,7 +6,7 @@ import { refName } from '../fit/params.ts';
 import { type ExampleManifest, exampleState } from '../app/example.ts';
 import { reducer } from '../app/state.ts';
 import { ROOT } from '../testutil.ts';
-import { refitAll, refitRefs, refitVariant } from './refit.ts';
+import { refitAll, refitNote, refitRefs, refitVariant } from './refit.ts';
 
 const read = (p: string): string => readFileSync(new URL(p, ROOT), 'utf8');
 const m = JSON.parse(read('public/examples/o7/o7.json')) as ExampleManifest;
@@ -41,4 +41,10 @@ test('refit fits exactly the values marked free: the O7 six, and unticking one r
   assert.ok(!refitRefs(s).some((r) => r.blockId === 'Ls'));
   const t = reducer(ex, { type: 'setParam', ref: { blockId: 'Lb', key: 'L' }, value: 90e-9 });
   assert.ok(refitRefs(t).some((r) => r.blockId === 'Lb'), 'a retyped value that is still ticked free is refitted');
+});
+
+test('a refit from sweeps of a single build is flagged; sweeps of several builds are not (reviewer pass M3)', () => {
+  assert.equal(refitNote(ex), null);
+  const one = { ...ex, tagged: ex.tagged.map((t, i) => ({ ...t, include: i === 4 })) };
+  assert.match(refitNote(one) ?? '', /one build/);
 });

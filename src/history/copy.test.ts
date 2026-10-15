@@ -34,3 +34,11 @@ test('a session with no network sweeps opens with nothing tagged and no active s
 test('history file paths are URL-encoded segment by segment', () => {
   assert.equal(historyUrl('2026-08-26/00_ORIGINAL_EXPORTS/300 300#1.s1p'), 'history/files/2026-08-26/00_ORIGINAL_EXPORTS/300%20300%231.s1p');
 });
+
+test('a server reply that is a web page, not a sweep file, is named as such (reviewer pass)', () => {
+  const s = index.sessions.find((x) => x.sweeps.some((w) => w.kind === 'network'));
+  assert.ok(s);
+  const t = texts(s.sweeps.map((w) => w.path));
+  t[s.sweeps[0].path] = '<!doctype html><html></html>';
+  assert.throws(() => historyCopy(s, t), /web page, not the sweep file/);
+});

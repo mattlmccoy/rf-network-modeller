@@ -80,3 +80,8 @@ test('the example ships the Python T-model for the first cable assumption, and t
   assert.ok(b?.type === 'measuredBranch');
   assert.deepEqual(b.transformer, { nP: 3, nS: 15, nC: 4 });
 });
+
+test('the example fits record the sweeps they were made from; 80/180 + loop stays a blind check (tools/capture_fixtures.py:222-223, reviewer pass M5)', () => {
+  const ex = exampleState(m, Object.fromEntries([m.capFree, ...m.sweeps.map((s) => s.file)].map((f) => [f, readFileSync(new URL(`public/examples/o7/${f}`, ROOT), 'utf8')])));
+  for (const f of Object.values(ex.fits)) assert.deepEqual(f.sweeps, ['o7-130-230', 'o7-100-200', 'o7-80-200', 'o7-80-200-loop']);
+});

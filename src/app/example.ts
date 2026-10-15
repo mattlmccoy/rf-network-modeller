@@ -6,7 +6,7 @@ import { structureKey } from '../present/circuit.ts';
 import type { AppState, TModel } from './state.ts';
 
 export interface ExampleSweep { id: string; file: string; label: string; series: number[]; shunt: number[]; loop: boolean }
-export interface ExampleFit { variant: string; x: number[]; q: number; source: string }
+export interface ExampleFit { variant: string; x: number[]; q: number; source: string; sweeps?: string[] }
 export interface ExampleManifest { name: string; capFree: string; sweeps: ExampleSweep[]; fits: ExampleFit[]; tmodel?: TModel }
 
 const sweepOf = (id: string, file: string, text: string | undefined): Sweep => {
@@ -25,7 +25,7 @@ export function exampleState(m: ExampleManifest, texts: Record<string, string>):
     chain,
     variants: DEFAULT_VARIANTS,
     primary: 0,
-    fits: Object.fromEntries(m.fits.map((f) => [f.variant, { refs: [...O7_REFS, O7_LOOP_REF], x: [...f.x, f.q], source: f.source, converged: null, rms: null, illDetermined: [] }])),
+    fits: Object.fromEntries(m.fits.map((f) => [f.variant, { refs: [...O7_REFS, O7_LOOP_REF], x: [...f.x, f.q], source: f.source, converged: null, rms: null, illDetermined: [], ...(f.sweeps ? { sweeps: f.sweeps } : {}) }])),
     sweeps,
     tagged: m.sweeps.map((s) => ({ sweepId: s.id, label: s.label, state: o7State(c3(s.series), c3(s.shunt), s.loop), include: true, structure: structureKey(chain) })),
     activeSweep: m.sweeps.at(-1)?.id ?? null,

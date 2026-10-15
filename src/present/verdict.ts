@@ -54,7 +54,7 @@ export function verdictOf(l: Landing | null, w: Window): Verdict {
 export interface Combined { state: VerdictState; agree: number; total: number }
 
 /** Worst first. */
-const SEVERITY: readonly VerdictState[] = ['unknown', 'outside', 'little', 'some', 'plenty'];
+export const SEVERITY: readonly VerdictState[] = ['unknown', 'outside', 'little', 'some', 'plenty'];
 
 /** The majority state across cable assumptions; with no majority, the worst one (spec §7.1). */
 export function combine(states: readonly VerdictState[]): Combined {
@@ -72,9 +72,9 @@ export const representative = (vs: readonly Verdict[], primary: number, state: V
 const SIDE: Record<OffSide, string> = { rLow: 'resistance too low', rHigh: 'resistance too high', xLow: 'reactance too low', xHigh: 'reactance too high' };
 const ROOM: Record<'little' | 'some' | 'plenty', string> = { little: 'little room', some: 'some room', plenty: 'plenty of room' };
 const BEGINNER: Record<'little' | 'some' | 'plenty', string> = {
-  little: 'Matches, but with little room: warming up may push it out',
-  some: 'Matches, with some room',
-  plenty: 'Matches, with plenty of room',
+  little: "In the tuner's good range, with little room: warming up may push it out",
+  some: "In the tuner's good range, with some room",
+  plenty: "In the tuner's good range, with plenty of room",
 };
 
 /** Verdict wording by level (spec §7.1). Beginner never shows ohms; Builder notes when assumptions disagree. */
@@ -83,10 +83,13 @@ export function verdictText(v: Verdict, level: Level, c?: Combined): string {
   if (v.state === 'unknown') return "Can't tell yet";
   if (v.state === 'outside') {
     const sides = v.off.map((s) => SIDE[s]).join(', ');
-    return level === 'beginner' ? `The tuner can't match this${sides ? ` (${sides})` : ''}` : `The tuner can't match this${sides ? `: ${sides}` : ''}${depends}`;
+    // the window is where this tuner has matched well (presets.ts AIT_WINDOW), not the limit of what it can reach (reviewer pass C2)
+    return level === 'beginner' ? `Outside the tuner's good range${sides ? ` (${sides})` : ''}` : `Outside where the tuner has matched well${sides ? `: ${sides}` : ''}${depends}`;
   }
   if (level === 'beginner') return BEGINNER[v.state];
-  return `The tuner can match it, with ${ROOM[v.state]} (room to drift up ${(v.roomUp ?? 0).toFixed(1)} %)${depends}`;
+  const up = v.roomUp ?? 0;
+  // the room as a frequency too: "0.8 %" alone does not say of what (reviewer pass)
+  return `Inside where the tuner has matched well, with ${ROOM[v.state]} (room to drift up ${up.toFixed(1)} %, about ${Math.round((up / 100) * 1356) * 10} kHz)${depends}`;
 }
 
 export type Tone = 'good' | 'warn' | 'bad' | 'unknown';

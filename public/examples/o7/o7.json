@@ -94,7 +94,13 @@
     0.49490286991550037
    ],
    "q": 3.3078752644474334,
-   "source": "3-sweep fit + loop shift (o7_loopstate.py recipe, Python), captured by tools/capture_fixtures.py"
+   "source": "3-sweep fit + loop shift (o7_loopstate.py recipe, Python), captured by tools/capture_fixtures.py",
+   "sweeps": [
+    "o7-130-230",
+    "o7-100-200",
+    "o7-80-200",
+    "o7-80-200-loop"
+   ]
   },
   {
    "variant": "1.2825 m + 329 nH",
@@ -106,7 +112,13 @@
     0.49333928814272476
    ],
    "q": 3.4141655727881988,
-   "source": "3-sweep fit + loop shift (o7_loopstate.py recipe, Python), captured by tools/capture_fixtures.py"
+   "source": "3-sweep fit + loop shift (o7_loopstate.py recipe, Python), captured by tools/capture_fixtures.py",
+   "sweeps": [
+    "o7-130-230",
+    "o7-100-200",
+    "o7-80-200",
+    "o7-80-200-loop"
+   ]
   },
   {
    "variant": "1.5094 m + 256 nH",
@@ -118,7 +130,13 @@
     0.5083562797469391
    ],
    "q": 4.157587995264539,
-   "source": "3-sweep fit + loop shift (o7_loopstate.py recipe, Python), captured by tools/capture_fixtures.py"
+   "source": "3-sweep fit + loop shift (o7_loopstate.py recipe, Python), captured by tools/capture_fixtures.py",
+   "sweeps": [
+    "o7-130-230",
+    "o7-100-200",
+    "o7-80-200",
+    "o7-80-200-loop"
+   ]
   }
  ],
  "tmodel": {

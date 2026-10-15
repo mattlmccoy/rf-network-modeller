@@ -29,3 +29,13 @@ test('C+D predicts with no sweeps; Blank is the cable alone and measured only', 
   assert.equal(hasModel(blank.chain), false);
   assert.throws(() => fromTemplate('o7'), /O7 example/);
 });
+
+test("a copy of this project's circuit keeps its fitted values and drops its sweeps (reviewer pass)", () => {
+  const refit = { ...ex, fits: { ...ex.fits, extra: ex.fits[ex.variants[0].name] } };
+  const s = fromTemplate('copy', refit);
+  assert.equal(s.fits, refit.fits);
+  assert.deepEqual(s.chain.blocks, ex.chain.blocks);
+  assert.equal(s.chain.name, `Next build from ${ex.chain.name}`);
+  assert.deepEqual(s.tagged, []);
+  assert.deepEqual(Object.keys(s.sweeps), ['capfree']);
+});

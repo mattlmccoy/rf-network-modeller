@@ -1,6 +1,6 @@
 import type { Dispatch } from 'react';
 import type { Variant, Window } from '../chain/types.ts';
-import type { Action, AppState } from '../app/state.ts';
+import { type Action, type AppState, retitled } from '../app/state.ts';
 import { DraftNumberInput } from './DraftNumberInput.tsx';
 
 const copyName = (vs: readonly Variant[], name: string): string => {
@@ -11,7 +11,7 @@ const copyName = (vs: readonly Variant[], name: string): string => {
 
 /** Engineer rig settings (spec §8.4): the cable assumptions and what the tuner can match. */
 export function RigSettings({ state, dispatch }: { state: AppState; dispatch: Dispatch<Action> }) {
-  const set = (i: number, v: Variant): void => dispatch({ type: 'setVariants', variants: state.variants.map((x, j) => (j === i ? v : x)) });
+  const set = (i: number, v: Variant): void => dispatch({ type: 'setVariants', variants: state.variants.map((x, j) => (j === i ? retitled(x, v) : x)) });
   const edit = (v: Variant, patch: { name?: string; length?: number; Lj?: number }): Variant =>
     ({ name: patch.name ?? v.name, cable: { ...v.cable, length: patch.length ?? v.cable.length }, Lj: patch.Lj ?? v.Lj });
   const win = (k: keyof Window, n: number): void => dispatch({ type: 'setWindow', window: { ...state.window, [k]: n } });

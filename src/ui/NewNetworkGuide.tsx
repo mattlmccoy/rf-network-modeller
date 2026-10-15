@@ -30,7 +30,7 @@ export function NewNetworkGuide({ state, dispatch, level, onNewProject, verdictL
   const start = async (t: TemplateKind): Promise<void> => {
     try {
       setError(null);
-      onNewProject(fromTemplate(t, t === 'o7' ? await loadExample() : undefined), 'newNetwork');
+      onNewProject(fromTemplate(t, t === 'o7' ? await loadExample() : t === 'copy' ? state : undefined), 'newNetwork');
       setStarted(true);
     } catch (e) {
       setError(`Couldn't start from that template: ${message(e)}`);

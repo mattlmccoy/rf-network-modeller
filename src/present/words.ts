@@ -1,6 +1,6 @@
 /** Plain names for internal terms; every view takes its wording from here (spec §11). */
 export const WORDS = {
-  window: 'what the tuner can match',
+  window: 'where the tuner has matched well',
   landing: 'where the tuner lands',
   atTuner: 'at the tuner',
   assumption: 'cable assumption',

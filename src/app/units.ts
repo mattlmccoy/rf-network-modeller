@@ -93,7 +93,7 @@ export function blockSummary(b: Block): string {
     case 'ideal':
       return `1:${b.n}`;
     case 'coax':
-      return 'variant cable';
+      return 'cable from the tuner';
     case 'shunt':
       return 'to ground';
     case 'parallel':
@@ -112,7 +112,7 @@ export function tagSummary(chain: Chain, state: StateOverrides): string {
       const ns = patch.nSeries === 2 ? 2 : patch.nSeries === 1 ? 1 : b.nSeries;
       parts.push(`${b.label} ${Number(((countsPf(c) + custom) / ns).toPrecision(6))} pF`);
     }
-    if (b?.type === 'measuredBranch' && typeof patch.loop === 'boolean') parts.push(`loop ${patch.loop ? 'on' : 'off'}`);
+    if (b?.type === 'measuredBranch' && typeof patch.loop === 'boolean') parts.push(`sense loop ${patch.loop ? 'on' : 'off'}`);
   }
   return parts.join(' · ');
 }
