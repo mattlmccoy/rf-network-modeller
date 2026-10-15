@@ -11,7 +11,7 @@ import { evalGrid } from '../app/grid.ts';
 import { variantChain } from '../app/state.ts';
 import { ROOT } from '../testutil.ts';
 import { noChangeNeeded, picksState, shapeRecs, stressFlag } from './recs.ts';
-import { newSweepStatus } from './guide.ts';
+import { newSweepStatus, tryChangeStatus } from './guide.ts';
 
 const land = (re: number, im: number, inWindow: boolean, roomUp = 1.5): Landing => ({ z: cx(re, im), f: 13.56e6, inWindow, roomUp: inWindow ? roomUp : -99, roomDown: inWindow ? 1 : -99 });
 const rec = (moves: number, stress: number | null, ls: Landing[]): Recommendation => ({
@@ -71,4 +71,11 @@ test('guide steps: confirm, then load, then the rest open together', () => {
   assert.deepEqual(newSweepStatus(false, false), ['current', 'waiting', 'waiting', 'waiting', 'waiting']);
   assert.deepEqual(newSweepStatus(true, false), ['done', 'current', 'waiting', 'waiting', 'waiting']);
   assert.deepEqual(newSweepStatus(true, true), ['done', 'done', 'current', 'current', 'current']);
+});
+
+test('try-a-change steps: pick, then change; the result opens once something changed', () => {
+  assert.deepEqual(tryChangeStatus(false, false), ['current', 'waiting', 'waiting']);
+  assert.deepEqual(tryChangeStatus(true, false), ['done', 'current', 'waiting']);
+  assert.deepEqual(tryChangeStatus(true, true), ['done', 'done', 'current']);
+  assert.deepEqual(tryChangeStatus(false, true), ['done', 'done', 'current']);
 });

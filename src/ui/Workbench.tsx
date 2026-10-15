@@ -13,17 +13,19 @@ import { DRAWING_LABEL, type DrawingKind, type Level, PROFILES, RESULT_LABEL, ty
 import { UNKNOWN, landingNearF0, toneOf, verdictOf, verdictText } from '../present/verdict.ts';
 import { Drawing } from './drawing/Drawing.tsx';
 import { EngineerPanel } from './EngineerPanel.tsx';
+import type { Task } from './Home.tsx';
 import { NewSweepGuide } from './NewSweepGuide.tsx';
+import { type Baseline, TryChangeGuide } from './TryChangeGuide.tsx';
 import { PartEditor } from './PartEditor.tsx';
 import { TargetBox } from './TargetBox.tsx';
 import { VerdictCard } from './VerdictCard.tsx';
 
-export interface WorkbenchProps { state: AppState; dispatch: Dispatch<Action>; level: Level; grid: number[]; results: VariantResult[]; caches: BranchCache[]; theme: 'light' | 'dark' }
+export interface WorkbenchProps { task: Exclude<Task, 'home'>; onTask: (t: Task) => void; state: AppState; dispatch: Dispatch<Action>; level: Level; grid: number[]; results: VariantResult[]; caches: BranchCache[]; theme: 'light' | 'dark' }
 
 const DRAWINGS: readonly DrawingKind[] = ['flow', 'hardware', 'schematic'];
 const RESULTS: readonly ResultKind[] = ['verdict', 'target', 'plots'];
 
-export function Workbench({ state, dispatch, level, grid, results, caches, theme }: WorkbenchProps) {
+export function Workbench({ task, onTask, state, dispatch, level, grid, results, caches, theme }: WorkbenchProps) {
   const [drawing, setDrawing] = useState<DrawingKind | null>(null);
   const [result, setResult] = useState<ResultKind | null>(null);
   useEffect(() => {
@@ -34,6 +36,14 @@ export function Workbench({ state, dispatch, level, grid, results, caches, theme
   useEffect(() => {
     setPreview(null);
   }, [state.chain]);
+  const [baseline, setBaseline] = useState<Baseline | null>(null);
+  useEffect(() => {
+    setBaseline(task === 'tryChange' ? { chain: state.chain, fits: state.fits } : null);
+  }, [task]);
+  const before = useMemo(
+    () => (baseline && (baseline.chain !== state.chain || baseline.fits !== state.fits) ? evaluateVariants({ ...state, chain: baseline.chain, fits: baseline.fits }, grid)[state.primary]?.landing?.z ?? null : null),
+    [baseline, state.chain, state.fits, state.primary, grid],
+  );
   const ghost = useMemo(() => (preview ? evaluateVariants({ ...state, chain: applyPicks(state.chain, preview) }, grid)[state.primary]?.landing?.z ?? null : null), [preview, state, grid]);
   const highlight = preview
     ? Object.keys(preview).filter((id) => {
@@ -72,7 +82,7 @@ export function Workbench({ state, dispatch, level, grid, results, caches, theme
           </header>
           {modelError ? <p className="bad">The model can't evaluate this circuit: {modelError}</p> : null}
           {rKind === 'verdict' ? <VerdictCard text={verdictText(shown.v, 'beginner')} tone={tone} source={shown.source} trustNote={trustText(t, 'beginner')} state={shown.v.state} /> : null}
-          {rKind === 'target' ? <TargetBox window={state.window} measured={active ? measuredLanding(active)?.z ?? null : null} measuredLabel={tag?.label ?? active?.name ?? ''} predicted={results[state.primary]?.landing?.z ?? null} ghost={ghost} /> : null}
+          {rKind === 'target' ? <TargetBox window={state.window} measured={active ? measuredLanding(active)?.z ?? null : null} measuredLabel={tag?.label ?? active?.name ?? ''} predicted={results[state.primary]?.landing?.z ?? null} ghost={task === 'tryChange' ? before : ghost} ghostLabel={task === 'tryChange' ? 'before the change' : 'with the change'} /> : null}
           {rKind !== 'verdict' ? <p className={`verdict-line ${tone}`}>{line}</p> : null}
           {rKind === 'target' ? <p className="rx-readout">At the tuner, 13.56 MHz. {active ? `Your sweep: ${plainRX(measuredLanding(active)?.z ?? null)}. ` : ''}Model: {plainRX(results[state.primary]?.landing?.z ?? null)}.</p> : null}
           {rKind === 'plots' ? <EngineerPanel state={state} dispatch={dispatch} grid={grid} results={results} theme={theme} /> : null}
@@ -82,7 +92,8 @@ export function Workbench({ state, dispatch, level, grid, results, caches, theme
       </div>
       <aside className="wb-side">
         {state.selected ? <PartEditor state={state} dispatch={dispatch} level={level} /> : null}
-        <NewSweepGuide state={state} dispatch={dispatch} level={level} grid={grid} caches={caches} verdict={shown.v.state} preview={preview} onPreview={setPreview} />
+        {task === 'newSweep' ? <NewSweepGuide state={state} dispatch={dispatch} level={level} grid={grid} caches={caches} verdict={shown.v.state} preview={preview} onPreview={setPreview} onSafePower={() => onTask('safePower')} /> : null}
+        {task === 'tryChange' && baseline ? <TryChangeGuide state={state} dispatch={dispatch} level={level} baseline={baseline} onKeep={() => setBaseline({ chain: state.chain, fits: state.fits })} verdictLine={verdictText(shown.v, level, shown.c)} /> : null}
       </aside>
     </main>
   );

@@ -23,7 +23,7 @@ function Marker({ z, kind, label }: { z: Complex | null; kind: 'measured' | 'pre
 }
 
 /** Builder result: the tuner's window, your sweep's point and the model's (spec §7.4). */
-export function TargetBox({ window: w, measured, measuredLabel, predicted, ghost }: { window: Window; measured: Complex | null; measuredLabel: string; predicted: Complex | null; ghost: Complex | null }) {
+export function TargetBox({ window: w, measured, measuredLabel, predicted, ghost, ghostLabel }: { window: Window; measured: Complex | null; measuredLabel: string; predicted: Complex | null; ghost: Complex | null; ghostLabel: string }) {
   const x1 = X(clamp01(w.rLo / TARGET.rMax));
   const x2 = X(clamp01(w.rHi / TARGET.rMax));
   const y1 = Y(clamp01(w.xHi / TARGET.xMax));
@@ -37,7 +37,7 @@ export function TargetBox({ window: w, measured, measuredLabel, predicted, ghost
       <text x={X(0.5)} y={208} textAnchor="middle">resistance at 13.56 MHz (Ω), 0 to {TARGET.rMax}</text>
       <text x={14} y={Y(0.5)} transform={`rotate(-90 14 ${Y(0.5)})`} textAnchor="middle">reactance (Ω), 0 to {TARGET.xMax}</text>
       <Marker z={predicted} kind="predicted" label="model predicts" />
-      <Marker z={ghost} kind="ghost" label="with the change" />
+      <Marker z={ghost} kind="ghost" label={ghostLabel} />
       <Marker z={measured} kind="measured" label={measuredLabel ? `your sweep (${measuredLabel})` : 'your sweep'} />
     </svg>
   );

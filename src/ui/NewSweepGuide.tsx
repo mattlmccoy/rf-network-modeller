@@ -32,10 +32,11 @@ export interface GuideProps {
   verdict: VerdictState;
   preview: Record<string, Pick> | null;
   onPreview: (p: Record<string, Pick> | null) => void;
+  onSafePower: () => void;
 }
 
 /** "I measured a new sweep" (spec §8.1): confirm the build, load the sweep, check the model, choose a change. */
-export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, preview, onPreview }: GuideProps) {
+export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, preview, onPreview, onSafePower }: GuideProps) {
   const [confirmed, setConfirmed] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -170,7 +171,7 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
         </>
       ))}
       {step(3, 'What to change', recBody())}
-      {step(4, 'Safe at full power?', <><button disabled>Check it at full power</button> <small>Coming next.</small></>)}
+      {step(4, 'Safe at full power?', <button onClick={onSafePower}>Check it at full power</button>)}
     </section>
   );
 }

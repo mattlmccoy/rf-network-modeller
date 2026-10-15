@@ -6,3 +6,9 @@ export function newSweepStatus(confirmed: boolean, loaded: boolean): StepStatus[
   if (!loaded) return ['done', 'current', 'waiting', 'waiting', 'waiting'];
   return ['done', 'done', 'current', 'current', 'current'];
 }
+
+/** "Try a change first": pick a part, change it; the before/after result opens once something changed (spec §8.2). */
+export function tryChangeStatus(picked: boolean, changed: boolean): StepStatus[] {
+  if (changed) return ['done', 'done', 'current'];
+  return picked ? ['done', 'current', 'waiting'] : ['current', 'waiting', 'waiting'];
+}

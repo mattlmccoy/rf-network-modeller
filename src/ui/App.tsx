@@ -17,7 +17,7 @@ import { Workbench } from './Workbench.tsx';
 
 type Theme = 'light' | 'dark';
 const LEVEL_KEY = 'rfnm-level';
-const TASK_TITLE: Record<Task, string> = { home: '', newSweep: 'I measured a new sweep' };
+const TASK_TITLE: Record<Task, string> = { home: '', newSweep: 'I measured a new sweep', tryChange: 'Try a change first', safePower: 'Safe at full power?' };
 const message = (e: unknown): string => (e instanceof Error ? e.message : String(e));
 const newId = (): string => `p-${Date.now().toString(36)}`;
 
@@ -147,7 +147,7 @@ export default function App() {
       {notice ? <div className="notice" role="status"><span>{notice}</span><button onClick={() => setNotice(null)} aria-label="Dismiss">×</button></div> : null}
       {task === 'home' ? <Home onTask={setTask} /> : (
         <ErrorBoundary onReset={() => { void openExample(); }}>
-          <Workbench state={state} dispatch={dispatch} level={level} grid={grid} results={results} caches={caches.current} theme={theme} />
+          <Workbench task={task} onTask={setTask} state={state} dispatch={dispatch} level={level} grid={grid} results={results} caches={caches.current} theme={theme} />
         </ErrorBoundary>
       )}
       {sheet ? (
