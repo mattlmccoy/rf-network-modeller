@@ -9,7 +9,7 @@ import type { Level } from '../present/level.ts';
 export interface Baseline { chain: Chain; fits: AppState['fits'] }
 
 /** "Try a change first" (spec §8.2): pick a part, change it, see before and after, then keep or undo. */
-export function TryChangeGuide({ state, dispatch, level, baseline, onKeep, verdictLine, beforeLine }: { state: AppState; dispatch: Dispatch<Action>; level: Level; baseline: Baseline; onKeep: () => void; verdictLine: string; beforeLine: string | null }) {
+export function TryChangeGuide({ state, dispatch, level, baseline, onKeep, verdictLine, beforeLine, estimate }: { state: AppState; dispatch: Dispatch<Action>; level: Level; baseline: Baseline; onKeep: () => void; verdictLine: string; beforeLine: string | null; estimate: boolean }) {
   const changed = baseline.chain !== state.chain || baseline.fits !== state.fits;
   const status = tryChangeStatus(state.selected !== null, changed);
   const note = trustText(trust(state.chain, state.tagged), level);
@@ -26,8 +26,8 @@ export function TryChangeGuide({ state, dispatch, level, baseline, onKeep, verdi
       {step(1, 'Change it', <p>{changed ? 'Changed. The drawing and the result show the new circuit.' : 'Edit it in the panel that opens beside the drawing.'}</p>)}
       {step(2, 'What it does', (
         <>
-          {beforeLine ? <p><b>Before the change (model):</b> {beforeLine}</p> : null}
-          <p><b>Now (model):</b> {verdictLine}</p>
+          {beforeLine ? <p><b>Before the change ({estimate ? 'estimate' : 'model'}):</b> {beforeLine}</p> : null}
+          <p><b>Now ({estimate ? 'estimate' : 'model'}):</b> {verdictLine}</p>
           {note ? <small>{note}</small> : null}
           {level === 'builder' ? <small>The dashed ring in the target box marks where it was before the change.</small> : null}
           <div className="row">

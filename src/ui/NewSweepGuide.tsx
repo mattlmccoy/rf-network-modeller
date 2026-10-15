@@ -13,6 +13,7 @@ import { type Level, PROFILES } from '../present/level.ts';
 import { type CapStress, roundSafe } from '../present/power.ts';
 import { type RecRow, type RecView, noChangeNeeded, picksState, shapeRecs } from '../present/recs.ts';
 import { refitAll, refitNote } from '../present/refit.ts';
+import { voters } from '../present/show.ts';
 import type { VerdictState } from '../present/verdict.ts';
 
 const SHORT: Record<VerdictState, string> = { unknown: "can't tell", outside: "outside the tuner's good range", little: 'in range, little room', some: 'in range, some room', plenty: 'in range, plenty of room' };
@@ -51,6 +52,7 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
   const [prevFits, setPrevFits] = useState<Record<string, FitValues> | null>(null);
   useEffect(() => {
     setLoaded(false);
+    setPrevFits(null);
   }, [circuit]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -62,6 +64,7 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
   const last = state.tagged.at(-1);
   const sameAsLast = last !== undefined && last.structure === structureKey(state.chain) && sameState(state.chain, last.state, snapshotState(state.chain));
   const activeTag = state.tagged.find((t) => t.sweepId === state.activeSweep);
+  const refitWarn = refitNote(state);
   const tagMatches = activeTag !== undefined && activeTag.structure === structureKey(state.chain) && sameState(state.chain, activeTag.state, snapshotState(state.chain));
   const model = hasModel(state.chain);
   const agreement = useMemo(() => (loaded && model ? agreementFor(state, grid, caches) : null), [loaded, model, state.chain, state.fits, state.sweeps, state.tagged, state.activeSweep, state.variants, state.window, grid]);
@@ -72,7 +75,8 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
     if (!loaded || !model) return undefined;
     const t = setTimeout(() => {
       try {
-        const out = recommend({ fitted: state.variants.map((variant, i) => ({ variant, chain: variantChain(state, i) })), sweeps: state.sweeps, grid, window: state.window, stock: state.stock, stressWatts: state.powerW });
+        // only the assumptions that vote (the fitted ones when any is fitted), as for the verdict (fix review I2)
+        const out = recommend({ fitted: voters(state).map((i) => ({ variant: state.variants[i], chain: variantChain(state, i) })), sweeps: state.sweeps, grid, window: state.window, stock: state.stock, stressWatts: state.powerW });
         setRecs(shapeRecs(out, state.window));
       } catch (e) {
         setRecError(e instanceof Error ? e.message : String(e));
@@ -123,7 +127,7 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
     const heads: string[] = [];
     if (noChangeNeeded(verdict, recs.currentStressPct)) heads.push('No change needed.');
     if (recs.notes.includes('nothing-beats')) heads.push('Nothing in your stock beats what you have.');
-    if (recs.notes.includes('none-fit')) heads.push(recs.closest.length ? 'None of your stock combinations lets the tuner match for most cable assumptions. The closest:' : 'None of your stock combinations lets the tuner match, and there is nothing to try: check Parts on hand.');
+    if (recs.notes.includes('none-fit')) heads.push(recs.closest.length ? 'None of your stock combinations lands in the tuner\'s good range for most cable assumptions. The closest:' : 'None of your stock combinations lands in the tuner\'s good range, and there is nothing to try: check Parts on hand.');
     if (recs.notes.includes('all-red')) heads.push(`Every option is over a capacitor rating at ${state.powerW} W planned power.`);
     const lim = power?.limiting;
     if (recs.notes.includes('nothing-beats') && lim && power && power.worstPct !== null && power.worstPct >= 100 && power.safeW !== null) {
@@ -170,7 +174,7 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
           <p>{tagSummary(state.chain, snapshotState(state.chain)) || 'No capacitor banks or sense loop in this circuit.'}</p>
           {sameAsLast ? <small>Same as your last build.</small> : null}
           <div className="row">
-            <button onClick={() => setConfirmedFor(circuit)} disabled={confirmed}>{confirmed ? 'Confirmed' : "That's what's installed"}</button>
+            <button onClick={() => { setConfirmedFor(circuit); setUsedChange(false); }} disabled={confirmed}>{confirmed ? 'Confirmed' : "That's what's installed"}</button>
             <button onClick={editBanks}>Change</button>
           </div>
         </>
@@ -188,7 +192,7 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
         <>
           {blind ? <p><b>Before the refit:</b> {agreementText(blind, level, state.primary)}</p> : null}
           {agreement ? <p>{agreementText(agreement, level, state.primary)}</p> : <p>Can't compare: no sweep is shown.</p>}
-          {refitNote(state) ? <small className="warn-text">{refitNote(state)}</small> : null}
+          {refitWarn ? <small className="warn-text">{refitWarn}</small> : null}
           <button onClick={() => { void doRefit(); }} disabled={busy}>Refit the model with your sweeps</button>
           {prevFits ? <button onClick={() => { dispatch({ type: 'setFits', fits: prevFits }); setPrevFits(null); setBlind(null); }}>Put back the fit from before the refit</button> : null}
           {refitMsg ? <small>{refitMsg}</small> : null}

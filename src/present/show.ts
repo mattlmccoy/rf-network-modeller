@@ -10,10 +10,13 @@ export interface Shown { v: Verdict; c: Combined | undefined; source: 'measured'
 /** Which cable assumptions have fitted values. */
 export const fittedVariants = (s: Pick<AppState, 'variants' | 'fits'>): boolean[] => s.variants.map((v) => (s.fits[v.name]?.refs.length ?? 0) > 0);
 
-/** The majority over the fitted assumptions when any is fitted, else over all of them; worded from the chosen one if it votes. */
+/** The assumptions whose predictions count: the fitted ones when any is fitted, else all of them (reviewer pass C1). */
+const voting = (fitted: readonly boolean[], n: number): number[] => Array.from({ length: n }, (_, i) => i).filter((i) => !fitted.some(Boolean) || fitted[i]);
+export const voters = (s: Pick<AppState, 'variants' | 'fits'>): number[] => voting(fittedVariants(s), s.variants.length);
+
+/** The majority over the voting assumptions, worded from the chosen one if it votes. */
 function vote(vs: readonly Verdict[], fitted: readonly boolean[], primary: number): { v: Verdict; c: Combined } {
-  const any = fitted.some(Boolean);
-  const idx = vs.map((_, i) => i).filter((i) => !any || fitted[i]);
+  const idx = voting(fitted, vs.length);
   const c = combine(idx.map((i) => vs[i].state));
   return { v: representative(idx.map((i) => vs[i]), idx.indexOf(primary), c.state), c };
 }

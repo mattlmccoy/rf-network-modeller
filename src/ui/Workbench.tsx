@@ -23,14 +23,14 @@ import { PartEditor } from './PartEditor.tsx';
 import { TargetBox } from './TargetBox.tsx';
 import { NEXT, VerdictCard } from './VerdictCard.tsx';
 
-export interface WorkbenchProps { task: WorkTask; onTask: (t: Task) => void; onNewProject: (s: AppState, next: Task) => void; onOpenExample: () => void; state: AppState; dispatch: Dispatch<Action>; level: Level; grid: number[]; results: VariantResult[]; caches: BranchCache[]; theme: 'light' | 'dark' }
+export interface WorkbenchProps { task: WorkTask; onTask: (t: Task) => void; onNewProject: (s: AppState, next: Task) => void; onOpenExample: () => void; projectId: string | null; onTrial: (b: Baseline | null) => void; state: AppState; dispatch: Dispatch<Action>; level: Level; grid: number[]; results: VariantResult[]; caches: BranchCache[]; theme: 'light' | 'dark' }
 
 const DRAWINGS: readonly DrawingKind[] = ['flow', 'hardware', 'schematic'];
 const RESULTS: readonly ResultKind[] = ['verdict', 'target', 'plots'];
 /** Beginner gets no Engineer plots (cable-assumption names, fit table). */
 const resultsFor = (level: Level): readonly ResultKind[] => (level === 'beginner' ? RESULTS.slice(0, 2) : RESULTS);
 
-export function Workbench({ task, onTask, onNewProject, onOpenExample, state, dispatch, level, grid, results, caches, theme }: WorkbenchProps) {
+export function Workbench({ task, onTask, onNewProject, onOpenExample, projectId, onTrial, state, dispatch, level, grid, results, caches, theme }: WorkbenchProps) {
   const [drawing, setDrawing] = useState<DrawingKind | null>(null);
   const [result, setResult] = useState<ResultKind | null>(null);
   useEffect(() => {
@@ -46,17 +46,26 @@ export function Workbench({ task, onTask, onNewProject, onOpenExample, state, di
   latest.current = state;
   const baseRef = useRef(baseline);
   baseRef.current = baseline;
-  // A change tried here is a trial: leaving the task without "Keep this change" puts the circuit back (reviewer pass).
+  const pidRef = useRef(projectId);
+  pidRef.current = projectId;
+  // A change tried here is a trial: leaving the task without "Keep this change" puts the circuit back (reviewer pass). The
+  // revert is guarded twice so it can never land on another project: only for the project the trial began in, and only
+  // while the circuit is still the trial's (revertTrial; fix review C1).
   useEffect(() => {
     if (task !== 'tryChange') return undefined;
+    const started = projectId;
     setBaseline({ chain: latest.current.chain, fits: latest.current.fits });
     return () => {
       const b = baseRef.current;
       const s = latest.current;
-      if (b && (s.chain !== b.chain || s.fits !== b.fits)) dispatch({ type: 'load', state: { ...s, chain: b.chain, fits: b.fits } });
+      if (b && started === pidRef.current && s.chain !== b.chain) dispatch({ type: 'revertTrial', trial: s.chain, chain: b.chain, fits: b.fits });
       setBaseline(null);
+      onTrial(null);
     };
-  }, [task]);
+  }, [task, projectId]);
+  useEffect(() => {
+    onTrial(baseline);
+  }, [baseline]);
   const baseResults = useMemo(
     () => (baseline && (baseline.chain !== state.chain || baseline.fits !== state.fits) ? evaluateVariants({ ...state, chain: baseline.chain, fits: baseline.fits }, grid) : null),
     [baseline, state.chain, state.fits, grid],
@@ -92,8 +101,10 @@ export function Workbench({ task, onTask, onNewProject, onOpenExample, state, di
   const matched = shown.v.state === 'little' || shown.v.state === 'some' || shown.v.state === 'plenty';
   const next = !model
     ? (Object.keys(state.sweeps).length ? 'Measurements only: open the O7 example or start a new network to get predictions and suggestions.' : 'Add parts in “Start a new network” to get a prediction.')
-    : over && matched ? `In the tuner's good range, but a capacitor goes over its rating at ${state.powerW} W: see “Safe at full power?”.` : NEXT[shown.v.state];
+    : over && matched ? `In the tuner's good range, but a capacitor ${power?.estimate ? 'may go' : 'goes'} over its rating at ${state.powerW} W: see “Safe at full power?”.` : NEXT[shown.v.state];
   const m = active ? measuredLanding(active) : null;
+  // the model point drawn is the voting verdict's, so an unfitted chosen assumption never draws a different answer (fix review I2)
+  const modelZ = (shown.source === 'predicted' ? shown.v.z : modelNow?.v.z) ?? null;
   const nearest = m && Math.abs(m.f - 13.56e6) > 5e3 ? ` (nearest point, ${(m.f / 1e6).toFixed(3)} MHz)` : '';
   const tag = state.tagged.find((x) => x.sweepId === state.activeSweep);
 
@@ -123,11 +134,11 @@ export function Workbench({ task, onTask, onNewProject, onOpenExample, state, di
             <VerdictCard text={verdictText(shown.v, 'beginner')} tone={tone} next={next} trustNote={model && shown.source !== 'measured' ? trustText(t, 'beginner') : null}
               label={shown.source === 'measured' ? 'From your sweep' : shown.estimate ? 'Estimate: this circuit is not fitted to any of its sweeps' : 'Predicted by the model'} />
           ) : null}
-          {rKind === 'target' ? <TargetBox window={state.window} measured={m?.z ?? null} measuredLabel={tag?.label ?? active?.name ?? ''} predicted={results[state.primary]?.landing?.z ?? null} ghost={task === 'tryChange' ? before : ghost} ghostLabel={task === 'tryChange' ? 'before the change' : 'with the change'} /> : null}
+          {rKind === 'target' ? <TargetBox window={state.window} measured={m?.z ?? null} measuredLabel={tag?.label ?? active?.name ?? ''} predicted={modelZ} ghost={task === 'tryChange' ? before : ghost} ghostLabel={task === 'tryChange' ? 'before the change' : 'with the change'} /> : null}
           {rKind !== 'verdict' ? <p className={`verdict-line ${tone}`}>{line}</p> : null}
-          {rKind !== 'verdict' && shown.source === 'measured' && modelNow ? <small>Model for this build: {verdictText(modelNow.v, lvl, modelNow.c)}</small> : null}
+          {rKind !== 'verdict' && shown.source === 'measured' && modelNow ? <small>{fittedVariants(state).some(Boolean) ? 'Model' : 'Estimate'} for this build: {verdictText(modelNow.v, lvl, modelNow.c)}</small> : null}
           {power ? <p className={`verdict-line ${powerTone(power)}`}>{powerText(power, level)}</p> : null}
-          {rKind === 'target' ? <p className="rx-readout">At the tuner, 13.56 MHz. {active ? `Your sweep${nearest}: ${plainRX(m?.z ?? null)}. ` : ''}{model ? `Model: ${plainRX(results[state.primary]?.landing?.z ?? null)}.` : ''}</p> : null}
+          {rKind === 'target' ? <p className="rx-readout">At the tuner, 13.56 MHz. {active ? `Your sweep${nearest}: ${plainRX(m?.z ?? null)}. ` : ''}{model ? `${shown.estimate ? 'Estimate' : 'Model'}: ${plainRX(modelZ)}.` : ''}</p> : null}
           {rKind === 'plots' ? <EngineerPanel state={state} dispatch={dispatch} grid={grid} results={results} theme={theme} /> : null}
           {rKind !== 'verdict' && note ? <small>{note}</small> : null}
           {rKind !== 'verdict' && clamped ? <small className="warn-text"> The model reads the measured part outside its sweep here; treat it as rough.</small> : null}
@@ -136,10 +147,10 @@ export function Workbench({ task, onTask, onNewProject, onOpenExample, state, di
       <aside className="wb-side">
         {state.selected ? <PartEditor state={state} dispatch={dispatch} level={level} /> : null}
         {task === 'newSweep' ? <NewSweepGuide state={state} dispatch={dispatch} level={level} grid={grid} caches={caches} verdict={shown.v.state} preview={preview} onPreview={setPreview} onSafePower={() => onTask('safePower')} power={power} /> : null}
-        {task === 'tryChange' && baseline ? <TryChangeGuide state={state} dispatch={dispatch} level={level} baseline={baseline} onKeep={() => setBaseline({ chain: state.chain, fits: state.fits })} verdictLine={modelNow ? verdictText(modelNow.v, level, modelNow.c) : verdictText(shown.v, level, shown.c)} beforeLine={beforeVerdict ? verdictText(beforeVerdict.v, level, beforeVerdict.c) : null} /> : null}
+        {task === 'tryChange' && baseline ? <TryChangeGuide state={state} dispatch={dispatch} level={level} baseline={baseline} onKeep={() => setBaseline({ chain: state.chain, fits: state.fits })} verdictLine={modelNow ? verdictText(modelNow.v, level, modelNow.c) : verdictText(shown.v, level, shown.c)} estimate={!fittedVariants(state).some(Boolean)} beforeLine={beforeVerdict ? verdictText(beforeVerdict.v, level, beforeVerdict.c) : null} /> : null}
         {task === 'safePower' && power ? <SafePowerGuide state={state} dispatch={dispatch} level={level} grid={grid} caches={caches} cs={power} /> : null}
         {task === 'safePower' && !model ? <section className="panel guide"><h3>Guide</h3><p>{Object.keys(state.sweeps).length ? 'This project holds measured sweeps only, so there is no circuit to check at full power.' : 'This project has no circuit model yet, so there is nothing to check at full power.'}</p></section> : null}
-        {task === 'newNetwork' ? <NewNetworkGuide state={state} dispatch={dispatch} level={level} onNewProject={onNewProject} verdictLine={modelNow ? verdictText(modelNow.v, level, modelNow.c) : ''} /> : null}
+        {task === 'newNetwork' ? <NewNetworkGuide state={state} dispatch={dispatch} level={level} onNewProject={onNewProject} verdictLine={modelNow ? `${fittedVariants(state).some(Boolean) ? '' : 'Estimate (not fitted to a sweep of this circuit): '}${verdictText(modelNow.v, level, modelNow.c)}` : ''} /> : null}
       </aside>
     </main>
   );

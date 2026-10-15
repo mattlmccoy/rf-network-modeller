@@ -3,7 +3,7 @@ import type { Window } from '../chain/types.ts';
 import type { Pick } from '../recommend/enumerate.ts';
 import type { Recommendation, RecommendOutput } from '../recommend/recommend.ts';
 import { lowerMedian } from '../recommend/rank.ts';
-import { SEVERITY, type VerdictState, combine, verdictOf, windowDistance } from './verdict.ts';
+import { type VerdictState, combine, verdictOf, windowDistance } from './verdict.ts';
 
 export const MAX_ROWS = 5;
 export type StressFlag = 'ok' | 'amber' | 'red' | 'unknown';
@@ -25,10 +25,12 @@ const medianDistance = (r: Recommendation, w: Window): number => lowerMedian(r.l
 
 /** Step 4's list from the recommender's real output (spec §8.1): current-build row, notes, and the closest fallback. */
 export function shapeRecs(out: RecommendOutput, w: Window): RecView {
-  const ranked = out.ranked.slice(0, MAX_ROWS).map((r) => row(r, w));
-  const cur = ranked.find((r) => r.isCurrent);
-  // an option with no more room and no less stress than keeping what you have is not a choice (reviewer pass)
-  const rows = cur ? ranked.filter((r) => r === cur || SEVERITY.indexOf(r.verdict) > SEVERITY.indexOf(cur.verdict) || (r.stressPct ?? Infinity) < (cur.stressPct ?? Infinity)) : ranked;
+  const ranked = out.ranked.map((r) => row(r, w));
+  const ci = ranked.findIndex((r) => r.isCurrent);
+  const cur = ranked[ci];
+  // ranked below the current build means no better on the ranking's own terms; keep only those with known lower stress (fix review I3)
+  const lower = (r: RecRow): boolean => r.stressPct !== null && cur?.stressPct != null && r.stressPct <= cur.stressPct - 1;
+  const rows = (ci < 0 ? ranked : ranked.filter((r, i) => i <= ci || lower(r))).slice(0, MAX_ROWS);
   const notes: RecNote[] = [];
   let closest: RecRow[] = [];
   if (!rows.length) {

@@ -86,3 +86,20 @@ test('alternatives worse than keeping what you have on every count are dropped; 
   const v = shapeRecs(out([rec(0, 111, some), rec(1, 129, little), rec(2, 120, some), rec(3, 90, little)]), AIT_WINDOW);
   assert.deepEqual(v.rows.map((r) => r.stressPct), [111, 90], 'less stress for less room is a real choice; more stress for the same or less room is not');
 });
+
+test('options ranked above the current build are always kept; below it, only those with known lower stress (fix review I3)', () => {
+  const some = [land(10, 20, true), land(10, 20, true), land(2, 2, false)];
+  const little = [land(10, 20, true, 0.5), land(10, 20, true, 0.5), land(2, 2, false)];
+  const v = shapeRecs(out([rec(1, 85, some), rec(0, 80, some), rec(2, 90, some), rec(3, 70, little)]), AIT_WINDOW);
+  assert.deepEqual(v.rows.map((r) => r.stressPct), [85, 80, 70]);
+  assert.ok(!v.notes.includes('nothing-beats'));
+  const unknown = shapeRecs(out([rec(0, null, some), rec(1, 140, little)]), AIT_WINDOW);
+  assert.deepEqual(unknown.rows.map((r) => r.stressPct), [null], 'with the current stress unknown, nothing below it can be called less stressed');
+});
+
+test('a stress difference smaller than one percentage point is not "less stress" (it reads the same on screen)', () => {
+  const some = [land(10, 20, true), land(10, 20, true), land(2, 2, false)];
+  const little = [land(10, 20, true, 0.5), land(10, 20, true, 0.5), land(2, 2, false)];
+  const v = shapeRecs(out([rec(0, 101.2, some), rec(1, 100.6, little)]), AIT_WINDOW);
+  assert.equal(v.rows.length, 1);
+});

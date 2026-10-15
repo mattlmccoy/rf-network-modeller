@@ -79,7 +79,8 @@ export type Action =
   | { type: 'place'; targetId: string | null; where: Placement; block: Block }
   | { type: 'setVariants'; variants: Variant[] }
   | { type: 'setWindow'; window: Window }
-  | { type: 'setName'; name: string };
+  | { type: 'setName'; name: string }
+  | { type: 'revertTrial'; trial: Chain; chain: Chain; fits: Record<string, FitValues> };
 
 export function emptyState(): AppState {
   return {
@@ -145,7 +146,11 @@ const physics = (v: Variant): string => JSON.stringify([v.cable, v.Lj]);
 const autoName = (v: Variant): string => `${v.cable.length} m + ${Math.round(v.Lj * 1e9)} nH`;
 
 /** An edited assumption: one still carrying its default name is renamed for its new values; a chosen name is kept (reviewer pass). */
-export const retitled = (old: Variant, next: Variant): Variant => (old.name === autoName(old) && next.name === old.name ? { ...next, name: autoName(next) } : next);
+export const retitled = (old: Variant, next: Variant, taken: readonly string[] = []): Variant =>
+  old.name === autoName(old) && next.name === old.name && !taken.includes(autoName(next)) ? { ...next, name: autoName(next) } : next;
+
+/** What autosave writes: the circuit from before an un-kept trial, so a reload never keeps a trial (fix review I1). */
+export const savedState = (s: AppState, trial: { chain: Chain; fits: Record<string, FitValues> } | null): AppState => (trial ? { ...s, chain: trial.chain, fits: trial.fits } : s);
 
 /**
  * New cable assumptions. A fit and the transformer model follow an assumption that is untouched (the same object) or only
@@ -239,5 +244,8 @@ export function reducer(s: AppState, a: Action): AppState {
       return { ...s, window: a.window };
     case 'setName':
       return { ...s, chain: { ...s.chain, name: a.name } };
+    case 'revertTrial':
+      // only while the circuit is still the trial's: a project opened in between is never overwritten (fix review C1)
+      return s.chain === a.trial ? { ...s, chain: a.chain, fits: a.fits } : s;
   }
 }

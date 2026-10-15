@@ -3,7 +3,7 @@ import type { BranchCache } from '../chain/types.ts';
 import { evaluateVariants } from '../app/evaluate.ts';
 import { loadExample } from '../app/example.ts';
 import { evalGrid } from '../app/grid.ts';
-import { type AppState, emptyState, reducer } from '../app/state.ts';
+import { type AppState, emptyState, reducer, savedState } from '../app/state.ts';
 import { hasModel } from '../present/circuit.ts';
 import { type Level, PROFILES, type SheetKind, parseLevel } from '../present/level.ts';
 import { fromProjectJson, toProjectJson } from '../project/file.ts';
@@ -43,6 +43,8 @@ export default function App() {
   const [save, setSave] = useState<SaveStatus>('idle');
   const [notice, setNotice] = useState<string | null>(null);
   const caches = useRef<BranchCache[]>([]);
+  // an un-kept Try-a-change trial, with the project it belongs to: autosave writes the circuit from before it (fix review I1)
+  const [trial, setTrial] = useState<{ chain: AppState['chain']; fits: AppState['fits']; project: string | null } | null>(null);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -104,12 +106,13 @@ export default function App() {
     setSave('pending');
     const t = setTimeout(() => {
       const savedAt = new Date().toISOString();
-      putProject({ id: projectId, name: state.chain.name, savedAt, json: toProjectJson(state, savedAt) })
+      const toSave = trial && trial.project === projectId ? savedState(state, trial) : state;
+      putProject({ id: projectId, name: state.chain.name, savedAt, json: toProjectJson(toSave, savedAt) })
         .then(() => setCurrentId(projectId))
         .then(() => setSave('saved'), () => setSave('failed'));
     }, 1000);
     return () => clearTimeout(t);
-  }, [state, projectId]);
+  }, [state, projectId, trial]);
 
   const openExample = async (): Promise<void> => {
     try {
@@ -174,7 +177,7 @@ export default function App() {
       {task === 'rigHistory' && level === 'engineer' ? <RigHistory onCopy={(s) => newProject(s, 'pastBuilds')} /> : null}
       {WORK.includes(task) ? (
         <ErrorBoundary onReset={() => { void openExample(); }}>
-          <Workbench task={task as WorkTask} onTask={setTask} onNewProject={newProject} onOpenExample={() => { void openExample(); }} state={state} dispatch={dispatch} level={level} grid={grid} results={results} caches={caches.current} theme={theme} />
+          <Workbench task={task as WorkTask} onTask={setTask} onNewProject={newProject} onOpenExample={() => { void openExample(); }} projectId={projectId} onTrial={(b) => setTrial(b ? { ...b, project: projectId } : null)} state={state} dispatch={dispatch} level={level} grid={grid} results={results} caches={caches.current} theme={theme} />
         </ErrorBoundary>
       ) : null}
       {sheet ? (

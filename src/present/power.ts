@@ -4,7 +4,7 @@ import { drive, reports } from '../stress/drive.ts';
 import { type AppState, variantChain } from '../app/state.ts';
 import type { Level } from './level.ts';
 import { type StressFlag, stressFlag } from './recs.ts';
-import { fittedVariants } from './show.ts';
+import { fittedVariants, voters } from './show.ts';
 import { nearF0Index } from './verdict.ts';
 
 export interface CapRow { blockId: string; label: string; pf: number; count: number; vRms: number; iRms: number; pct: number | null; limit: 'voltage' | 'current' | null; flag: StressFlag }
@@ -21,13 +21,13 @@ export const safePower = (watts: number, worstPct: number | null): number | null
  */
 export function capStress(s: AppState, grid: number[], watts: number, caches: BranchCache[] = []): CapStress {
   const k = nearF0Index(grid);
-  const fitted = fittedVariants(s);
-  const estimate = !fitted.some(Boolean);
+  const estimate = !fittedVariants(s).some(Boolean);
+  const counted = voters(s);
   if (k === null) return { watts, rows: [], worstPct: null, limiting: null, safeW: null, errors: ['the model has no point at 13.56 MHz'], unrated: [], estimate };
   const rows = new Map<string, CapRow>();
   const errors: string[] = [];
   s.variants.forEach((variant, i) => {
-    if (!estimate && !fitted[i]) return;
+    if (!counted.includes(i)) return;
     caches[i] ??= new Map();
     const chain = variantChain(s, i);
     try {

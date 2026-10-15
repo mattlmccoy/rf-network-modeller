@@ -10,7 +10,7 @@ import { type ExampleManifest, exampleState } from '../app/example.ts';
 import { evalGrid } from '../app/grid.ts';
 import { ROOT } from '../testutil.ts';
 import { noChangeNeeded } from './recs.ts';
-import { modelVerdict, shownResult } from './show.ts';
+import { modelVerdict, shownResult, voters } from './show.ts';
 import { type Verdict, landingNearF0, verdictOf } from './verdict.ts';
 
 const read = (p: string): string => readFileSync(new URL(p, ROOT), 'utf8');
@@ -56,4 +56,9 @@ test('unfitted cable assumptions are left out of the vote when any is fitted; wi
   const none = shownResult({ ...ex, activeSweep: null, fits: {} }, v, null);
   assert.deepEqual([none.c?.total, none.estimate], [3, true]);
   assert.equal(shownResult(ex, v, measured).estimate, false, 'a measured verdict is never an estimate');
+});
+
+test('voters: the fitted cable assumptions when any is fitted, else all of them (fix review I2)', () => {
+  assert.deepEqual(voters({ ...ex, fits: { [ex.variants[1].name]: ex.fits[ex.variants[1].name] } }), [1]);
+  assert.deepEqual(voters({ ...ex, fits: {} }), [0, 1, 2]);
 });

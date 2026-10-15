@@ -5,7 +5,7 @@ import { findBlock } from '../chain/state.ts';
 import { DEFAULT_VARIANTS, O7_FILES, O7_REFS, o7Chain } from '../chain/presets.ts';
 import type { Sweep } from '../io/sweep.ts';
 import { getParam } from '../fit/params.ts';
-import { type AppState, emptyState, reducer, reservedIds, retitled, snapshotState, uniqueSweepId, variantChain } from './state.ts';
+import { type AppState, emptyState, reducer, reservedIds, retitled, savedState, snapshotState, uniqueSweepId, variantChain } from './state.ts';
 import { newBlock } from './chainEdit.ts';
 import { loadFixtureSweep } from '../testutil.ts';
 import { structureKey } from '../present/circuit.ts';
@@ -178,4 +178,27 @@ test('an assumption still carrying its default name is renamed when its values c
   const longer = { ...v, cable: { ...v.cable, length: 1.6 }, Lj: 250e-9 };
   assert.equal(retitled(v, longer).name, '1.6 m + 250 nH');
   assert.equal(retitled({ ...v, name: 'Cage cable' }, { ...longer, name: 'Cage cable' }).name, 'Cage cable');
+});
+
+test('revertTrial puts the circuit back only while it is still the trial circuit (fix review C1)', () => {
+  const trial = reducer(base, { type: 'setParam', ref: ls, value: 410e-9 });
+  const back = reducer(trial, { type: 'revertTrial', trial: trial.chain, chain: base.chain, fits: base.fits });
+  assert.equal(back.chain, base.chain);
+  assert.equal(back.fits, base.fits);
+  const opened = reducer(trial, { type: 'load', state: { ...emptyState(), chain: o7Chain('capfree') } });
+  assert.equal(reducer(opened, { type: 'revertTrial', trial: trial.chain, chain: base.chain, fits: base.fits }), opened, 'a project opened in between is never overwritten');
+});
+
+test('the saved project never holds an un-kept trial (fix review I1)', () => {
+  const trial = reducer(base, { type: 'setParam', ref: ls, value: 410e-9 });
+  const saved = savedState(trial, { chain: base.chain, fits: base.fits });
+  assert.equal(saved.chain, base.chain);
+  assert.equal(saved.fits, base.fits);
+  assert.equal(savedState(trial, null), trial);
+});
+
+test('a default-named assumption whose new default name is taken keeps its name, so the edit still goes through (fix review M1)', () => {
+  const v = DEFAULT_VARIANTS[0];
+  const next = { ...v, cable: { ...v.cable, length: 1.5094 }, Lj: 256e-9 };
+  assert.equal(retitled(v, next, DEFAULT_VARIANTS.map((x) => x.name)).name, v.name);
 });

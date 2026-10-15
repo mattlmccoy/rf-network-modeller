@@ -3309,7 +3309,7 @@
      "condition": null,
      "label": "Cap-free transformer + load on the electrodes, 1-60 MHz, evening stage 'Full, cube'",
      "evidence": "file name ('electrodes_load'); 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L570-577; 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L603-604 (definition of 'load'); loop: 2026-10-10_DESIGN_SPACE/sweep_configs_notes.md:L50 (no loop before 10-01 16:00)",
-     "uncertain": "The the name could read as electrodes only, but the record defines 'load' as the powder cylinder with the embedded cube between the electrodes (REC L603-604) and logs the evening full sweep as 'Full, cube' (L573-577), so load is set to cube; the record does not name this file individually.",
+     "uncertain": "The name could read as electrodes only, but the record defines 'load' as the powder cylinder with the embedded cube between the electrodes (REC L603-604) and logs the evening full sweep as 'Full, cube' (L573-577), so load is set to cube; the record does not name this file individually.",
      "csvFormat": null
     },
     {

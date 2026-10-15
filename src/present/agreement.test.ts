@@ -50,14 +50,21 @@ test('agreement wording carries the near-edge warning for rough and the unsettle
   const a = { perVariant: [{ grade: 'rough' as const, dR: -0.57, dX: -9.89 }], combined: 'rough' as const, unsettled: true, inSample: false };
   assert.equal(agreementText(a, 'beginner', 0), "The model is close, not exact. The last refit didn't settle.");
   assert.equal(agreementText(a, 'builder', 0),
-    "Roughly: resistance −0.6 Ω, reactance −9.9 Ω (model minus sweep). A miss this size can change which suggestion is best and whether the tuner matches near the edge of its range, so treat the ranking as a direction. The last refit didn't settle.");
+    "Roughly: resistance −0.6 Ω, reactance −9.9 Ω (model minus sweep). A miss this size can change which suggestion is best and whether it lands in the tuner's good range near the edge, so treat the ranking as a direction. The last refit didn't settle.");
 });
 
 test('a sweep the fit was made from reads as "fit to this sweep", never as a blind check (review I1)', () => {
   const grid = evalGrid(ex.chain, ex.sweeps);
-  assert.equal(agreementFor(ex, grid)?.inSample, false, 'the imported fits record no sweeps');
+  assert.equal(agreementFor(ex, grid)?.inSample, false, 'the imported fits record their sweeps, and 80/180 + loop is not one of them');
   const fitted = { ...ex, fits: Object.fromEntries(Object.entries(ex.fits).map(([k, f]) => [k, { ...f, sweeps: ['o7-80-180-loop'] }])) };
   const a = agreementFor(fitted, grid);
   assert.ok(a?.inSample);
   assert.match(agreementText(a, 'builder', 0), /^Fit to this sweep \(it is part of the fit\): /);
+});
+
+test('agreement combines only the fitted cable assumptions when any is fitted (fix review I2)', () => {
+  const v0 = ex.variants[0].name;
+  const a = agreementFor({ ...ex, fits: { [v0]: ex.fits[v0] } }, evalGrid(ex.chain, ex.sweeps));
+  assert.ok(a);
+  assert.equal(a.combined, a.perVariant[0].grade);
 });

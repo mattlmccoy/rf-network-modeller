@@ -9,7 +9,7 @@ const copyName = (vs: readonly Variant[], name: string): string => {
   return `${name} (copy${n > 1 ? ` ${n}` : ''})`;
 };
 
-/** Engineer rig settings (spec §8.4): the cable assumptions and what the tuner can match. */
+/** Engineer rig settings (spec §8.4): the cable assumptions and where the tuner has matched well. */
 export function RigSettings({ state, dispatch }: { state: AppState; dispatch: Dispatch<Action> }) {
   const set = (i: number, v: Variant): void => dispatch({ type: 'setVariants', variants: state.variants.map((x, j) => (j === i ? retitled(x, v) : x)) });
   const edit = (v: Variant, patch: { name?: string; length?: number; Lj?: number }): Variant =>
@@ -41,7 +41,7 @@ export function RigSettings({ state, dispatch }: { state: AppState; dispatch: Di
       </table>
       <button onClick={() => dispatch({ type: 'setVariants', variants: [...state.variants, { ...edit(p, {}), name: copyName(state.variants, p.name) }] })}>Add a cable assumption</button>
       <small>Changing a length or jumper inductance clears that assumption's fitted values; renaming keeps them. Each name must be different.</small>
-      <h4>What the tuner can match</h4>
+      <h4>Where the tuner has matched well</h4>
       {(['rLo', 'rHi', 'xLo', 'xHi'] as const).map((k) => (
         <div className="form-row" key={k}>
           <label>{{ rLo: 'Resistance from (Ω)', rHi: 'Resistance to (Ω)', xLo: 'Reactance from (Ω)', xHi: 'Reactance to (Ω)' }[k]}</label>
