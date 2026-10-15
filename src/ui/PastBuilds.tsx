@@ -64,7 +64,12 @@ export function PastBuilds({ current, level, onOpen }: { current: { id: string |
                 ghost={picked[1] ? measuredLanding(picked[1].sweep)?.z ?? null : null} ghostLabel="B" />
             )}
           </>
-        ) : <p>Tick up to two builds below to compare their sweeps.</p>}
+        ) : (
+          <>
+            <p>Tick up to two builds below to compare their sweeps.</p>
+            {level === 'engineer' ? null : <TargetBox window={current.state.window} measured={null} measuredLabel="" predicted={null} ghost={null} ghostLabel="" />}
+          </>
+        )}
       </section>
       {all.map((r) => {
         const builds = r.state ? buildsOf(r.state) : [];
@@ -72,7 +77,7 @@ export function PastBuilds({ current, level, onOpen }: { current: { id: string |
           <section className="panel" key={r.id ?? 'current'}>
             <header className="panel-head">
               <h3>{r.name}</h3>
-              {r.state ? <small>{hasModel(r.state.chain) ? 'modelled' : 'measured only'}</small> : null}
+              {r.state ? <small title={hasModel(r.state.chain) ? 'Has a circuit model, so it can predict' : 'Holds measured sweeps only: no circuit model to predict from'}>{hasModel(r.state.chain) ? 'modelled' : 'measured only'}</small> : null}
               {r.id === current.id ? <small>open now</small> : r.id ? <button onClick={() => onOpen(r.id as string)}>Open</button> : null}
             </header>
             {r.error ? <p className="bad">Couldn't read this project: {r.error}</p> : null}

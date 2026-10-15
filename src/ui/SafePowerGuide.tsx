@@ -2,12 +2,10 @@ import { type Dispatch, useMemo, useState } from 'react';
 import type { BranchCache } from '../chain/types.ts';
 import type { Action, AppState } from '../app/state.ts';
 import type { Level } from '../present/level.ts';
-import { capStress, powerText } from '../present/power.ts';
+import { type CapStress, powerText, powerTone } from '../present/power.ts';
 import { fPriAtPower, fitBranchTModel, transformerView } from '../present/transformer.ts';
 import { DraftNumberInput } from './DraftNumberInput.tsx';
 
-/** Never green while a current-carrying part has no rating (review I6). */
-const tone = (pct: number | null, unrated: number): string => (pct === null ? 'unknown' : pct >= 100 ? 'bad' : unrated > 0 ? 'unknown' : pct >= 80 ? 'warn' : 'good');
 const message = (e: unknown): string => (e instanceof Error ? e.message : String(e));
 
 function TurnsForm({ onSave }: { onSave: (t: { nP: number; nS: number; nC: number }) => void }) {
@@ -24,11 +22,10 @@ function TurnsForm({ onSave }: { onSave: (t: { nP: number; nS: number; nC: numbe
 }
 
 /** "Safe at full power?" (spec §8.3): capacitors against their ratings, the safe power, and transformer flux. */
-export function SafePowerGuide({ state, dispatch, level, grid, caches }: { state: AppState; dispatch: Dispatch<Action>; level: Level; grid: number[]; caches: BranchCache[] }) {
+export function SafePowerGuide({ state, dispatch, level, grid, caches, cs }: { state: AppState; dispatch: Dispatch<Action>; level: Level; grid: number[]; caches: BranchCache[]; cs: CapStress }) {
   const [fitting, setFitting] = useState<string | null>(null);
   const [loopMeasured, setLoopMeasured] = useState<number | null>(null);
   const [loopAtW, setLoopAtW] = useState<number | null>(null);
-  const cs = useMemo(() => capStress(state, grid, state.powerW, caches), [state.chain, state.fits, state.variants, state.sweeps, state.powerW, grid]);
   const tv = useMemo(() => transformerView(state, grid, state.powerW, caches), [state.chain, state.fits, state.variants, state.primary, state.sweeps, state.powerW, state.tmodel, grid]);
   const fit = (): void => {
     setFitting('Fitting the transformer model (about 5 s)…');
@@ -53,7 +50,7 @@ export function SafePowerGuide({ state, dispatch, level, grid, caches }: { state
       </section>
       <section className="step current">
         <h4><span className="step-mark">2</span>Capacitors against their ratings</h4>
-        <p className={`verdict-line ${tone(cs.worstPct, cs.unrated.length)}`}>{powerText(cs, level)}</p>
+        <p className={`verdict-line ${powerTone(cs)}`}>{powerText(cs, level)}</p>
         <small>Only the capacitors have ratings here; transformer and wiring heating aren't modelled.</small>
         {level === 'beginner' ? null : (
           <table className="numbers">
@@ -86,7 +83,7 @@ export function SafePowerGuide({ state, dispatch, level, grid, caches }: { state
           {tv.kind === 'ranges' ? (
             <>
               {tv.extent.map((r) => <p key={r.blockId}>Flux per core: {r.bMin.toFixed(2)}–{r.bMax.toFixed(2)} mT · sense-loop voltage {r.vMin.toFixed(1)}–{r.vMax.toFixed(1)} V rms at {state.powerW} W.</p>)}
-              <small>A range, because one-port sweeps can't tell how the leakage splits between the windings (0 to 0.5 of it on the primary).</small>
+              <small>A range, because one-port sweeps can't tell how the leakage splits between the windings (0 to 0.5 of it on the primary). No flux limit is set for these cores here, so this is a range to compare with the core's data, not a safe or unsafe call.</small>
               {level === 'engineer' ? (
                 <>
                   <table className="numbers">

@@ -3,21 +3,22 @@ import { allBlocks } from '../chain/state.ts';
 import type { BranchCache } from '../chain/types.ts';
 import type { Pick } from '../recommend/enumerate.ts';
 import { recommend } from '../recommend/recommend.ts';
-import { type Action, type AppState, variantChain } from '../app/state.ts';
+import { type Action, type AppState, type FitValues, variantChain } from '../app/state.ts';
 import { sweepFromFile, sweepLabel } from '../app/sweepFile.ts';
 import { tagSummary } from '../app/units.ts';
 import { type Agreement, agreementFor, agreementText } from '../present/agreement.ts';
 import { hasModel, sameState, snapshotState, structureKey } from '../present/circuit.ts';
 import { newSweepStatus } from '../present/guide.ts';
 import { type Level, PROFILES } from '../present/level.ts';
+import { type CapStress, roundSafe } from '../present/power.ts';
 import { type RecRow, type RecView, noChangeNeeded, picksState, shapeRecs } from '../present/recs.ts';
-import { refitAll } from '../present/refit.ts';
+import { refitAll, refitNote } from '../present/refit.ts';
 import type { VerdictState } from '../present/verdict.ts';
 
-const SHORT: Record<VerdictState, string> = { unknown: "can't tell", outside: "tuner can't match", little: 'matches, little room', some: 'matches, some room', plenty: 'matches, plenty of room' };
+const SHORT: Record<VerdictState, string> = { unknown: "can't tell", outside: "outside the tuner's good range", little: 'in range, little room', some: 'in range, some room', plenty: 'in range, plenty of room' };
 
 function rowText(r: RecRow, level: Level, watts: number): string {
-  const v = `${SHORT[r.verdict]}${level === 'engineer' ? ` (${r.inCount} of ${r.total} cable assumptions)` : ''}`;
+  const v = `Model: ${SHORT[r.verdict]}${level === 'engineer' ? ` (${r.inCount} of ${r.total} cable assumptions)` : ''}`;
   const st = r.stressPct === null ? 'capacitor stress unknown' : r.stress === 'red' ? `over a capacitor rating at ${watts} W (${r.stressPct.toFixed(0)} %)` : `capacitors at ${r.stressPct.toFixed(0)} % of rating at ${watts} W`;
   return `${v} · ${st}`;
 }
@@ -35,12 +36,22 @@ export interface GuideProps {
   preview: Record<string, Pick> | null;
   onPreview: (p: Record<string, Pick> | null) => void;
   onSafePower: () => void;
+  /** Capacitor stress of the current build at the planned power, or null without a model. */
+  power: CapStress | null;
 }
 
 /** "I measured a new sweep" (spec §8.1): confirm the build, load the sweep, check the model, choose a change. */
-export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, preview, onPreview, onSafePower }: GuideProps) {
-  const [confirmed, setConfirmed] = useState(false);
+export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, preview, onPreview, onSafePower, power }: GuideProps) {
+  // "Confirmed" belongs to the circuit that was confirmed: any change to it asks again (reviewer pass).
+  const circuit = `${structureKey(state.chain)}|${JSON.stringify(snapshotState(state.chain))}`;
+  const [confirmedFor, setConfirmedFor] = useState<string | null>(null);
+  const confirmed = confirmedFor === circuit;
   const [loaded, setLoaded] = useState(false);
+  const [usedChange, setUsedChange] = useState(false);
+  const [prevFits, setPrevFits] = useState<Record<string, FitValues> | null>(null);
+  useEffect(() => {
+    setLoaded(false);
+  }, [circuit]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [refitMsg, setRefitMsg] = useState<string | null>(null);
@@ -51,6 +62,7 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
   const last = state.tagged.at(-1);
   const sameAsLast = last !== undefined && last.structure === structureKey(state.chain) && sameState(state.chain, last.state, snapshotState(state.chain));
   const activeTag = state.tagged.find((t) => t.sweepId === state.activeSweep);
+  const tagMatches = activeTag !== undefined && activeTag.structure === structureKey(state.chain) && sameState(state.chain, activeTag.state, snapshotState(state.chain));
   const model = hasModel(state.chain);
   const agreement = useMemo(() => (loaded && model ? agreementFor(state, grid, caches) : null), [loaded, model, state.chain, state.fits, state.sweeps, state.tagged, state.activeSweep, state.variants, state.window, grid]);
 
@@ -95,6 +107,7 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
       setBlind(before);
       return;
     }
+    setPrevFits(state.fits);
     dispatch({ type: 'setFits', fits: r.fits });
     setRefitMsg(null);
   };
@@ -105,7 +118,6 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
   };
 
   const recBody = (): ReactNode => {
-    if (!model) return MEASURED_ONLY;
     if (recError) return <small className="bad">Couldn't work out changes: {recError}</small>;
     if (!recs) return <small>Working out changes from your parts…</small>;
     const heads: string[] = [];
@@ -113,6 +125,10 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
     if (recs.notes.includes('nothing-beats')) heads.push('Nothing in your stock beats what you have.');
     if (recs.notes.includes('none-fit')) heads.push(recs.closest.length ? 'None of your stock combinations lets the tuner match for most cable assumptions. The closest:' : 'None of your stock combinations lets the tuner match, and there is nothing to try: check Parts on hand.');
     if (recs.notes.includes('all-red')) heads.push(`Every option is over a capacitor rating at ${state.powerW} W planned power.`);
+    const lim = power?.limiting;
+    if (recs.notes.includes('nothing-beats') && lim && power && power.worstPct !== null && power.worstPct >= 100 && power.safeW !== null) {
+      heads.push(`Nothing in your stock fixes the ${lim.pf} pF part in the ${lim.label} at ${state.powerW} W. Run at about ${roundSafe(power.safeW)} W or less, or use a part rated for more ${lim.limit === 'voltage' ? 'voltage' : 'current'}.`);
+    }
     const rows = recs.rows.length ? recs.rows : recs.closest;
     return (
       <div className="recs">
@@ -127,7 +143,7 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
                 {r.isCurrent ? null : (
                   <div className="row">
                     <button onClick={() => onPreview(on ? null : r.picks)}>{on ? 'Hide' : 'Show on drawing'}</button>
-                    <button onClick={() => dispatch({ type: 'setCircuitState', state: picksState(r.picks) })}>Use this</button>
+                    <button onClick={() => { dispatch({ type: 'setCircuitState', state: picksState(r.picks) }); setUsedChange(true); }}>Use this</button>
                   </div>
                 )}
               </li>
@@ -150,10 +166,11 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
       <h3>Guide</h3>
       {step(0, "What's installed right now?", (
         <>
+          {usedChange && !confirmed ? <p><b>The circuit now shows the change you chose.</b> Build it, then confirm it here and load its sweep.</p> : null}
           <p>{tagSummary(state.chain, snapshotState(state.chain)) || 'No capacitor banks or sense loop in this circuit.'}</p>
           {sameAsLast ? <small>Same as your last build.</small> : null}
           <div className="row">
-            <button onClick={() => setConfirmed(true)} disabled={confirmed}>{confirmed ? 'Confirmed' : "That's what's installed"}</button>
+            <button onClick={() => setConfirmedFor(circuit)} disabled={confirmed}>{confirmed ? 'Confirmed' : "That's what's installed"}</button>
             <button onClick={editBanks}>Change</button>
           </div>
         </>
@@ -161,21 +178,24 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
       {step(1, 'Load the sweep', (
         <>
           <label className="file-picker">Choose an .s1p file…<input type="file" accept=".s1p" onChange={(e) => { void onFiles(e.target.files); e.target.value = ''; }} /></label>
-          {activeTag && !loaded ? <button onClick={() => setLoaded(true)}>Use "{activeTag.label}" (already loaded)</button> : null}
+          {activeTag && !loaded && tagMatches ? <button onClick={() => setLoaded(true)}>Use "{activeTag.label}" (already loaded)</button> : null}
+          {activeTag && !loaded && !tagMatches ? <small>"{activeTag.label}" was taken on {tagSummary(state.chain, activeTag.state) || 'a different build'}, not on what's installed now. Load this build's sweep, or fix the tag in Sweeps.</small> : null}
           {loadError ? <small className="bad">{loadError}</small> : null}
           {PROFILES[level].sheets.includes('sweeps') ? <small>Tagged with the wrong build? Fix it in Sweeps (top bar).</small> : null}
         </>
       ))}
       {step(2, 'Does the model agree?', !model ? MEASURED_ONLY : (
         <>
-          {blind ? <p><b>Before refit (blind check):</b> {agreementText(blind, level, state.primary)}</p> : null}
+          {blind ? <p><b>Before the refit:</b> {agreementText(blind, level, state.primary)}</p> : null}
           {agreement ? <p>{agreementText(agreement, level, state.primary)}</p> : <p>Can't compare: no sweep is shown.</p>}
-          <button onClick={() => { void doRefit(); }} disabled={busy}>Refit the model with this sweep</button>
+          {refitNote(state) ? <small className="warn-text">{refitNote(state)}</small> : null}
+          <button onClick={() => { void doRefit(); }} disabled={busy}>Refit the model with your sweeps</button>
+          {prevFits ? <button onClick={() => { dispatch({ type: 'setFits', fits: prevFits }); setPrevFits(null); setBlind(null); }}>Put back the fit from before the refit</button> : null}
           {refitMsg ? <small>{refitMsg}</small> : null}
         </>
       ))}
-      {step(3, 'What to change', recBody())}
-      {step(4, 'Safe at full power?', <button onClick={onSafePower}>Check it at full power</button>)}
+      {model ? step(3, 'What to change', recBody()) : null}
+      {model ? step(4, 'Safe at full power?', <button onClick={onSafePower}>Check it at full power</button>) : null}
     </section>
   );
 }

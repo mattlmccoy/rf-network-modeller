@@ -12,7 +12,10 @@ const KIND: Record<SweepKind, string> = {
   short: 'shorted cable',
   other: 'other',
 };
-const PRESET: Record<'o7' | 'cd', string> = { o7: 'O7 as built', cd: 'C+D 2:18 two-core' };
+const PRESET: Record<'o7' | 'cd', string> = {
+  o7: 'The "O7 as built" starting point in Start a new network was fitted to this session\'s sweeps.',
+  cd: 'Same hardware as the "C+D 2:18 two-core" starting point in Start a new network; that starting point is not fitted to these sweeps.',
+};
 const pf = (v: number | null): string => (v === null ? 'unknown' : `${v} pF`);
 
 /** Rig history (spec §8.6, §10): every configuration ever swept, read-only, newest first; a session opens as a copy. */
@@ -60,7 +63,7 @@ export function RigHistory({ onCopy }: { onCopy: (s: AppState) => void }) {
   if (!index) return <main className="past"><p>Loading the rig history…</p></main>;
   return (
     <main className="past">
-      <p>{index.sessions.length} sessions, {index.sessions.reduce((n, s) => n + s.sweeps.length, 0)} sweeps, newest first; undated files last. Read-only copies of {index.source}.</p>
+      <p>{index.sessions.length} sessions, {index.sessions.reduce((n, s) => n + s.sweeps.length, 0)} sweeps, newest first; undated files last. Read-only copies of {index.source}. Impedances quoted in labels come from the notes and can differ slightly from the file. Load: cube = powder and cube between connected plates; electrodes = plates connected, contents not recorded; none = nothing between the plates.</p>
       {index.sessions.map((s) => (
         <section className="panel" key={s.id}>
           <header className="panel-head">
@@ -69,7 +72,7 @@ export function RigHistory({ onCopy }: { onCopy: (s: AppState) => void }) {
           </header>
           <p><b>{s.title}</b></p>
           {status[s.id] ? <small>{status[s.id]}</small> : null}
-          {s.modelPreset ? <small>Modelled by the "{PRESET[s.modelPreset]}" starting point in Start a new network.</small> : null}
+          {s.modelPreset ? <small>{PRESET[s.modelPreset]}</small> : null}
           <details>
             <summary>Rig</summary>
             <p><small>Transformer: {s.rig.transformer}</small></p>

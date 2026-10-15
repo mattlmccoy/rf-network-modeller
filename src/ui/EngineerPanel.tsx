@@ -3,6 +3,7 @@ import { findBlock } from '../chain/state.ts';
 import type { Variant } from '../chain/types.ts';
 import { getParam, refName } from '../fit/params.ts';
 import { zFromGamma } from '../io/sweep.ts';
+import { landingNearF0 } from '../present/verdict.ts';
 import { type VariantResult, measuredLanding } from '../app/evaluate.ts';
 import { type Action, type AppState, type FitValues, type PaneMode, variantChain } from '../app/state.ts';
 import { displayUnit, fmtZ, toDisplay } from '../app/units.ts';
@@ -53,8 +54,10 @@ export function EngineerPanel({ state, dispatch, grid, results, theme }: { state
     if (active) out.push({ key: 'measured', label: `${active.name} (measured)`, color: measuredColor, f: active.f, z: active.gamma.map((g) => zFromGamma(g)), role: 'measured' });
     return out;
   }, [results, active, grid, state.primary, state.variants, theme]);
-  const dots = useMemo<Dot[]>(() => results.flatMap((r, i) => (r.landing ? [{ key: `d${i}`, z: r.landing.z, color: colors[i] }] : [])), [results]);
   const m = active ? measuredLanding(active) : null;
+  // the measured landing is marked too, so the plots show what the verdict reads (reviewer pass)
+  const dots = useMemo<Dot[]>(() => [...results.flatMap((r, i) => (r.landing ? [{ key: `d${i}`, z: r.landing.z, color: colors[i] }] : [])), ...(m ? [{ key: 'dm', z: m.z, color: measuredColor }] : [])], [results, m, measuredColor]);
+  const mRoom = useMemo(() => (active ? landingNearF0(active.f, active.gamma.map((g) => zFromGamma(g)), state.window) : null), [active, state.window]);
   return (
     <div className="engineer">
       <div className="plots">
@@ -68,7 +71,7 @@ export function EngineerPanel({ state, dispatch, grid, results, theme }: { state
       <table className="numbers">
         <thead><tr><th>At 13.56 MHz, at the tuner</th><th>Z</th><th>Room to drift up</th></tr></thead>
         <tbody>
-          <tr><td>Measured{active ? ` (${active.name})` : ''}</td><td>{active ? (m ? fmtZ(m.z) : 'no point at 13.56 MHz') : 'no sweep shown'}</td><td /></tr>
+          <tr><td>Measured{active ? ` (${active.name})` : ''}</td><td>{active ? (m ? fmtZ(m.z) : 'no point at 13.56 MHz') : 'no sweep shown'}</td><td>{mRoom?.inWindow ? `${mRoom.roomUp.toFixed(2)} %` : '–'}</td></tr>
           {results.map((r, i) => (
             <tr key={state.variants[i].name}>
               <td><span className="swatch" style={{ background: colors[i] }} />{state.variants[i].name}{state.variants[i].flag ? ' (poor fit)' : ''}{i === state.primary ? ' · chosen' : ''}</td>

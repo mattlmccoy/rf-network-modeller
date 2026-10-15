@@ -26,14 +26,15 @@ export function TryChangeGuide({ state, dispatch, level, baseline, onKeep, verdi
       {step(1, 'Change it', <p>{changed ? 'Changed. The drawing and the result show the new circuit.' : 'Edit it in the panel that opens beside the drawing.'}</p>)}
       {step(2, 'What it does', (
         <>
-          {beforeLine ? <p><b>Before the change:</b> {beforeLine}</p> : null}
-          <p><b>Now:</b> {verdictLine}</p>
+          {beforeLine ? <p><b>Before the change (model):</b> {beforeLine}</p> : null}
+          <p><b>Now (model):</b> {verdictLine}</p>
           {note ? <small>{note}</small> : null}
           {level === 'builder' ? <small>The dashed ring in the target box marks where it was before the change.</small> : null}
           <div className="row">
             <button onClick={onKeep}>Keep this change</button>
             <button onClick={() => dispatch({ type: 'load', state: { ...state, chain: baseline.chain, fits: baseline.fits } })}>Undo</button>
           </div>
+          <small>This is a trial: leaving this task without “Keep this change” puts the circuit back.</small>
         </>
       ))}
     </section>

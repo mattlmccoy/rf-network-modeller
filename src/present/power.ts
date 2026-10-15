@@ -67,3 +67,7 @@ export function powerText(cs: CapStress, level: Level): string {
   if (level === 'beginner') return `${pre}The ${which} are within their ratings at ${cs.watts} W. ${safe}${note}`;
   return `${pre}At ${cs.watts} W the worst ${which === 'capacitors' ? 'capacitor' : 'rated capacitor'} (the ${p.pf} pF part in the ${p.label}) is at ${pct} % of its rated ${p.limit}. ${safe}${note}`;
 }
+
+/** The safety line's tone: never green while a current-carrying part has no rating (review I6) or the numbers are estimates. */
+export const powerTone = (cs: CapStress): 'good' | 'warn' | 'bad' | 'unknown' =>
+  cs.worstPct === null ? 'unknown' : cs.worstPct >= 100 ? 'bad' : cs.unrated.length || cs.estimate ? 'unknown' : cs.worstPct >= 80 ? 'warn' : 'good';

@@ -174,7 +174,7 @@ export default function App() {
       {task === 'rigHistory' && level === 'engineer' ? <RigHistory onCopy={(s) => newProject(s, 'pastBuilds')} /> : null}
       {WORK.includes(task) ? (
         <ErrorBoundary onReset={() => { void openExample(); }}>
-          <Workbench task={task as WorkTask} onTask={setTask} onNewProject={newProject} state={state} dispatch={dispatch} level={level} grid={grid} results={results} caches={caches.current} theme={theme} />
+          <Workbench task={task as WorkTask} onTask={setTask} onNewProject={newProject} onOpenExample={() => { void openExample(); }} state={state} dispatch={dispatch} level={level} grid={grid} results={results} caches={caches.current} theme={theme} />
         </ErrorBoundary>
       ) : null}
       {sheet ? (
