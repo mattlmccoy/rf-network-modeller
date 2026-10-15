@@ -63,7 +63,7 @@ test('include, active and remove; a sweep a measured branch uses keeps its data 
   s = reducer(s, { type: 'removeSweep', sweepId: 'x' });
   assert.equal(s.sweeps.x, undefined);
   assert.equal(s.activeSweep, null);
-  const t = reducer({ ...base, tagged: [{ sweepId: 'capfree', label: 'cap-free', state: {}, include: false }] }, { type: 'removeSweep', sweepId: 'capfree' });
+  const t = reducer({ ...base, tagged: [{ sweepId: 'capfree', label: 'cap-free', state: {}, include: false, structure: '' }] }, { type: 'removeSweep', sweepId: 'capfree' });
   assert.ok(t.sweeps.capfree);
   assert.equal(t.tagged.length, 0);
 });
@@ -74,7 +74,7 @@ test('uniqueSweepId sanitizes file names and avoids collisions', () => {
 });
 
 test('fitted values for blocks that no longer exist are ignored, and structural patches drop them', () => {
-  const dangling: AppState = { ...base, fits: { [DEFAULT_VARIANTS[0].name]: { refs: [...O7_REFS, { blockId: 'gone', key: 'L' }], x: [330, 92, 1.07, 1.2, 0.49, 5], source: 'test' } } };
+  const dangling: AppState = { ...base, fits: { [DEFAULT_VARIANTS[0].name]: { refs: [...O7_REFS, { blockId: 'gone', key: 'L' }], x: [330, 92, 1.07, 1.2, 0.49, 5], source: 'test', converged: null, rms: null, illDetermined: [] } } };
   assert.equal(getParam(variantChain(dangling, 0), ls).value, 330 * 1e-9);
   const s = reducer(base, { type: 'patchBlock', id: 'shuntArm', patch: { chain: [] } });
   assert.ok(Object.values(s.fits).every((f) => f.refs.every((r) => r.blockId !== 'sh') && f.x.length === f.refs.length));

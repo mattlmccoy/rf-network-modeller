@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { cdChain, o7Chain } from '../chain/presets.ts';
+import { findBlock } from '../chain/state.ts';
+import { LEVELS, PROFILES, parseLevel } from './level.ts';
+import { WORDS } from './words.ts';
+
+test('each level sets the drawing, the result view and the field set (spec §5)', () => {
+  assert.deepEqual(LEVELS, ['beginner', 'builder', 'engineer']);
+  assert.deepEqual([PROFILES.beginner.drawing, PROFILES.builder.drawing, PROFILES.engineer.drawing], ['flow', 'hardware', 'schematic']);
+  assert.deepEqual([PROFILES.beginner.result, PROFILES.builder.result, PROFILES.engineer.result], ['verdict', 'target', 'plots']);
+  assert.deepEqual([PROFILES.beginner.fields, PROFILES.builder.fields, PROFILES.engineer.fields], ['stock', 'physical', 'all']);
+  assert.equal(PROFILES.beginner.showOhms, false);
+  assert.ok(PROFILES.engineer.nameAssumptions && !PROFILES.builder.nameAssumptions);
+  assert.deepEqual(PROFILES.beginner.sheets, ['parts']);
+  assert.deepEqual(PROFILES.builder.sheets, ['parts', 'sweeps']);
+});
+
+test('a missing or unknown stored level falls back to Builder', () => {
+  assert.equal(parseLevel(null), 'builder');
+  assert.equal(parseLevel('wizard'), 'builder');
+  assert.equal(parseLevel('engineer'), 'engineer');
+});
+
+test('screen words carry none of the internal jargon (spec §11)', () => {
+  for (const w of Object.values(WORDS)) assert.doesNotMatch(w, /AIT|variant|landing/i);
+});
+
+test('preset parts carry plain names', () => {
+  const o7 = o7Chain('capfree');
+  assert.equal(findBlock(o7, 'Ls')?.label, 'Wiring inductance');
+  assert.equal(findBlock(o7, 'Lb')?.label, 'Loop inductance');
+  assert.equal(findBlock(o7, 'branch')?.label, 'Transformer pair + plates');
+  assert.equal(findBlock(cdChain(), 'Ls')?.label, 'Wiring inductance');
+  assert.equal(findBlock(cdChain(), 'Lb')?.label, 'Loop inductance');
+});

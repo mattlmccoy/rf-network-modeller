@@ -34,13 +34,13 @@ export function o7Chain(capFreeSweepId: string): Chain {
     blocks: [
       { id: 'coax', label: 'Cage coax', type: 'coax' },
       { id: 'ser', label: 'Series bank', type: 'capBank', counts: counts(0, 1, 1), customPf: 0, nSeries: 1, slots: 2, k: param(1, 'typed', true, 0.8, 1.5), esr: 0, searchable: true },
-      { id: 'Ls', label: 'Series path L', type: 'inductor', L: param(300e-9, 'typed', true, 150e-9, 700e-9), R: 0 },
+      { id: 'Ls', label: 'Wiring inductance', type: 'inductor', L: param(300e-9, 'typed', true, 150e-9, 700e-9), R: 0 },
       { id: 'shuntArm', label: 'Shunt bank arm', type: 'shunt', chain: [
         { id: 'sh', label: 'Shunt bank', type: 'capBank', counts: counts(1, 1, 1), customPf: 0, nSeries: 1, slots: 4, k: param(1, 'typed', true, 0.8, 1.5), esr: 0, searchable: true },
       ] },
       { id: 'branchArm', label: 'Transformer arm', type: 'shunt', chain: [
-        { id: 'Lb', label: 'Branch (shunt-loop) L', type: 'inductor', L: param(150e-9, 'typed', true, -100e-9, 600e-9), R: 0 },
-        { id: 'branch', label: 'O7 pair (cap-free sweep)', type: 'measuredBranch', sweepId: capFreeSweepId,
+        { id: 'Lb', label: 'Loop inductance', type: 'inductor', L: param(150e-9, 'typed', true, -100e-9, 600e-9), R: 0 },
+        { id: 'branch', label: 'Transformer pair + plates', type: 'measuredBranch', sweepId: capFreeSweepId,
           kr: param(1, 'typed', true, 0.2, 3), d: param(0, 'typed', false, -2, 4), dLb: param(0, 'typed', false, -200e-9, 400e-9), loop: true },
       ] },
     ],
@@ -66,11 +66,11 @@ export function cdChain(): Chain {
     blocks: [
       { id: 'coax', label: 'Cage coax', type: 'coax' },
       { id: 'ser', label: 'Series bank', type: 'capBank', counts: counts(1, 0, 0), customPf: 0, nSeries: 1, slots: 2, k: param(1), esr: 0, searchable: true },
-      { id: 'Ls', label: 'Series path L', type: 'inductor', L: param(0), R: 0 },
+      { id: 'Ls', label: 'Wiring inductance', type: 'inductor', L: param(0), R: 0 },
       { id: 'shuntArm', label: 'Shunt bank arm', type: 'shunt', chain: [
         { id: 'sh', label: 'Shunt bank', type: 'capBank', counts: counts(3, 0, 1), customPf: 0, nSeries: 1, slots: 4, k: param(1), esr: 0, searchable: true },
       ] },
-      { id: 'Lb', label: 'Branch L', type: 'inductor', L: param(0), R: 0 },
+      { id: 'Lb', label: 'Loop inductance', type: 'inductor', L: param(0), R: 0 },
       { id: 'stack', label: 'C+D stack', type: 'stack', unit: CD_UNIT, source: 'fit' },
       { id: 'platesArm', label: 'Plates arm', type: 'shunt', chain: [
         { id: 'plates', label: 'Plates + cube', type: 'plates', C: param(CD_LOAD.C, 'fit'), G_cube: param(CD_LOAD.G_cube, 'fit'), G_fix: param(CD_LOAD.G_fix, 'fit') },
