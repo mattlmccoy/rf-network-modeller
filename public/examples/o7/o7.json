@@ -123,6 +123,7 @@
  ],
  "tmodel": {
   "variant": "1.245 m + 342 nH",
+  "sweepId": "capfree",
   "unit": {
    "n": 5,
    "L_leak": 0.0000011492489047228436,

@@ -26,7 +26,7 @@ export interface FitValues {
 }
 
 /** The stage-1 T-model of a measured branch's cap-free sweep, fitted for one cable assumption (spec §8.3). */
-export interface TModel { variant: string; unit: Unit; load: PlateLoad; rmsRel: number }
+export interface TModel { variant: string; sweepId: string; unit: Unit; load: PlateLoad; rmsRel: number }
 
 /** A loaded caps-in sweep, the circuit state it was taken in, the circuit's structure then, and whether fits use it. */
 export interface TagRef {

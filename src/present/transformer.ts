@@ -13,8 +13,17 @@ export type TransformerView =
   | { kind: 'none' }
   | { kind: 'needs-turns'; branchId: string }
   | { kind: 'needs-tmodel'; branchId: string }
-  | { kind: 'ranges'; source: 'stacks' | 'branch'; ranges: FluxRange[]; loopV: ((fPri: number) => number) | null; split: { label: string; watts: number }[] }
+  | { kind: 'ranges'; source: 'stacks' | 'branch'; ranges: FluxRange[]; extent: Extent[]; loopV: ((fPri: number) => number) | null; split: { label: string; watts: number }[]; branchW: number | null }
   | { kind: 'error'; message: string };
+
+/** The true min/max of flux and loop voltage over leakage split 0–0.5 (the six-row `ranges` are for the table only). */
+export interface Extent { blockId: string; bMin: number; bMax: number; vMin: number; vMax: number }
+
+const extentOf = (blockId: string, pts: { bPk_mT: number; vLoopRms: number }[]): Extent => ({
+  blockId,
+  bMin: Math.min(...pts.map((p) => p.bPk_mT)), bMax: Math.max(...pts.map((p) => p.bPk_mT)),
+  vMin: Math.min(...pts.map((p) => p.vLoopRms)), vMax: Math.max(...pts.map((p) => p.vLoopRms)),
+});
 
 const branchOf = (s: AppState): MeasuredBranchBlock | undefined => allBlocks(s.chain.blocks).find((b): b is MeasuredBranchBlock => b.type === 'measuredBranch');
 
@@ -22,7 +31,7 @@ const branchOf = (s: AppState): MeasuredBranchBlock | undefined => allBlocks(s.c
 export function tmodelFits(s: AppState, b: MeasuredBranchBlock): boolean {
   const t = s.tmodel;
   const tr = b.transformer;
-  return !!t && !!tr && t.variant === s.variants[s.primary].name && t.unit.N_p === tr.nP && t.unit.N_c === tr.nC && Math.abs(t.unit.n - tr.nS / tr.nP) < 1e-9;
+  return !!t && !!tr && t.variant === s.variants[s.primary].name && t.sweepId === b.sweepId && t.unit.N_p === tr.nP && t.unit.N_c === tr.nC && Math.abs(t.unit.n - tr.nS / tr.nP) < 1e-9;
 }
 
 /** Flux and loop-voltage ranges at `watts` for the chosen cable assumption (spec §8.3), or what is missing for them. */
@@ -37,7 +46,8 @@ export function transformerView(s: AppState, grid: number[], watts: number, cach
     const splitOf = (dd: ReturnType<typeof drive>): { label: string; watts: number }[] =>
       [...reports(chain, dd).values()].filter((r) => r.powerW > 0.01).map((r) => ({ label: findBlock(s.chain, r.blockId)?.label ?? r.blockId, watts: r.powerW }));
     if (allBlocks(chain.blocks).some((b) => b.type === 'stack')) {
-      return { kind: 'ranges', source: 'stacks', ranges: fluxRangeStacks(chain, ctx, grid[k], watts), loopV: null, split: splitOf(d()) };
+      const dense = fluxRangeStacks(chain, ctx, grid[k], watts, 0.5, 51).map((r) => extentOf(r.blockId, r.points));
+      return { kind: 'ranges', source: 'stacks', ranges: fluxRangeStacks(chain, ctx, grid[k], watts), extent: dense, loopV: null, split: splitOf(d()), branchW: null };
     }
     const b = branchOf(s);
     if (!b) return { kind: 'none' };
@@ -46,12 +56,18 @@ export function transformerView(s: AppState, grid: number[], watts: number, cach
     const t: TModel = s.tmodel;
     const dd = d();
     const v1 = branchVoltage(dd, b.id);
+    const at = (fp: number): { bPk_mT: number; vLoopRms: number } => {
+      const u = solveTransformer([{ ...t.unit, f_pri: fp }], t.load, dd.f, v1).units[0];
+      return { bPk_mT: u.b_pk_mT, vLoopRms: u.v_loop_rms };
+    };
     return {
       kind: 'ranges',
       source: 'branch',
       ranges: [fluxRangeBranch(dd, b.id, t.unit, t.load)],
-      loopV: (fp) => solveTransformer([{ ...t.unit, f_pri: fp }], t.load, dd.f, v1).units[0].v_loop_rms,
+      extent: [extentOf(b.id, Array.from({ length: 1001 }, (_, i) => at((0.5 * i) / 1000)))],
+      loopV: (fp) => at(fp).vLoopRms,
       split: splitOf(dd),
+      branchW: reports(chain, dd).get(b.id)?.powerW ?? null,
     };
   } catch (e) {
     return { kind: 'error', message: e instanceof Error ? e.message : String(e) };
@@ -68,7 +84,7 @@ export function fitBranchTModel(s: AppState): TModel {
   const t = buildBranchTable(sweep, v);
   const { nP, nS, nC } = b.transformer;
   const fit = fitTModel(sweep.f, t.re.map((re, i) => cx(re, t.im[i])), { n: nS / nP, fPri: 0, nP, nC });
-  return { variant: v.name, unit: fit.unit, load: fit.load, rmsRel: fit.rmsRel };
+  return { variant: v.name, sweepId: b.sweepId, unit: fit.unit, load: fit.load, rmsRel: fit.rmsRel };
 }
 
 /**

@@ -58,3 +58,28 @@ test('fitting the T-model in the browser reproduces the Python fit on the O7 cap
   assert.deepEqual([t.variant, t.unit.n, t.unit.N_p, t.unit.N_c], [ex.variants[0].name, 5, 3, 4]);
   assert.ok(Math.abs(t.rmsRel / py.rms_rel - 1) < 0.02, `rms ${t.rmsRel} vs Python ${py.rms_rel}`);
 });
+
+test('a T-model fitted to another sweep, or with no sweep recorded, asks for a refit (Plan 3B review I4)', () => {
+  const moved = { ...ex, chain: updateBlock(ex.chain, 'branch', { sweepId: 'o7-130-230' }) };
+  assert.equal(transformerView(moved, grid, 500).kind, 'needs-tmodel');
+  const legacy = { ...ex, tmodel: ex.tmodel && { ...ex.tmodel, sweepId: undefined as unknown as string } };
+  assert.equal(transformerView(legacy, grid, 500).kind, 'needs-tmodel');
+  assert.equal(ex.tmodel?.sweepId, 'capfree');
+});
+
+test("the measured part's own power is reported, not the first block that dissipates (Plan 3B review I5)", () => {
+  const lossy = { ...ex, chain: updateBlock(ex.chain, 'ser', { esr: 0.2 }) };
+  const v = transformerView(lossy, grid, 500);
+  assert.ok(v.kind === 'ranges' && v.branchW !== null);
+  assert.ok(v.branchW > 400 && v.branchW < 499, `branch ${v.branchW} W`);
+  assert.ok(v.split.some((x) => x.label === 'Series bank' && x.watts > 1));
+});
+
+test('the stated range is the true minimum and maximum over 0–0.5, not six samples (Plan 3B review I7)', () => {
+  const v = transformerView(ex, grid, 500);
+  assert.ok(v.kind === 'ranges');
+  const e = v.extent[0];
+  assert.ok(Math.abs(e.bMin - 0.075) < 0.01 && Math.abs(e.vMin - 0.715) < 0.02, JSON.stringify(e));
+  assert.ok(Math.abs(e.bMax - 6.31) < 0.01 && Math.abs(e.vMax - 60.0) < 0.1, JSON.stringify(e));
+  assert.equal(v.ranges[0].points.length, 6, 'the Engineer table keeps six rows');
+});

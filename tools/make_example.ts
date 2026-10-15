@@ -39,6 +39,6 @@ const manifest: ExampleManifest = {
 };
 const tm = JSON.parse(readFileSync(new URL('fixtures/python/tmodel_short.json', root), 'utf8')).tmodel as { variant: string; unit: TModel['unit']; load: TModel['load']; rms_rel: number };
 if (Number(tm.variant) !== DEFAULT_VARIANTS[0].cable.length) throw new Error('tmodel_short.json was not fitted for the first cable assumption');
-manifest.tmodel = { variant: DEFAULT_VARIANTS[0].name, unit: tm.unit, load: tm.load, rmsRel: tm.rms_rel };
+manifest.tmodel = { variant: DEFAULT_VARIANTS[0].name, sweepId: 'capfree', unit: tm.unit, load: tm.load, rmsRel: tm.rms_rel };
 writeFileSync(new URL('o7.json', out), `${JSON.stringify(manifest, null, 1)}\n`);
 console.log(`wrote ${files.length} sweeps and o7.json to ${out.pathname}`);

@@ -74,14 +74,14 @@ export function SafePowerGuide({ state, dispatch, level, grid, caches }: { state
           {tv.kind === 'needs-turns' ? <TurnsForm onSave={(t) => dispatch({ type: 'patchBlock', id: tv.branchId, patch: { transformer: t } })} /> : null}
           {tv.kind === 'needs-tmodel' ? (
             <>
-              <p>Flux needs a transformer model fitted to the cap-free sweep for this cable assumption and these turns.</p>
+              <p>Flux needs a transformer model fitted to the measured part's sweep{level === 'engineer' ? ' for this cable assumption' : ''} and these turns.</p>
               <button onClick={fit} disabled={fitting !== null && fitting.startsWith('Fitting')}>Fit transformer model (about 5 s)</button>
               {fitting ? <small>{fitting}</small> : null}
             </>
           ) : null}
           {tv.kind === 'ranges' ? (
             <>
-              {tv.ranges.map((r) => <p key={r.blockId}>Flux per core: {r.bMin.toFixed(2)}–{r.bMax.toFixed(2)} mT · sense-loop voltage {r.vMin.toFixed(1)}–{r.vMax.toFixed(1)} V rms at {state.powerW} W.</p>)}
+              {tv.extent.map((r) => <p key={r.blockId}>Flux per core: {r.bMin.toFixed(2)}–{r.bMax.toFixed(2)} mT · sense-loop voltage {r.vMin.toFixed(1)}–{r.vMax.toFixed(1)} V rms at {state.powerW} W.</p>)}
               <small>A range, because one-port sweeps can't tell how the leakage splits between the windings (0 to 0.5 of it on the primary).</small>
               {level === 'engineer' ? (
                 <>
@@ -94,7 +94,7 @@ export function SafePowerGuide({ state, dispatch, level, grid, caches }: { state
                   ) : null}
                   {sols ? <small>{sols.length === 0 ? `No leakage split from 0 to 1 gives ${loopMeasured} V on the loop: the model structure, not the split, is off.` : sols.length === 1 ? `That reading means ${pct(sols[0])} of the leakage sits on the primary.` : `That reading fits ${sols.map(pct).join(' or ')} of the leakage on the primary; one sweep can't tell which.`}</small> : null}
                   <p>{tv.source === 'branch'
-                    ? `The measured part absorbs ${tv.split[0]?.watts.toFixed(0) ?? '?'} W; the split between transformer, plates and part can't be identified from a one-port sweep.`
+                    ? `The measured part absorbs ${tv.branchW === null ? '?' : tv.branchW.toFixed(0)} W; the split between transformer, plates and part can't be identified from a one-port sweep.`
                     : `Power: ${tv.split.map((x) => `${x.label} ${x.watts.toFixed(1)} W`).join(' · ')}`}</p>
                 </>
               ) : null}

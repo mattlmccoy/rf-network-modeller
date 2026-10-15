@@ -116,7 +116,7 @@ test('setPower takes a finite positive power and ignores anything else (review f
 });
 
 test('setTModel stores or clears the transformer model', () => {
-  const tm = { variant: 'v', unit: { n: 5, L_leak: 1e-6, f_pri: 0, L_m: 1e-6, G_core: 1e-4, R1: 1, R2: 9, C_w: 0, N_p: 3, N_c: 4 }, load: { C: 7e-12, G_cube: 0, G_fix: 0 }, rmsRel: 0.05 };
+  const tm = { variant: 'v', sweepId: 'capfree', unit: { n: 5, L_leak: 1e-6, f_pri: 0, L_m: 1e-6, G_core: 1e-4, R1: 1, R2: 9, C_w: 0, N_p: 3, N_c: 4 }, load: { C: 7e-12, G_cube: 0, G_fix: 0 }, rmsRel: 0.05 };
   const s = reducer(base, { type: 'setTModel', tmodel: tm });
   assert.deepEqual(s.tmodel, tm);
   assert.equal(reducer(s, { type: 'setTModel', tmodel: null }).tmodel, null);
