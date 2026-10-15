@@ -48,6 +48,13 @@ export const knownState = (chain: Chain, state: StateOverrides): StateOverrides 
 
 const stateText = (chain: Chain, s: StateOverrides): string => JSON.stringify(canon(snapshotState(applyState(chain, knownState(chain, s)))));
 
+/** A tag's state as comparable text, keeping overrides for blocks since removed so old builds stay apart (final review I3). */
+export const stateKey = (chain: Chain, s: StateOverrides): string => {
+  const known = knownState(chain, s);
+  const gone = Object.fromEntries(Object.entries(s).filter(([id]) => !(id in known)));
+  return JSON.stringify(canon({ ...snapshotState(applyState(chain, known)), ...gone }));
+};
+
 /** Two tags describe the same build. Compared after applying them, so o7State and snapshotState shapes agree. */
 export const sameState = (chain: Chain, a: StateOverrides, b: StateOverrides): boolean => stateText(chain, a) === stateText(chain, b);
 

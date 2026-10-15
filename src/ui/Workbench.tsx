@@ -87,7 +87,7 @@ export function Workbench({ task, onTask, onNewProject, state, dispatch, level, 
             <label className="override">Result <select value={rKind} onChange={(e) => setResult(e.target.value as ResultKind)}>{RESULTS.map((k) => <option key={k} value={k}>{RESULT_LABEL[k]}</option>)}</select></label>
           </header>
           {modelError ? <p className="bad">The model can't evaluate this circuit: {modelError}</p> : null}
-          {model ? null : <p>This project holds measured sweeps only; there is no circuit model to predict from.</p>}
+          {model ? null : <p>{Object.keys(state.sweeps).length ? 'This project holds measured sweeps only; there is no circuit model to predict from.' : 'This project has no circuit model yet: add parts to get a prediction.'}</p>}
           {rKind === 'verdict' && (model || shown.source === 'measured') ? <VerdictCard text={verdictText(shown.v, 'beginner')} tone={tone} source={shown.source} trustNote={model ? trustText(t, 'beginner') : null} state={shown.v.state} /> : null}
           {rKind === 'target' ? <TargetBox window={state.window} measured={active ? measuredLanding(active)?.z ?? null : null} measuredLabel={tag?.label ?? active?.name ?? ''} predicted={results[state.primary]?.landing?.z ?? null} ghost={task === 'tryChange' ? before : ghost} ghostLabel={task === 'tryChange' ? 'before the change' : 'with the change'} /> : null}
           {rKind !== 'verdict' ? <p className={`verdict-line ${tone}`}>{line}</p> : null}
@@ -102,7 +102,7 @@ export function Workbench({ task, onTask, onNewProject, state, dispatch, level, 
         {task === 'newSweep' ? <NewSweepGuide state={state} dispatch={dispatch} level={level} grid={grid} caches={caches} verdict={shown.v.state} preview={preview} onPreview={setPreview} onSafePower={() => onTask('safePower')} /> : null}
         {task === 'tryChange' && baseline ? <TryChangeGuide state={state} dispatch={dispatch} level={level} baseline={baseline} onKeep={() => setBaseline({ chain: state.chain, fits: state.fits })} verdictLine={verdictText(shown.v, level, shown.c)} beforeLine={beforeVerdict ? verdictText(beforeVerdict.v, level, beforeVerdict.c) : null} /> : null}
         {task === 'safePower' && model ? <SafePowerGuide state={state} dispatch={dispatch} level={level} grid={grid} caches={caches} /> : null}
-        {task === 'safePower' && !model ? <section className="panel guide"><h3>Guide</h3><p>This project holds measured sweeps only, so there is no circuit to check at full power.</p></section> : null}
+        {task === 'safePower' && !model ? <section className="panel guide"><h3>Guide</h3><p>{Object.keys(state.sweeps).length ? 'This project holds measured sweeps only, so there is no circuit to check at full power.' : 'This project has no circuit model yet, so there is nothing to check at full power.'}</p></section> : null}
         {task === 'newNetwork' ? <NewNetworkGuide state={state} dispatch={dispatch} level={level} onNewProject={onNewProject} verdictLine={verdictText(shown.v, level, shown.c)} /> : null}
       </aside>
     </main>

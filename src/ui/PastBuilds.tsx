@@ -3,7 +3,7 @@ import type { Window } from '../chain/types.ts';
 import { type Sweep, zFromGamma } from '../io/sweep.ts';
 import { measuredLanding } from '../app/evaluate.ts';
 import type { AppState, PaneMode } from '../app/state.ts';
-import { buildSweep, buildsOf } from '../present/builds.ts';
+import { buildSweep, buildsOf, dateText } from '../present/builds.ts';
 import { hasModel } from '../present/circuit.ts';
 import type { Level } from '../present/level.ts';
 import { landingNearF0, toneOf, verdictOf, verdictText } from '../present/verdict.ts';
@@ -17,7 +17,6 @@ interface Row { id: string | null; name: string; state: AppState | null; error: 
 interface Chosen { key: string; label: string; sweep: Sweep; window: Window }
 
 const message = (e: unknown): string => (e instanceof Error ? e.message : String(e));
-const dateText = (ms: number | null): string => (ms === null ? 'date unknown' : new Date(ms).toISOString().slice(0, 10));
 const zs = (s: Sweep) => s.gamma.map((g) => zFromGamma(g));
 
 /** "Look back at past builds" (spec §8.5): every project's builds, compare up to two, open one. */
@@ -46,7 +45,6 @@ export function PastBuilds({ current, level, onOpen }: { current: { id: string |
   }, [current.id]);
   const all: Row[] = [{ id: current.id, name: current.state.chain.name, state: current.state, error: null }, ...(rows ?? [])];
   const toggle = (c: Chosen): void => setPicked((ps) => (ps.some((x) => x.key === c.key) ? ps.filter((x) => x.key !== c.key) : [...ps, c].slice(-2)));
-  const lvl = level === 'beginner' ? 'beginner' : level;
   const verdict = (c: Chosen) => verdictOf(landingNearF0(c.sweep.f, zs(c.sweep), c.window), c.window);
   return (
     <main className="past">
@@ -56,7 +54,7 @@ export function PastBuilds({ current, level, onOpen }: { current: { id: string |
         <header className="panel-head"><h3>Compare</h3></header>
         {picked.length ? (
           <>
-            {picked.map((c, i) => <p key={c.key} className={`verdict-line ${toneOf(verdict(c).state)}`}><b>{'AB'[i]}: {c.label}.</b> {verdictText(verdict(c), lvl)}</p>)}
+            {picked.map((c, i) => <p key={c.key} className={`verdict-line ${toneOf(verdict(c).state)}`}><b>{'AB'[i]}: {c.label}.</b> {verdictText(verdict(c), level)}</p>)}
             {level === 'engineer' ? (
               <PlotPane mode={mode} onMode={setMode} theme={document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'} aitWindow={picked[0].window}
                 dots={picked.flatMap((c, i) => { const m = measuredLanding(c.sweep); return m ? [{ key: c.key, z: m.z, color: VARIANT_COLORS[i] }] : []; })}
@@ -78,7 +76,7 @@ export function PastBuilds({ current, level, onOpen }: { current: { id: string |
               {r.id === current.id ? <small>open now</small> : r.id ? <button onClick={() => onOpen(r.id as string)}>Open</button> : null}
             </header>
             {r.error ? <p className="bad">Couldn't read this project: {r.error}</p> : null}
-            {r.state && !builds.length ? <small>No sweeps yet.</small> : null}
+            {r.state && !builds.length ? <small>{Object.keys(r.state.sweeps).length ? `${Object.keys(r.state.sweeps).length} sweep${Object.keys(r.state.sweeps).length === 1 ? '' : 's'} loaded, none tagged to a build.` : 'No sweeps yet.'}</small> : null}
             {builds.map((b) => {
               const sweep = r.state ? buildSweep(r.state, b) : undefined;
               const key = `${r.id ?? 'current'}:${b.key}`;

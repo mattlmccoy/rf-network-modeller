@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { cdChain } from '../chain/presets.ts';
 import { loadExampleState } from '../testutil.ts';
-import { buildSweep, buildsOf, stampOf } from './builds.ts';
+import { buildSweep, buildsOf, dateText, stampOf } from './builds.ts';
+import { reducer } from '../app/state.ts';
 import { hasModel } from './circuit.ts';
 
 const ex = loadExampleState();
@@ -47,4 +48,24 @@ test('a build compares by its newest stamped sweep, else its last one', () => {
   assert.equal(buildSweep(twice, b[4])?.id, 'again');
   assert.equal(buildSweep(twice, b[0])?.id, 'o7-130-230');
   assert.equal(buildSweep({ sweeps: {} }, b[0]), undefined, 'a build whose sweeps are gone has nothing to compare');
+});
+
+test('removing a part keeps builds that differed in it apart, and says so (final review I3)', () => {
+  const s = reducer(ex, { type: 'remove', id: 'ser' });
+  const b = buildsOf(s);
+  assert.equal(b.length, 5);
+  const two = b.filter((x) => x.label.startsWith('100/200') || x.label.startsWith('80/200 ('));
+  assert.deepEqual(two.map((x) => x.sweepIds), [['o7-100-200'], ['o7-80-200']]);
+  assert.match(two[0].label, /parts no longer in this circuit/);
+});
+
+test('a build date is the local calendar date of its newest stamp (final review M2)', () => {
+  const tz = process.env.TZ;
+  process.env.TZ = 'America/New_York';
+  try {
+    assert.equal(dateText(Date.UTC(2026, 9, 9, 0, 2)), '2026-10-08', '20:02 EDT on 10-08 is 00:02 UTC on 10-09');
+    assert.equal(dateText(null), 'date unknown');
+  } finally {
+    process.env.TZ = tz;
+  }
 });

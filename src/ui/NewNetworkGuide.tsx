@@ -19,6 +19,8 @@ export function NewNetworkGuide({ state, dispatch, level, onNewProject, verdictL
   const [where, setWhere] = useState<Placement>('inline');
   const [sweepId, setSweepId] = useState('');
   const [error, setError] = useState<string | null>(null);
+  // Nothing edits a project until the user picks a starting point here (final review I5).
+  const [started, setStarted] = useState(false);
   const sel = state.selected ? findBlock(state.chain, state.selected) : undefined;
   const places = placementsFor(level).filter((p) => sel || p !== 'parallel');
   const k = palette.some((p) => p.kind === kind) ? kind : palette[0].kind;
@@ -29,23 +31,25 @@ export function NewNetworkGuide({ state, dispatch, level, onNewProject, verdictL
     try {
       setError(null);
       onNewProject(fromTemplate(t, t === 'o7' ? await loadExample() : undefined), 'newNetwork');
+      setStarted(true);
     } catch (e) {
       setError(`Couldn't start from that template: ${message(e)}`);
     }
   };
   const add = (): void => dispatch({ type: 'place', targetId: sel?.id ?? null, where: w, block: newBlock(state.chain, k, k === 'measuredBranch' ? sw : '', reservedIds(state)) });
-  const step = (n: number, title: string, body: ReactNode): ReactNode => (
-    <section className="step active" key={n}><h4><span className="step-mark">{n}</span>{title}</h4>{body}</section>
+  const step = (n: number, title: string, body: ReactNode, live = true): ReactNode => (
+    <section className={`step ${live ? 'active' : 'waiting'}`} key={n}><h4><span className="step-mark">{n}</span>{title}</h4>{live ? body : null}</section>
   );
   return (
     <section className="panel guide">
       <h3>Guide</h3>
       {step(1, 'Pick a starting point', (
         <>
-          <p>This starts a new project. The one open now stays in Past builds.</p>
+          <p>A template starts a new project; the one open now stays in Past builds.</p>
           <div className="row">{TEMPLATES.map((t) => <button key={t.kind} onClick={() => { void start(t.kind); }}>{t.label}</button>)}</div>
+          <button disabled={started} onClick={() => setStarted(true)}>Keep working on "{state.chain.name}"</button>
           {error ? <p className="bad">{error}</p> : null}
-          <div className="form-row"><label>Project name</label><input value={state.chain.name} onChange={(e) => dispatch({ type: 'setName', name: e.target.value })} /></div>
+          {started ? <div className="form-row"><label>Project name</label><input value={state.chain.name} onChange={(e) => dispatch({ type: 'setName', name: e.target.value })} /></div> : null}
         </>
       ))}
       {step(2, 'Add, remove and reorder parts', (
@@ -65,8 +69,8 @@ export function NewNetworkGuide({ state, dispatch, level, onNewProject, verdictL
             </div>
           ) : null}
         </>
-      ))}
-      {level === 'engineer' ? step(3, 'Rig settings', <RigSettings state={state} dispatch={dispatch} />) : null}
+      ), started)}
+      {level === 'engineer' ? step(3, 'Rig settings', <RigSettings state={state} dispatch={dispatch} />, started) : null}
       {step(level === 'engineer' ? 4 : 3, 'What it predicts', <p>{hasModel(state.chain) ? verdictLine : 'Add parts to get a prediction.'}</p>)}
     </section>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { AppState } from '../app/state.ts';
 import { historyCopy, historyUrl } from '../history/copy.ts';
 import { type HistoryIndex, type IndexSession, type SweepKind, parseIndex } from '../history/manifest.ts';
@@ -20,6 +20,15 @@ export function RigHistory({ onCopy }: { onCopy: (s: AppState) => void }) {
   const [index, setIndex] = useState<HistoryIndex | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState(false);
+  // A copy that arrives after the user left this page must not replace the project they moved to (final review M1).
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   useEffect(() => {
     let live = true;
     fetch('history/index.json')
@@ -33,6 +42,7 @@ export function RigHistory({ onCopy }: { onCopy: (s: AppState) => void }) {
     };
   }, []);
   const copy = async (s: IndexSession): Promise<void> => {
+    setBusy(true);
     setStatus((m) => ({ ...m, [s.id]: `Fetching ${s.sweeps.length} sweeps…` }));
     try {
       const texts = Object.fromEntries(await Promise.all(s.sweeps.map(async (w) => {
@@ -40,10 +50,11 @@ export function RigHistory({ onCopy }: { onCopy: (s: AppState) => void }) {
         if (!r.ok) throw new Error(`${w.path}: HTTP ${r.status}`);
         return [w.path, await r.text()] as const;
       })));
-      onCopy(historyCopy(s, texts));
+      if (mounted.current) onCopy(historyCopy(s, texts));
     } catch (e) {
-      setStatus((m) => ({ ...m, [s.id]: `Couldn't open a copy: ${message(e)}` }));
+      if (mounted.current) setStatus((m) => ({ ...m, [s.id]: `Couldn't open a copy: ${message(e)}` }));
     }
+    if (mounted.current) setBusy(false);
   };
   if (error) return <main className="past"><p className="bad">{error}</p></main>;
   if (!index) return <main className="past"><p>Loading the rig history…</p></main>;
@@ -54,7 +65,7 @@ export function RigHistory({ onCopy }: { onCopy: (s: AppState) => void }) {
         <section className="panel" key={s.id}>
           <header className="panel-head">
             <h3>{s.date ?? 'date unknown'}</h3>
-            <button disabled={!s.sweeps.length} onClick={() => { void copy(s); }}>Open a copy</button>
+            <button disabled={busy || !s.sweeps.length} onClick={() => { void copy(s); }}>Open a copy</button>
           </header>
           <p><b>{s.title}</b></p>
           {status[s.id] ? <small>{status[s.id]}</small> : null}

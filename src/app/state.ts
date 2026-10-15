@@ -138,19 +138,27 @@ function filterFits(fits: Record<string, FitValues>, keep: (r: ParamRef) => bool
 /** Drops fitted values whose block no longer exists in the chain. */
 const pruneFits = (fits: Record<string, FitValues>, chain: Chain): Record<string, FitValues> => filterFits(fits, (r) => findBlock(chain, r.blockId) !== undefined);
 
-/** A cable assumption's physics: fits and the transformer model belong to it, not to its name or position. */
+/** A cable assumption's physics: what a fit and the transformer model were made for. */
 const physics = (v: Variant): string => JSON.stringify([v.cable, v.Lj]);
 
-/** New cable assumptions, carrying each fit and the transformer model to the assumption with the same physics (review focus 5). */
+/**
+ * New cable assumptions. A fit and the transformer model follow an assumption that is untouched (the same object) or only
+ * renamed in place; any other change drops them, and the chosen assumption stays chosen (final review I1, I2). Names stay
+ * unique and non-empty, because fits are keyed by them.
+ */
 function withVariants(s: AppState, variants: Variant[]): AppState {
+  const names = variants.map((v) => v.name.trim());
+  if (names.some((n) => !n) || new Set(names).size !== names.length) return s;
+  const inPlace = variants.length === s.variants.length;
   const fits: Record<string, FitValues> = {};
   let tmodel: TModel | null = null;
-  for (const v of variants) {
-    const old = s.variants.find((o) => physics(o) === physics(v));
+  for (const [i, v] of variants.entries()) {
+    const old = s.variants.find((o) => o === v) ?? (inPlace && physics(s.variants[i]) === physics(v) ? s.variants[i] : undefined);
     if (old && s.fits[old.name]) fits[v.name] = s.fits[old.name];
     if (old && s.tmodel?.variant === old.name) tmodel = { ...s.tmodel, variant: v.name };
   }
-  return { ...s, variants, fits, tmodel, primary: Math.min(s.primary, variants.length - 1) };
+  const kept = variants.indexOf(s.variants[s.primary]);
+  return { ...s, variants, fits, tmodel, primary: kept >= 0 ? kept : inPlace ? s.primary : 0 };
 }
 
 export function reducer(s: AppState, a: Action): AppState {

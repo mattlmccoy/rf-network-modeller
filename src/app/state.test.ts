@@ -151,3 +151,24 @@ test('move on the only part of a branch moves the branch (what the drawing shows
   const s = reducer(base, { type: 'move', id: 'sh', dir: -1 });
   assert.deepEqual(s.chain.blocks.map((b) => b.id), ['coax', 'ser', 'shuntArm', 'Ls', 'branchArm']);
 });
+
+test('setVariants: adding a copy leaves the transformer model on the original; editing the copy never touches it (final review I1)', () => {
+  const tm = { variant: DEFAULT_VARIANTS[0].name, sweepId: 'capfree', unit: { n: 5, L_leak: 1e-6, f_pri: 0, L_m: 1e-6, G_core: 0, R1: 0, R2: 0, C_w: 0, N_p: 3, N_c: 4 }, load: { C: 3e-12, G_cube: 0, G_fix: 0 }, rmsRel: 0.01 };
+  const s0 = { ...base, tmodel: tm };
+  const copy = { ...DEFAULT_VARIANTS[0], name: `${DEFAULT_VARIANTS[0].name} (copy)` };
+  const added = reducer(s0, { type: 'setVariants', variants: [...s0.variants, copy] });
+  assert.equal(added.tmodel?.variant, DEFAULT_VARIANTS[0].name);
+  assert.equal(added.fits[copy.name], undefined, 'a new assumption starts unfitted');
+  const longer = { ...copy, cable: { ...copy.cable, length: 1.3 } };
+  const edited = reducer(added, { type: 'setVariants', variants: [...added.variants.slice(0, 3), longer] });
+  assert.equal(edited.tmodel?.variant, DEFAULT_VARIANTS[0].name);
+  assert.ok(edited.fits[DEFAULT_VARIANTS[0].name]);
+  const clash = reducer(edited, { type: 'setVariants', variants: [...edited.variants.slice(0, 3), { ...longer, name: DEFAULT_VARIANTS[0].name }] });
+  assert.equal(clash, edited, 'two cable assumptions can never share a name (fits are keyed by it)');
+});
+
+test('setVariants: removing an earlier assumption keeps the chosen one chosen (final review I2)', () => {
+  const s = reducer({ ...base, primary: 1 }, { type: 'setVariants', variants: [base.variants[1], base.variants[2]] });
+  assert.equal(s.variants[s.primary].name, DEFAULT_VARIANTS[1].name);
+  assert.ok(s.fits[DEFAULT_VARIANTS[1].name]);
+});
