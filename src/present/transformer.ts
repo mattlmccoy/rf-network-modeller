@@ -5,11 +5,9 @@ import { allBlocks, findBlock } from '../chain/state.ts';
 import type { BranchCache, MeasuredBranchBlock } from '../chain/types.ts';
 import { fitTModel } from '../fit/tmodel.ts';
 import { drive, reports } from '../stress/drive.ts';
-import { type FluxRange, branchVoltage, fluxRangeBranch, fluxRangeStacks, solveFPri } from '../stress/flux.ts';
+import { type FluxRange, branchVoltage, fluxRangeBranch, fluxRangeStacks } from '../stress/flux.ts';
 import { type AppState, type TModel, variantChain } from '../app/state.ts';
 import { nearF0Index } from './verdict.ts';
-
-export { solveFPri };
 
 export type TransformerView =
   | { kind: 'none' }
@@ -71,4 +69,38 @@ export function fitBranchTModel(s: AppState): TModel {
   const { nP, nS, nC } = b.transformer;
   const fit = fitTModel(sweep.f, t.re.map((re, i) => cx(re, t.im[i])), { n: nS / nP, fPri: 0, nP, nC });
   return { variant: v.name, unit: fit.unit, load: fit.load, rmsRel: fit.rmsRel };
+}
+
+/**
+ * Every leakage split in [0, 1] that reproduces a measured loop voltage: scan 40 steps, bisect each sign change. The loop
+ * voltage dips and rises with the split, so one reading can fit two splits that a one-port sweep cannot tell apart.
+ */
+export function fPriSolutions(loopV: (fPri: number) => number, measured: number): number[] {
+  const n = 40;
+  const xs = Array.from({ length: n + 1 }, (_, i) => i / n);
+  const g = xs.map((x) => loopV(x) - measured);
+  const out: number[] = [];
+  for (let k = 0; k < n; k += 1) {
+    if (g[k] === 0) {
+      out.push(xs[k]);
+      continue;
+    }
+    if (g[k] * g[k + 1] < 0) {
+      let a = xs[k];
+      let b = xs[k + 1];
+      let ga = g[k];
+      for (let it = 0; it < 60; it += 1) {
+        const m = (a + b) / 2;
+        const gm = loopV(m) - measured;
+        if (ga * gm <= 0) b = m;
+        else {
+          a = m;
+          ga = gm;
+        }
+      }
+      out.push((a + b) / 2);
+    }
+  }
+  if (g[n] === 0) out.push(1);
+  return out;
 }

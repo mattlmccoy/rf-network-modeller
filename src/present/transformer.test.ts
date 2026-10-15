@@ -7,7 +7,7 @@ import { type ExampleManifest, exampleState } from '../app/example.ts';
 import { defaultGrid, evalGrid } from '../app/grid.ts';
 import { emptyState } from '../app/state.ts';
 import { ROOT, readFixtureJson } from '../testutil.ts';
-import { fitBranchTModel, solveFPri, transformerView } from './transformer.ts';
+import { fPriSolutions, fitBranchTModel, transformerView } from './transformer.ts';
 
 const read = (p: string): string => readFileSync(new URL(p, ROOT), 'utf8');
 const m = JSON.parse(read('public/examples/o7/o7.json')) as ExampleManifest;
@@ -25,12 +25,14 @@ test('O7 with the shipped T-model at 500 W: flux 0.47–6.31 mT and loop 4.5–6
   assert.ok(Math.abs(v.split[0].watts - 500) < 0.5);
 });
 
-test('a measured loop voltage solves the leakage split; an impossible reading says so (review focus 4)', () => {
-  const v = transformerView(ex, grid, 500);
+test('a scope reading can fit more than one leakage split; all are reported, and an impossible one gives none (review focus 4)', () => {
+  const v = transformerView(ex, grid, 300);
   assert.ok(v.kind === 'ranges' && v.loopV);
-  const ok = solveFPri(v.loopV, 20);
-  assert.ok('fPri' in ok && ok.fPri > 0 && ok.fPri < 0.5, JSON.stringify(ok));
-  assert.ok('error' in solveFPri(v.loopV, 1e6));
+  const two = fPriSolutions(v.loopV, 20);
+  assert.equal(two.length, 2, JSON.stringify(two));
+  assert.ok(Math.abs(two[0] - 0.18) < 0.01 && two[1] > 0.4 && two[1] < 0.5, JSON.stringify(two));
+  for (const fp of two) assert.ok(Math.abs(v.loopV(fp) - 20) < 1e-6);
+  assert.deepEqual(fPriSolutions(v.loopV, 1e6), []);
 });
 
 test('no turns asks for them; a missing, other-assumption or other-turns T-model asks for a refit (review focus 3)', () => {

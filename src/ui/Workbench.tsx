@@ -15,6 +15,7 @@ import { Drawing } from './drawing/Drawing.tsx';
 import { EngineerPanel } from './EngineerPanel.tsx';
 import type { Task } from './Home.tsx';
 import { NewSweepGuide } from './NewSweepGuide.tsx';
+import { SafePowerGuide } from './SafePowerGuide.tsx';
 import { type Baseline, TryChangeGuide } from './TryChangeGuide.tsx';
 import { PartEditor } from './PartEditor.tsx';
 import { TargetBox } from './TargetBox.tsx';
@@ -94,6 +95,7 @@ export function Workbench({ task, onTask, state, dispatch, level, grid, results,
         {state.selected ? <PartEditor state={state} dispatch={dispatch} level={level} /> : null}
         {task === 'newSweep' ? <NewSweepGuide state={state} dispatch={dispatch} level={level} grid={grid} caches={caches} verdict={shown.v.state} preview={preview} onPreview={setPreview} onSafePower={() => onTask('safePower')} /> : null}
         {task === 'tryChange' && baseline ? <TryChangeGuide state={state} dispatch={dispatch} level={level} baseline={baseline} onKeep={() => setBaseline({ chain: state.chain, fits: state.fits })} verdictLine={verdictText(shown.v, level, shown.c)} /> : null}
+        {task === 'safePower' ? <SafePowerGuide state={state} dispatch={dispatch} level={level} grid={grid} caches={caches} /> : null}
       </aside>
     </main>
   );

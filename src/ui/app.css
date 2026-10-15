@@ -136,3 +136,8 @@ html[data-theme='dark'] .verdict-line.warn, html[data-theme='dark'] .verdict-car
 .stress-unknown { color: #666; }
 html[data-theme='dark'] .stress-red { color: #ff8a80; }
 .rx-readout { margin: 2px 0 6px; font-size: 12px; }
+.stress-bar { display: inline-block; width: 70px; height: 7px; margin-right: 6px; border-radius: 3px; background: rgba(127,127,120,.25); vertical-align: middle; overflow: hidden; }
+.stress-bar i { display: block; height: 100%; background: #34c759; }
+.stress-bar.amber i { background: #ff9f0a; }
+.stress-bar.red i { background: #ff3b30; }
+.stress-bar.unknown i { background: transparent; }
