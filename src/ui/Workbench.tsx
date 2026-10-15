@@ -6,9 +6,10 @@ import { applyPicks } from '../recommend/recommend.ts';
 import { zFromGamma } from '../io/sweep.ts';
 import { type VariantResult, evaluateVariants, measuredLanding } from '../app/evaluate.ts';
 import { type Action, type AppState, variantChain } from '../app/state.ts';
-import { activeIsMeasured, trust, trustText } from '../present/circuit.ts';
+import { trust, trustText } from '../present/circuit.ts';
+import { shownResult } from '../present/show.ts';
 import { DRAWING_LABEL, type DrawingKind, type Level, PROFILES, RESULT_LABEL, type ResultKind } from '../present/level.ts';
-import { UNKNOWN, combine, landingNearF0, representative, toneOf, verdictOf, verdictText } from '../present/verdict.ts';
+import { UNKNOWN, landingNearF0, toneOf, verdictOf, verdictText } from '../present/verdict.ts';
 import { Drawing } from './drawing/Drawing.tsx';
 import { EngineerPanel } from './EngineerPanel.tsx';
 import { NewSweepGuide } from './NewSweepGuide.tsx';
@@ -41,13 +42,9 @@ export function Workbench({ state, dispatch, level, grid, results, caches, theme
     : [];
   const view = useMemo(() => variantChain(state, state.primary), [state]);
   const verdicts = useMemo(() => results.map((r) => (r.error ? UNKNOWN : verdictOf(r.landing, state.window))), [results, state.window]);
-  const combined = combine(verdicts.map((v) => v.state));
   const active = state.activeSweep ? state.sweeps[state.activeSweep] : undefined;
   const measuredV = useMemo(() => (active ? verdictOf(landingNearF0(active.f, active.gamma.map((g) => zFromGamma(g)), state.window), state.window) : null), [active, state.window]);
-  // The measured verdict applies only while the circuit is the one the active sweep was taken on (spec §7.4).
-  const shown = activeIsMeasured(state.chain, state.tagged, state.activeSweep) && measuredV
-    ? { v: measuredV, c: undefined, source: 'measured' as const }
-    : { v: representative(verdicts, state.primary, combined.state), c: combined, source: 'predicted' as const };
+  const shown = shownResult(state, verdicts, measuredV);
   const t = trust(state.chain, state.tagged);
   const modelError = results.find((r) => r.error)?.error ?? null;
   const clamped = results.some((r) => r.outOfRange);
@@ -83,7 +80,7 @@ export function Workbench({ state, dispatch, level, grid, results, caches, theme
       </div>
       <aside className="wb-side">
         {state.selected ? <PartEditor state={state} dispatch={dispatch} level={level} /> : null}
-        <NewSweepGuide state={state} dispatch={dispatch} level={level} grid={grid} caches={caches} combined={combined} preview={preview} onPreview={setPreview} />
+        <NewSweepGuide state={state} dispatch={dispatch} level={level} grid={grid} caches={caches} verdict={shown.v.state} preview={preview} onPreview={setPreview} />
       </aside>
     </main>
   );

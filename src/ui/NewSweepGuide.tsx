@@ -12,7 +12,7 @@ import { newSweepStatus } from '../present/guide.ts';
 import { type Level, PROFILES } from '../present/level.ts';
 import { type RecRow, type RecView, noChangeNeeded, picksState, shapeRecs } from '../present/recs.ts';
 import { refitAll } from '../present/refit.ts';
-import type { Combined, VerdictState } from '../present/verdict.ts';
+import type { VerdictState } from '../present/verdict.ts';
 
 const SHORT: Record<VerdictState, string> = { unknown: "can't tell", outside: "tuner can't match", little: 'matches, little room', some: 'matches, some room', plenty: 'matches, plenty of room' };
 
@@ -28,13 +28,14 @@ export interface GuideProps {
   level: Level;
   grid: number[];
   caches: BranchCache[];
-  combined: Combined;
+  /** The verdict on screen (measured or predicted), so step 4 never contradicts the result panel (review I3). */
+  verdict: VerdictState;
   preview: Record<string, Pick> | null;
   onPreview: (p: Record<string, Pick> | null) => void;
 }
 
 /** "I measured a new sweep" (spec §8.1): confirm the build, load the sweep, check the model, choose a change. */
-export function NewSweepGuide({ state, dispatch, level, grid, caches, combined, preview, onPreview }: GuideProps) {
+export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, preview, onPreview }: GuideProps) {
   const [confirmed, setConfirmed] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -103,7 +104,7 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, combined, 
     if (recError) return <small className="bad">Couldn't work out changes: {recError}</small>;
     if (!recs) return <small>Working out changes from your parts…</small>;
     const heads: string[] = [];
-    if (noChangeNeeded(combined.state, recs.currentStressPct)) heads.push('No change needed.');
+    if (noChangeNeeded(verdict, recs.currentStressPct)) heads.push('No change needed.');
     if (recs.notes.includes('nothing-beats')) heads.push('Nothing in your stock beats what you have.');
     if (recs.notes.includes('none-fit')) heads.push(recs.closest.length ? 'None of your stock combinations lets the tuner match for most cable assumptions. The closest:' : 'None of your stock combinations lets the tuner match, and there is nothing to try: check Parts on hand.');
     if (recs.notes.includes('all-red')) heads.push(`Every option is over a capacitor rating at ${state.powerW} W planned power.`);
