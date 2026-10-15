@@ -72,7 +72,7 @@
      "condition": null,
      "label": "tuner matched T1.24 / L1.09 V on 80/180, loop + probe in the RF state: |S11| 0.0034 at 13.560 MHz; 10-18 MHz, 20 kHz steps (no .s1p extension)",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L574-579; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
-     "uncertain": null,
+     "uncertain": "LOAD ATTACHED means the secondary is on the plates (SWEEP_NOTES.md L28); the bed and cube state is not stated per sweep, though L20 gives the trim target as plates, bed and cube connected.",
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/AIT_T1.24_L1.09_sense-loop_80ser_180sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791933630449.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/single-transformer/AIT_T1.24_L1.09_sense-loop_80ser_180sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791933630449"
@@ -84,10 +84,10 @@
      "series_pF": 80,
      "shunt_pF": 180,
      "loop": true,
-     "load": "electrodes",
+     "load": "cube",
      "condition": "cold start",
      "label": "tuner re-matched T1.34 / L1.16 V after moving the rig into the FLIR view (cold-start state for the run log), 20 kHz grid: |S11| 0.0225 (no .s1p extension)",
-     "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L618-625; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
+     "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L618-625; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L624-625, L650 (cold start of the run that heated the cube)",
      "uncertain": null,
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/AIT_T1.34_L1.16_sense-loop_80ser_180sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791933888653.s1p",
      "sources": [
@@ -100,10 +100,10 @@
      "series_pF": 80,
      "shunt_pF": 180,
      "loop": true,
-     "load": "electrodes",
+     "load": "cube",
      "condition": "cold start",
      "label": "tuner re-matched T1.34 / L1.16 V, same state, ~1.6 kHz grid (5049 points): |S11| 0.0261 (no .s1p extension)",
-     "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L618-625; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
+     "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L618-625; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L624-625, L650 (cold start of the run that heated the cube)",
      "uncertain": null,
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/AIT_T1.34_L1.16_sense-loop_80ser_180sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791933958913.s1p",
      "sources": [
@@ -152,7 +152,7 @@
      "condition": null,
      "label": "Series 100 / shunt 200 (both 30 pF removed), tuner out, rep 1: Z(13.56) 11.5 + j46.5 ohm, top edge of the window",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L436, L460-467; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
-     "uncertain": "Loop not stated for this sweep; the first O7 sense loop was installed after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508).",
+     "uncertain": "Loop not stated for this sweep; the notes first mention an O7 loop after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508). LOAD ATTACHED means the secondary is on the plates (SWEEP_NOTES.md L28); the bed and cube state is not stated per sweep, though L20 gives the trim target as plates, bed and cube connected.",
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_100ser_200sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791931275980.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_100ser_200sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791931275980.s1p"
@@ -168,7 +168,7 @@
      "condition": null,
      "label": "First cap test: series 130 (100+30) / shunt 230 (2x100+30), tuner out: Z(13.56) 716 + j185 ohm, response ~4% low in frequency",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L397, L426-436; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
-     "uncertain": "Loop not stated for this sweep; the first O7 sense loop was installed after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508).",
+     "uncertain": "Loop not stated for this sweep; the notes first mention an O7 loop after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508). LOAD ATTACHED means the secondary is on the plates (SWEEP_NOTES.md L28); the bed and cube state is not stated per sweep, though L20 gives the trim target as plates, bed and cube connected.",
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_130ser_230sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791930836256.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_130ser_230sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791930836256.s1p"
@@ -184,7 +184,7 @@
      "condition": null,
      "label": "Stack 1 alone at 3:18, load attached, unwound wire still on the secondary lead: series f_r 6.290 MHz raw",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L67-70, L95; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
-     "uncertain": "Loop not stated for this sweep; the first O7 sense loop was installed after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508).",
+     "uncertain": "Loop not stated for this sweep; the notes first mention an O7 loop after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508). LOAD ATTACHED means the secondary is on the plates (SWEEP_NOTES.md L28); the bed and cube state is not stated per sweep, though L20 gives the trim target as plates, bed and cube connected.",
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_4core_3pri_18sec_direct_LOAD-ATTACHED_nanovna-sweep-1791919687561.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_4core_3pri_18sec_direct_LOAD-ATTACHED_nanovna-sweep-1791919687561.s1p"
@@ -200,7 +200,7 @@
      "condition": null,
      "label": "Stack 1 alone at 3:18, secondary lead re-cut to 75 mm, load attached: series f_r 6.574 MHz raw",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L90-93; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
-     "uncertain": "Loop not stated for this sweep; the first O7 sense loop was installed after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508).",
+     "uncertain": "Loop not stated for this sweep; the notes first mention an O7 loop after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508). LOAD ATTACHED means the secondary is on the plates (SWEEP_NOTES.md L28); the bed and cube state is not stated per sweep, though L20 gives the trim target as plates, bed and cube connected.",
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_4core_3pri_18sec_shortened-lead_direct_LOAD-ATTACHED_nanovna-sweep-1791920183935.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_4core_3pri_18sec_shortened-lead_direct_LOAD-ATTACHED_nanovna-sweep-1791920183935.s1p"
@@ -216,7 +216,7 @@
      "condition": null,
      "label": "Stack 1 alone at 3:19, load attached, unwound wire still on the secondary lead: series f_r 6.256 MHz raw",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L47-49, L95; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
-     "uncertain": "Loop not stated for this sweep; the first O7 sense loop was installed after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508).",
+     "uncertain": "Loop not stated for this sweep; the notes first mention an O7 loop after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508). LOAD ATTACHED means the secondary is on the plates (SWEEP_NOTES.md L28); the bed and cube state is not stated per sweep, though L20 gives the trim target as plates, bed and cube connected.",
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_4core_3pri_19sec_direct_LOAD-ATTACHED_nanovna-sweep-1791919473221.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_4core_3pri_19sec_direct_LOAD-ATTACHED_nanovna-sweep-1791919473221.s1p"
@@ -264,7 +264,7 @@
      "condition": null,
      "label": "Stack 1 ALONE (not the pair) at 3:20, capacitor-free, load attached, 1-25 MHz: series f_r 6.10 MHz raw",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28-38",
-     "uncertain": "Loop not stated for this sweep; the first O7 sense loop was installed after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508).",
+     "uncertain": "Loop not stated for this sweep; the notes first mention an O7 loop after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508). LOAD ATTACHED means the secondary is on the plates (SWEEP_NOTES.md L28); the bed and cube state is not stated per sweep, though L20 gives the trim target as plates, bed and cube connected.",
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_4core_3pri_20sec_direct_resweep_LOAD-ATTACHED_nanovna-sweep-1791919181087.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_4core_3pri_20sec_direct_resweep_LOAD-ATTACHED_nanovna-sweep-1791919181087.s1p"
@@ -296,7 +296,7 @@
      "condition": null,
      "label": "Series 80 (50+30) / shunt 200 (2x100), tuner out, no loop: Z(13.56) 5.03 + j4.30 ohm; selected",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L476, L483-486, L512; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
-     "uncertain": null,
+     "uncertain": "LOAD ATTACHED means the secondary is on the plates (SWEEP_NOTES.md L28); the bed and cube state is not stated per sweep, though L20 gives the trim target as plates, bed and cube connected.",
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_80ser_200sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791931754256.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_80ser_200sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791931754256.s1p"
@@ -312,7 +312,7 @@
      "condition": null,
      "label": "Series 100 / shunt 200, tuner out, rep 2: Z(13.56) 11.4 + j46.5 ohm",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L460-464; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
-     "uncertain": "Loop not stated for this sweep; the first O7 sense loop was installed after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508).",
+     "uncertain": "Loop not stated for this sweep; the notes first mention an O7 loop after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508). LOAD ATTACHED means the secondary is on the plates (SWEEP_NOTES.md L28); the bed and cube state is not stated per sweep, though L20 gives the trim target as plates, bed and cube connected.",
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_rep2_100ser_200sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791931369395.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_rep2_100ser_200sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791931369395.s1p"
@@ -328,7 +328,7 @@
      "condition": null,
      "label": "80/200, sense loop on, probe disconnected: Z(13.56) 38.1 + j97.6 ohm",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L538-542; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
-     "uncertain": "The file name says 'poweroff' while the notes say the probe was disconnected (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L538); either way the probe was not in its RF state.",
+     "uncertain": "The file name says 'poweroff' while the notes say the probe was disconnected (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L538); either way the probe was not in its RF state. LOAD ATTACHED means the secondary is on the plates (SWEEP_NOTES.md L28); the bed and cube state is not stated per sweep, though L20 gives the trim target as plates, bed and cube connected.",
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_sense-loop-poweroff_80ser_200sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791933094112.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_sense-loop-poweroff_80ser_200sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791933094112.s1p"
@@ -344,7 +344,7 @@
      "condition": "power-ready",
      "label": "FINAL no-tuner result: series 80 (50+30) / shunt 180 (100+50+30), loop + probe connected: Z(13.56) 7.81 + j27.89 ohm, mid-window",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L521, L554-559; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
-     "uncertain": null,
+     "uncertain": "LOAD ATTACHED means the secondary is on the plates (SWEEP_NOTES.md L28); the bed and cube state is not stated per sweep, though L20 gives the trim target as plates, bed and cube connected.",
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_sense-loop_80ser_180sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791933400391.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_sense-loop_80ser_180sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791933400391.s1p"
@@ -360,7 +360,7 @@
      "condition": null,
      "label": "80/200 with the sense loop installed (one turn, one core), probe connected: Z(13.56) 17.8 + j54.9 ohm, response ~2.4% lower",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508-516, L538; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
-     "uncertain": null,
+     "uncertain": "LOAD ATTACHED means the secondary is on the plates (SWEEP_NOTES.md L28); the bed and cube state is not stated per sweep, though L20 gives the trim target as plates, bed and cube connected.",
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_sense-loop_80ser_200sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791932761517.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_sense-loop_80ser_200sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791932761517.s1p"
@@ -376,7 +376,7 @@
      "condition": null,
      "label": "O7 PAIR at 3:15 / 3:15, capacitor-free, load attached: the branch sweep the caps were picked from (raw series f_r 9.37 MHz)",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L373-379; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
-     "uncertain": "Shares its sweep ID with the 16/15 SWAPPED file but holds different data (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L376; shasum differs), and the loop is not stated (first loop installed after the 80/200 sweep, L508).",
+     "uncertain": "Shares its sweep ID with the 16/15 SWAPPED file but holds different data (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L376; shasum differs), and the loop is not stated (first loop installed after the 80/200 sweep, L508). LOAD ATTACHED means the secondary is on the plates (SWEEP_NOTES.md L28); the bed and cube state is not stated per sweep, though L20 gives the trim target as plates, bed and cube connected.",
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_trans1_3pri_15sec_trans2_3pri_15sec_direct_LOAD-ATTACHED_nanovna-sweep-1791927664566.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_trans1_3pri_15sec_trans2_3pri_15sec_direct_LOAD-ATTACHED_nanovna-sweep-1791927664566.s1p"
@@ -392,7 +392,7 @@
      "condition": null,
      "label": "Pair 16 + 15 turns after the secondary phase swap, load attached: in phase, series f_r 9.15 MHz raw",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L308, L310-320, L376; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
-     "uncertain": "The file name says S11-S21 but the fix swapped stack 2's leads between S21 and S22 (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L308) and the data shows in phase (L320); it shares its sweep ID with the 15/15 file but holds different data (L376; shasum differs); loop not stated (first loop after L508).",
+     "uncertain": "The file name says S11-S21 but the fix swapped stack 2's leads between S21 and S22 (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L308) and the data shows in phase (L320); it shares its sweep ID with the 15/15 file but holds different data (L376; shasum differs); loop not stated (first loop after L508). LOAD ATTACHED means the secondary is on the plates (SWEEP_NOTES.md L28); the bed and cube state is not stated per sweep, though L20 gives the trim target as plates, bed and cube connected.",
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_trans1_3pri_16sec_trans2_3pri_15sec_direct_LOAD-ATTACHED_SWAPPED-S11-S21_nanovna-sweep-1791927664566.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_trans1_3pri_16sec_trans2_3pri_15sec_direct_LOAD-ATTACHED_SWAPPED-S11-S21_nanovna-sweep-1791927664566.s1p"
@@ -408,7 +408,7 @@
      "condition": null,
      "label": "Pair 16 + 15 turns, first hookup, load attached: WRONG PHASE (the secondaries buck; flat ~0.8 uH, no series resonance)",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L299-308; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
-     "uncertain": "Loop not stated for this sweep; the first O7 sense loop was installed after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508).",
+     "uncertain": "Loop not stated for this sweep; the notes first mention an O7 loop after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508). LOAD ATTACHED means the secondary is on the plates (SWEEP_NOTES.md L28); the bed and cube state is not stated per sweep, though L20 gives the trim target as plates, bed and cube connected.",
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_trans1_3pri_16sec_trans2_3pri_15sec_direct_LOAD-ATTACHED_nanovna-sweep-1791927272913.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_trans1_3pri_16sec_trans2_3pri_15sec_direct_LOAD-ATTACHED_nanovna-sweep-1791927272913.s1p"
@@ -424,7 +424,7 @@
      "condition": null,
      "label": "Stack 1 ALONE (not the pair) at 3:16, capacitor-free, load attached: series f_r 7.20 MHz raw",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L250-256; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
-     "uncertain": "Loop not stated for this sweep; the first O7 sense loop was installed after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508).",
+     "uncertain": "Loop not stated for this sweep; the notes first mention an O7 loop after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508). LOAD ATTACHED means the secondary is on the plates (SWEEP_NOTES.md L28); the bed and cube state is not stated per sweep, though L20 gives the trim target as plates, bed and cube connected.",
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_trans1_4core_3pri_16sec_direct_LOAD-ATTACHED_nanovna-sweep-1791925335398.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_trans1_4core_3pri_16sec_direct_LOAD-ATTACHED_nanovna-sweep-1791925335398.s1p"
@@ -440,7 +440,7 @@
      "condition": null,
      "label": "Stack 2 ALONE (not the pair) at 3:15, capacitor-free, load attached: series f_r 7.97 MHz raw",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L185-193; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
-     "uncertain": "Loop not stated for this sweep; the first O7 sense loop was installed after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508).",
+     "uncertain": "Loop not stated for this sweep; the notes first mention an O7 loop after the 80/200 sweep (2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L508). LOAD ATTACHED means the secondary is on the plates (SWEEP_NOTES.md L28); the bed and cube state is not stated per sweep, though L20 gives the trim target as plates, bed and cube connected.",
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_trans2_4core_3pri_15sec_direct_LOAD-ATTACHED_nanovna-sweep-1791924095901.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_trans2_4core_3pri_15sec_direct_LOAD-ATTACHED_nanovna-sweep-1791924095901.s1p"
@@ -945,7 +945,7 @@
      "series_pF": null,
      "shunt_pF": null,
      "loop": null,
-     "load": "electrodes",
+     "load": "none",
      "condition": null,
      "label": "8-stack 2:18, parallel two-strand primary, capacitor-free, no load: empty plates per the record, rep 1",
      "evidence": "file name; 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L2245, L2249",
@@ -961,7 +961,7 @@
      "series_pF": null,
      "shunt_pF": null,
      "loop": null,
-     "load": "electrodes",
+     "load": "none",
      "condition": null,
      "label": "8-stack 2:18, parallel two-strand primary, capacitor-free, no load: empty plates per the record, rep 2",
      "evidence": "file name; 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L2245, L2249",
@@ -977,7 +977,7 @@
      "series_pF": null,
      "shunt_pF": null,
      "loop": null,
-     "load": "electrodes",
+     "load": "none",
      "condition": null,
      "label": "8-stack 2:18, parallel two-strand primary, capacitor-free, no load: empty plates per the record, rep 3",
      "evidence": "file name; 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L2245, L2249",
@@ -2459,7 +2459,7 @@
      "condition": null,
      "label": "'PRE_DIRECT' sweep, no load, 10-18 MHz (not described in the record)",
      "evidence": "file name ('no-load'); RF_NETWORK_DEVELOPMENT_PAPER_STORYLINE.md:L104; 2026-10-10_DESIGN_SPACE/sweep_configs_notes.md:L95-102",
-     "uncertain": "Not described in any record: tuner state, network values and loop state are not written ('DIRECT' may mean tuner removed by an earlier lab convention, SCN L97, unconfirmed), so kind is 'other'.",
+     "uncertain": "Not described in any record: tuner state, network values and loop state are not written ('DIRECT' may mean tuner removed by an earlier lab convention, SCN L97, unconfirmed), so kind is 'other'. NO-LOAD is not redefined after 09-30; the whole load out is presumed (2026-10-10_DESIGN_SPACE/sweep_configs_notes.md:L41-42).",
      "path": "2026-10-01_218-2core-mat67_100ser-330sh/PRE_DIRECT_no-load_nanovna-sweep-1790878823175.s1p",
      "sources": [
       "2026-10-01_218-2core-mat67_100ser-330sh/PRE_DIRECT_no-load_nanovna-sweep-1790878823175.s1p"
@@ -2475,7 +2475,7 @@
      "condition": null,
      "label": "Network 100/330, tuner out, load out, two-core sense loop attached ('PRE-loop' baseline)",
      "evidence": "file name (NET, NO-LOAD, 3x100+30p); 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L1012-1013, L1230 (PRE 10-01 no-load); 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L1453 ('loop-attached PRE-loop no-load 14.726 MHz')",
-     "uncertain": "File name says 'PRE-loop' (caller's rule: loop=false), but the record calls these sweeps loop-attached (REC L1453) and their loaded port matches '330 + loop' (L1242), so loop is set true.",
+     "uncertain": "File name says 'PRE-loop', but the record calls these sweeps loop-attached (REC L1453) and their loaded port matches '330 + loop' (L1242), so loop is set true. NO-LOAD is not redefined after 09-30; the whole load out is presumed (2026-10-10_DESIGN_SPACE/sweep_configs_notes.md:L41-42).",
      "path": "2026-10-01_218-2core-mat67_100ser-330sh/2026-10-01_NET_218_CD_100s_3x100+30p_10-18M_NO-LOAD_PRE-loop_nanovna-sweep-1790884812689.s1p",
      "sources": [
       "2026-10-01_218-2core-mat67_100ser-330sh/2026-10-01_NET_218_CD_100s_3x100+30p_10-18M_NO-LOAD_PRE-loop_nanovna-sweep-1790884812689.s1p"
@@ -2491,7 +2491,7 @@
      "condition": null,
      "label": "Network 100/330, tuner out, loaded, two-core sense loop attached ('PRE-loop' baseline)",
      "evidence": "file name (NET, 3x100+30p); 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L1231, L1300 (PRE 10-01 LOADED port 16.84+48.16j); 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L1242 ('330 + loop 16.8+48.2j'); 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L1453",
-     "uncertain": "File name says 'PRE-loop' (caller's rule: loop=false), but the record calls these sweeps loop-attached (REC L1453) and their loaded port matches '330 + loop' (L1242), so loop is set true.",
+     "uncertain": "File name says 'PRE-loop', but the record calls these sweeps loop-attached (REC L1453) and their loaded port matches '330 + loop' (L1242), so loop is set true.",
      "path": "2026-10-01_218-2core-mat67_100ser-330sh/2026-10-01_NET_218_CD_100s_3x100+30p_10-18M_PRE-loop_nanovna-sweep-1790884838445.s1p",
      "sources": [
       "2026-10-01_218-2core-mat67_100ser-330sh/2026-10-01_NET_218_CD_100s_3x100+30p_10-18M_PRE-loop_nanovna-sweep-1790884838445.s1p"
@@ -2571,7 +2571,7 @@
      "condition": "post-power, warm (~12 min after the 70 W step)",
      "label": "Network 100/330, tuner out, load out, loop on, after the 10-02 ladder",
      "evidence": "file name (NO-LOAD, POST-ladder); 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L1227-1235",
-     "uncertain": null,
+     "uncertain": "NO-LOAD is not redefined after 09-30; the whole load out is presumed (2026-10-10_DESIGN_SPACE/sweep_configs_notes.md:L41-42).",
      "path": "2026-10-01_218-2core-mat67_100ser-330sh/2026-10-02/2026-10-02_NET_218_CD_100s_3x100+30p_10-18M_NO-LOAD_POST-ladder_nanovna-sweep-1790961521503.s1p",
      "sources": [
       "2026-10-01_218-2core-mat67_100ser-330sh/2026-10-02/2026-10-02_NET_218_CD_100s_3x100+30p_10-18M_NO-LOAD_POST-ladder_nanovna-sweep-1790961521503.s1p"
@@ -2587,7 +2587,7 @@
      "condition": "post-power, warm (~27 min after RF off)",
      "label": "Network 100/330, tuner out, load out, second warm no-load sweep after the 10-02 ladder",
      "evidence": "file name (NO-LOAD, POST-ladder); 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L1260-1262; loop: 2026-10-10_DESIGN_SPACE/sweep_configs_notes.md:L52-54 (two-core loop on for all of 10-02)",
-     "uncertain": null,
+     "uncertain": "NO-LOAD is not redefined after 09-30; the whole load out is presumed (2026-10-10_DESIGN_SPACE/sweep_configs_notes.md:L41-42).",
      "path": "2026-10-01_218-2core-mat67_100ser-330sh/2026-10-02/2026-10-02_NET_218_CD_100s_3x100+30p_10-18M_NO-LOAD_POST-ladder_nanovna-sweep-1790962367936.s1p",
      "sources": [
       "2026-10-01_218-2core-mat67_100ser-330sh/2026-10-02/2026-10-02_NET_218_CD_100s_3x100+30p_10-18M_NO-LOAD_POST-ladder_nanovna-sweep-1790962367936.s1p"
@@ -2603,7 +2603,7 @@
      "condition": "cold (~2 h 50 min after the 70 W step)",
      "label": "Network 100/330, tuner out, load out, loop + probe on, cold re-sweep",
      "evidence": "file name (NO-LOAD, COLD); 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L1295-1301; loop: 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L1304-1309",
-     "uncertain": null,
+     "uncertain": "NO-LOAD is not redefined after 09-30; the whole load out is presumed (2026-10-10_DESIGN_SPACE/sweep_configs_notes.md:L41-42).",
      "path": "2026-10-01_218-2core-mat67_100ser-330sh/2026-10-02/2026-10-02_NET_218_CD_100s_3x100+30p_10-18M_NO-LOAD_COLD_nanovna-sweep-1790970870504.s1p",
      "sources": [
       "2026-10-01_218-2core-mat67_100ser-330sh/2026-10-02/2026-10-02_NET_218_CD_100s_3x100+30p_10-18M_NO-LOAD_COLD_nanovna-sweep-1790970870504.s1p"
@@ -2932,7 +2932,7 @@
      "condition": null,
      "label": "Cap-free transformer + load on the electrodes, 1-60 MHz, evening stage 'Full, cube'",
      "evidence": "file name ('electrodes_load'); 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L570-577; 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L603-604 (definition of 'load'); loop: 2026-10-10_DESIGN_SPACE/sweep_configs_notes.md:L50 (no loop before 10-01 16:00)",
-     "uncertain": "The caller's rule reads 'electrodes_load' as load=electrodes, but the record defines 'load' as the powder cylinder with the embedded cube between the electrodes (REC L603-604) and logs the evening full sweep as 'Full, cube' (L573-577), so load is set to cube; the record does not name this file individually.",
+     "uncertain": "The the name could read as electrodes only, but the record defines 'load' as the powder cylinder with the embedded cube between the electrodes (REC L603-604) and logs the evening full sweep as 'Full, cube' (L573-577), so load is set to cube; the record does not name this file individually.",
      "path": "2026-09-30_218-2core_v2/2026-09-30_CAPFREE_218_electrodes_load_1-60Mnanovna-sweep-1790798666532.s1p",
      "sources": [
       "2026-09-30_218-2core_v2/2026-09-30_CAPFREE_218_electrodes_load_1-60Mnanovna-sweep-1790798666532.s1p"
@@ -2944,10 +2944,10 @@
      "series_pF": null,
      "shunt_pF": null,
      "loop": false,
-     "load": "unknown",
+     "load": "none",
      "condition": null,
      "label": "Cap-free transformer, secondary leads off the electrodes (plate-side C breakdown stage), 1-60 MHz",
-     "evidence": "file name ('secleads-OFF-electrodes'); 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L579, L616; loop: 2026-10-10_DESIGN_SPACE/sweep_configs_notes.md:L50 (no loop before 10-01 16:00)",
+     "evidence": "file name ('secleads-OFF-electrodes'); 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L579, L616; loop: 2026-10-10_DESIGN_SPACE/sweep_configs_notes.md:L50 (no loop before 10-01 16:00); 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L579 (\"Leads off the electrodes\")",
      "uncertain": "Nothing was connected to the plates in this stage, but no notes line says whether the load stayed in the fixture.",
      "path": "2026-09-30_218-2core_v2/2026-09-30_CAPFREE_218_CD_secleads-OFF-electrodes_1-60M_nanovna-sweep-1790798757899.s1p",
      "sources": [
@@ -2960,10 +2960,10 @@
      "series_pF": null,
      "shunt_pF": null,
      "loop": false,
-     "load": "unknown",
+     "load": "none",
      "condition": null,
      "label": "Cap-free transformer, secondary leads removed (winding only), 1-60 MHz",
-     "evidence": "file name ('secleads-REMOVED'); 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L580, L737-738; loop: 2026-10-10_DESIGN_SPACE/sweep_configs_notes.md:L50 (no loop before 10-01 16:00)",
+     "evidence": "file name ('secleads-REMOVED'); 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L580, L737-738; loop: 2026-10-10_DESIGN_SPACE/sweep_configs_notes.md:L50 (no loop before 10-01 16:00); 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L580 (\"Leads removed (winding only)\")",
      "uncertain": "Winding-only stage with the plates disconnected; no notes line says whether the load stayed in the fixture.",
      "path": "2026-09-30_218-2core_v2/2026-09-30_CAPFREE_218_CD_secleads-REMOVED_1-60M_nanovna-sweep-1790798832841.s1p",
      "sources": [
@@ -3444,7 +3444,7 @@
      "condition": "cold (taken 10-01)",
      "label": "10-01 cold damage re-check: network 100/330, tuner disconnected, load out, no sense loop",
      "evidence": "file name (NO-LOAD, COLD); 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L865-873; 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L1452-1453 ('no-loop no-load 3.6 + j1.9 ohm')",
-     "uncertain": null,
+     "uncertain": "NO-LOAD is not redefined after 09-30; the whole load out is presumed (2026-10-10_DESIGN_SPACE/sweep_configs_notes.md:L41-42).",
      "path": "2026-09-30_218-2core_v2/100s_330shunt/2026-10-01_NET_218_CD_100s_3x100+30p_10-18M_NO-LOAD_COLD_nanovna-sweep-1790872988728.s1p",
      "sources": [
       "2026-09-30_218-2core_v2/100s_330shunt/2026-10-01_NET_218_CD_100s_3x100+30p_10-18M_NO-LOAD_COLD_nanovna-sweep-1790872988728.s1p"
@@ -3536,7 +3536,7 @@
      "series_pF": null,
      "shunt_pF": null,
      "loop": null,
-     "load": "electrodes",
+     "load": "unknown",
      "condition": null,
      "label": "Capacitor-free, 2:18 on C+D, no cube, 10-18 MHz; reads as an open (broken primary)",
      "evidence": "file name; 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L406-410, L417-420",
@@ -6264,7 +6264,7 @@
      "condition": null,
      "label": "perfboard-mounted 9:1 transformer with 300 pF series/shunt caps, test 1",
      "evidence": "file name",
-     "uncertain": "No notes exist for 08-25: the load is not recorded, 'network' assumes no tuner because the name has no tuner tag and the notes introduce the tuner only after the 300/300 direct stage (2026-08-26/10_DOCUMENTATION/20260826_SUPPORTING_EMAIL_TO_TOM.pdf:L35; 2026-09-03_FULLCAP/RF_matching_complete_project_knowledge_handoff_2026-09-03.md:L107-109), and '300pF_seriesshuntcap' is read as 300 pF in each bank.",
+     "uncertain": "No notes exist for 08-25: the load is not recorded, 'network' assumes no tuner because the name has no 'AIT' tag and the notes introduce the tuner only after the 300/300 direct stage (2026-08-26/10_DOCUMENTATION/20260826_SUPPORTING_EMAIL_TO_TOM.pdf:L35; 2026-09-03_FULLCAP/RF_matching_complete_project_knowledge_handoff_2026-09-03.md:L107-109), and '300pF_seriesshuntcap' is read as 300 pF in each bank.",
      "path": "2026-08-25/mounted_300pF_seriesshuntcap_9to1trans_test1_nanovna-sweep-1787692989887.s1p",
      "sources": [
       "2026-08-25/mounted_300pF_seriesshuntcap_9to1trans_test1_nanovna-sweep-1787692989887.csv"
@@ -6280,7 +6280,7 @@
      "condition": null,
      "label": "perfboard-mounted 9:1 transformer with 300 pF series/shunt caps, test 2",
      "evidence": "file name",
-     "uncertain": "No notes exist for 08-25: the load is not recorded, 'network' assumes no tuner because the name has no tuner tag and the notes introduce the tuner only after the 300/300 direct stage (2026-08-26/10_DOCUMENTATION/20260826_SUPPORTING_EMAIL_TO_TOM.pdf:L35; 2026-09-03_FULLCAP/RF_matching_complete_project_knowledge_handoff_2026-09-03.md:L107-109), and '300pF_seriesshuntcap' is read as 300 pF in each bank.",
+     "uncertain": "No notes exist for 08-25: the load is not recorded, 'network' assumes no tuner because the name has no 'AIT' tag and the notes introduce the tuner only after the 300/300 direct stage (2026-08-26/10_DOCUMENTATION/20260826_SUPPORTING_EMAIL_TO_TOM.pdf:L35; 2026-09-03_FULLCAP/RF_matching_complete_project_knowledge_handoff_2026-09-03.md:L107-109), and '300pF_seriesshuntcap' is read as 300 pF in each bank.",
      "path": "2026-08-25/mounted_300pF_seriesshuntcap_9to1trans_test2_nanovna-sweep-1787693048907.s1p",
      "sources": [
       "2026-08-25/mounted_300pF_seriesshuntcap_9to1trans_test2_nanovna-sweep-1787693048907.csv"
@@ -6296,7 +6296,7 @@
      "condition": null,
      "label": "perfboard-mounted 9:1 transformer with 300 pF series/shunt caps, test 3",
      "evidence": "file name",
-     "uncertain": "No notes exist for 08-25: the load is not recorded, 'network' assumes no tuner because the name has no tuner tag and the notes introduce the tuner only after the 300/300 direct stage (2026-08-26/10_DOCUMENTATION/20260826_SUPPORTING_EMAIL_TO_TOM.pdf:L35; 2026-09-03_FULLCAP/RF_matching_complete_project_knowledge_handoff_2026-09-03.md:L107-109), and '300pF_seriesshuntcap' is read as 300 pF in each bank.",
+     "uncertain": "No notes exist for 08-25: the load is not recorded, 'network' assumes no tuner because the name has no 'AIT' tag and the notes introduce the tuner only after the 300/300 direct stage (2026-08-26/10_DOCUMENTATION/20260826_SUPPORTING_EMAIL_TO_TOM.pdf:L35; 2026-09-03_FULLCAP/RF_matching_complete_project_knowledge_handoff_2026-09-03.md:L107-109), and '300pF_seriesshuntcap' is read as 300 pF in each bank.",
      "path": "2026-08-25/mounted_300pF_seriesshuntcap_9to1trans_test3_nanovna-sweep-1787693115696.s1p",
      "sources": [
       "2026-08-25/mounted_300pF_seriesshuntcap_9to1trans_test3_nanovna-sweep-1787693115696.csv"
@@ -6312,7 +6312,7 @@
      "condition": null,
      "label": "perfboard-mounted 9:1 transformer with 300 pF series/shunt caps, test 4",
      "evidence": "file name",
-     "uncertain": "No notes exist for 08-25: the load is not recorded, 'network' assumes no tuner because the name has no tuner tag and the notes introduce the tuner only after the 300/300 direct stage (2026-08-26/10_DOCUMENTATION/20260826_SUPPORTING_EMAIL_TO_TOM.pdf:L35; 2026-09-03_FULLCAP/RF_matching_complete_project_knowledge_handoff_2026-09-03.md:L107-109), and '300pF_seriesshuntcap' is read as 300 pF in each bank.",
+     "uncertain": "No notes exist for 08-25: the load is not recorded, 'network' assumes no tuner because the name has no 'AIT' tag and the notes introduce the tuner only after the 300/300 direct stage (2026-08-26/10_DOCUMENTATION/20260826_SUPPORTING_EMAIL_TO_TOM.pdf:L35; 2026-09-03_FULLCAP/RF_matching_complete_project_knowledge_handoff_2026-09-03.md:L107-109), and '300pF_seriesshuntcap' is read as 300 pF in each bank.",
      "path": "2026-08-25/mounted_300pF_seriesshuntcap_9to1trans_test4_nanovna-sweep-1787693132108.s1p",
      "sources": [
       "2026-08-25/mounted_300pF_seriesshuntcap_9to1trans_test4_nanovna-sweep-1787693132108.csv"
@@ -6328,7 +6328,7 @@
      "condition": null,
      "label": "perfboard-mounted 9:1 transformer with 300 pF series/shunt caps, test 5",
      "evidence": "file name",
-     "uncertain": "No notes exist for 08-25: the load is not recorded, 'network' assumes no tuner because the name has no tuner tag and the notes introduce the tuner only after the 300/300 direct stage (2026-08-26/10_DOCUMENTATION/20260826_SUPPORTING_EMAIL_TO_TOM.pdf:L35; 2026-09-03_FULLCAP/RF_matching_complete_project_knowledge_handoff_2026-09-03.md:L107-109), and '300pF_seriesshuntcap' is read as 300 pF in each bank.",
+     "uncertain": "No notes exist for 08-25: the load is not recorded, 'network' assumes no tuner because the name has no 'AIT' tag and the notes introduce the tuner only after the 300/300 direct stage (2026-08-26/10_DOCUMENTATION/20260826_SUPPORTING_EMAIL_TO_TOM.pdf:L35; 2026-09-03_FULLCAP/RF_matching_complete_project_knowledge_handoff_2026-09-03.md:L107-109), and '300pF_seriesshuntcap' is read as 300 pF in each bank.",
      "path": "2026-08-25/mounted_300pF_seriesshuntcap_9to1trans_test5_nanovna-sweep-1787696761263.s1p",
      "sources": [
       "2026-08-25/mounted_300pF_seriesshuntcap_9to1trans_test5_nanovna-sweep-1787696761263.csv"
@@ -6352,13 +6352,13 @@
    "modelPreset": null,
    "sweeps": [
     {
-     "kind": "network",
+     "kind": "other",
      "series_pF": 300,
      "shunt_pF": 300,
      "loop": null,
      "load": "unknown",
      "condition": null,
-     "label": "80/20 load, 300 pF series / 300 pF shunt, 9:1 transformer; name tag '1280marker' (meaning not recorded)",
+     "label": "80/20 load, 300 pF series / 300 pF shunt, 9:1 transformer; name tag '1280marker' (meaning not recorded) (tuner presence not recorded)",
      "evidence": "file name",
      "uncertain": "Date, tuner presence, VNA calibration plane and what '8020LOAD' physically was are not recorded for these root files; the '80/20 mix' recipe in 2026-09-03_FULLCAP/RF_matching_complete_project_knowledge_handoff_2026-09-03.md:L52-58 describes the later 110 mm cylinder, and 2026-09-03_FULLCAP/RF_matching_complete_project_knowledge_handoff_2026-09-03.md:L71 says an early method calibrated the VNA at the DUT end of the cable.",
      "path": "undated-root/8020LOAD_300pFseriescap_300pFshuntcap_9to1_trans_1280marker.s1p",
@@ -6368,13 +6368,13 @@
      "converted": false
     },
     {
-     "kind": "network",
+     "kind": "other",
      "series_pF": 300,
      "shunt_pF": 300,
      "loop": null,
      "load": "unknown",
      "condition": null,
-     "label": "80/20 load, 300 pF series / 300 pF shunt, 9:1 transformer; name tag '1356marker' (meaning not recorded)",
+     "label": "80/20 load, 300 pF series / 300 pF shunt, 9:1 transformer; name tag '1356marker' (meaning not recorded) (tuner presence not recorded)",
      "evidence": "file name",
      "uncertain": "Date, tuner presence, VNA calibration plane and what '8020LOAD' physically was are not recorded for these root files; the '80/20 mix' recipe in 2026-09-03_FULLCAP/RF_matching_complete_project_knowledge_handoff_2026-09-03.md:L52-58 describes the later 110 mm cylinder, and 2026-09-03_FULLCAP/RF_matching_complete_project_knowledge_handoff_2026-09-03.md:L71 says an early method calibrated the VNA at the DUT end of the cable.",
      "path": "undated-root/8020LOAD_300pFseriescap_300pFshuntcap_9to1_trans_1356marker.s1p",
@@ -6400,13 +6400,13 @@
      "converted": false
     },
     {
-     "kind": "network",
+     "kind": "other",
      "series_pF": 300,
      "shunt_pF": 300,
      "loop": null,
      "load": "unknown",
      "condition": null,
-     "label": "80/20 load 'in-box', 300 pF series / 300 pF shunt, 9:1 transformer",
+     "label": "80/20 load 'in-box', 300 pF series / 300 pF shunt, 9:1 transformer (tuner presence not recorded)",
      "evidence": "file name",
      "uncertain": "Date, tuner presence, VNA calibration plane and what '8020LOAD' physically was are not recorded for these root files; the '80/20 mix' recipe in 2026-09-03_FULLCAP/RF_matching_complete_project_knowledge_handoff_2026-09-03.md:L52-58 describes the later 110 mm cylinder, and 2026-09-03_FULLCAP/RF_matching_complete_project_knowledge_handoff_2026-09-03.md:L71 says an early method calibrated the VNA at the DUT end of the cable.",
      "path": "undated-root/8020LOAD_in-box_300pFseriescap_300pFshuntcap_9to1_trans.s1p",
