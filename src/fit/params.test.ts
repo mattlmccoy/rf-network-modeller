@@ -18,5 +18,5 @@ test('fromFitVars writes SI values and marks them fitted', () => {
 });
 
 test('freeRefs lists the free parameters in chain order', () => {
-  assert.deepEqual(freeRefs(o7Chain('capfree')).map((r) => `${r.blockId}.${r.key}`), ['ser.k', 'Ls.L', 'sh.k', 'Lb.L', 'branch.kr']);
+  assert.deepEqual(freeRefs(o7Chain('capfree')).map((r) => `${r.blockId}.${r.key}`), ['ser.k', 'Ls.L', 'sh.k', 'Lb.L', 'branch.kr', 'branch.d']);
 });

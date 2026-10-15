@@ -41,7 +41,7 @@ export function o7Chain(capFreeSweepId: string): Chain {
       { id: 'branchArm', label: 'Transformer arm', type: 'shunt', chain: [
         { id: 'Lb', label: 'Loop inductance', type: 'inductor', L: param(150e-9, 'typed', true, -100e-9, 600e-9), R: 0 },
         { id: 'branch', label: 'Transformer pair + plates', type: 'measuredBranch', sweepId: capFreeSweepId,
-          kr: param(1, 'typed', true, 0.2, 3), d: param(0, 'typed', false, -2, 4), dLb: param(0, 'typed', false, -200e-9, 400e-9), loop: true },
+          kr: param(1, 'typed', true, 0.2, 3), d: param(0, 'typed', true, -2, 4), dLb: param(0, 'typed', false, -200e-9, 400e-9), loop: true },
       ] },
     ],
   };

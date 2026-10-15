@@ -3,11 +3,8 @@ import { type ParamRef, freeRefs } from '../fit/params.ts';
 import { type AppState, type FitValues, variantChain } from '../app/state.ts';
 import { knownState } from './circuit.ts';
 
-/** The parameters to refit: the current fits' (spec §8.1), else every value marked free. */
-export function refitRefs(s: AppState): ParamRef[] {
-  const f = Object.values(s.fits).find((x) => x.refs.length > 0);
-  return f ? f.refs : freeRefs(s.chain);
-}
+/** The parameters to refit: every value marked free, so the Engineer "fit" toggle governs refits (review I2). */
+export const refitRefs = (s: AppState): ParamRef[] => freeRefs(s.chain);
 
 /** One cable assumption refitted against every included tagged sweep, started from its current fit. */
 export function refitVariant(s: AppState, i: number, refs: ParamRef[]): FitValues {
