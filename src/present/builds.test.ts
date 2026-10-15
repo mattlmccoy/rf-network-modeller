@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { cdChain } from '../chain/presets.ts';
 import { loadExampleState } from '../testutil.ts';
-import { buildsOf, stampOf } from './builds.ts';
+import { buildSweep, buildsOf, stampOf } from './builds.ts';
 import { hasModel } from './circuit.ts';
 
 const ex = loadExampleState();
@@ -38,4 +38,13 @@ test('a cable-only project has no circuit model; anything else does (review focu
   assert.equal(hasModel({ name: 'm', blocks: [] }), false);
   assert.equal(hasModel(cdChain()), true);
   assert.equal(hasModel(ex.chain), true);
+});
+
+test('a build compares by its newest stamped sweep, else its last one', () => {
+  const again = { ...ex.sweeps['o7-80-180-loop'], id: 'again', name: 'x_nanovna-sweep-1791933400391.s1p' };
+  const twice = { ...ex, tagged: [...ex.tagged, { ...ex.tagged[4], sweepId: 'again', label: 'again' }], sweeps: { ...ex.sweeps, again } };
+  const b = buildsOf(twice);
+  assert.equal(buildSweep(twice, b[4])?.id, 'again');
+  assert.equal(buildSweep(twice, b[0])?.id, 'o7-130-230');
+  assert.equal(buildSweep({ sweeps: {} }, b[0]), undefined, 'a build whose sweeps are gone has nothing to compare');
 });

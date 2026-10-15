@@ -1,5 +1,6 @@
 import { tagSummary } from '../app/units.ts';
 import type { AppState, TagRef } from '../app/state.ts';
+import type { Sweep } from '../io/sweep.ts';
 import { sameState } from './circuit.ts';
 
 export interface Build { key: string; label: string; sweepIds: string[]; newest: number | null }
@@ -32,4 +33,10 @@ export function buildsOf(s: Pick<AppState, 'chain' | 'tagged' | 'sweeps'>): Buil
       newest: stamps.length ? Math.max(...stamps) : null,
     };
   });
+}
+
+/** The sweep a build is compared by: its newest stamped one, else the last one still loaded. */
+export function buildSweep(s: Pick<AppState, 'sweeps'>, b: Build): Sweep | undefined {
+  const loaded = b.sweepIds.map((id) => s.sweeps[id]).filter((x): x is Sweep => x !== undefined);
+  return loaded.find((x) => b.newest !== null && stampOf(x.name) === b.newest) ?? loaded.at(-1);
 }

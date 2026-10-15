@@ -6,7 +6,7 @@ const TILES: readonly { task: Task | null; title: string; text: string }[] = [
   { task: 'tryChange', title: 'Try a change first', text: 'Swap a part and see what the VNA would show' },
   { task: 'safePower', title: 'Safe at full power?', text: 'Cap voltage and current, transformer flux' },
   { task: 'newNetwork', title: 'Start a new network', text: 'From a template or a blank board' },
-  { task: null, title: 'Look back at past builds', text: 'Every build and its sweeps; compare two' },
+  { task: 'pastBuilds', title: 'Look back at past builds', text: 'Every build and its sweeps; compare two' },
 ];
 
 /** What are you doing today? Tasks not built yet are disabled tiles marked "coming next" (spec §3). */

@@ -28,6 +28,7 @@
 .save-status.failed { color: #a11414; font-weight: 800; }
 .notice { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 8px; padding: 6px 10px; border: 1px solid var(--edge); border-left: 4px solid var(--yellow); border-radius: 3px; background: var(--surface); }
 .home { max-width: 980px; margin: 24px auto; padding: 0 16px; }
+.past { display: grid; gap: 12px; padding: 12px; max-width: 980px; margin: 0 auto; }
 .home h2 { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
 .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
 .tile { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 96px; padding: 12px; font-weight: 400; text-align: left; }

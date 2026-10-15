@@ -10,6 +10,7 @@ import { fromProjectJson, toProjectJson } from '../project/file.ts';
 import { getCurrentId, getProject, putProject, setCurrentId } from '../project/store.ts';
 import { ErrorBoundary } from './ErrorBoundary.tsx';
 import { Home, type Task, type WorkTask } from './Home.tsx';
+import { PastBuilds } from './PastBuilds.tsx';
 import { Sheet } from './Sheet.tsx';
 import { StockPanel } from './StockPanel.tsx';
 import { SweepsPanel } from './SweepsPanel.tsx';
@@ -125,6 +126,18 @@ export default function App() {
     setTask(next);
   };
 
+  const openProject = async (id: string): Promise<void> => {
+    try {
+      const e = await getProject(id);
+      if (!e) throw new Error('it is no longer saved in this browser');
+      dispatch({ type: 'load', state: fromProjectJson(e.json).state });
+      setProjectId(id);
+      setTask('home');
+    } catch (e) {
+      setNotice(`Couldn't open that project: ${message(e)}`);
+    }
+  };
+
   const saveFile = (): void => {
     const url = URL.createObjectURL(new Blob([toProjectJson(state, new Date().toISOString())], { type: 'application/json' }));
     const a = document.createElement('a');
@@ -155,6 +168,7 @@ export default function App() {
         theme={theme} onTheme={() => setTheme((t) => (t === 'light' ? 'dark' : 'light'))} />
       {notice ? <div className="notice" role="status"><span>{notice}</span><button onClick={() => setNotice(null)} aria-label="Dismiss">×</button></div> : null}
       {task === 'home' ? <Home onTask={setTask} /> : null}
+      {task === 'pastBuilds' ? <PastBuilds current={{ id: projectId, state }} level={level} onOpen={(id) => { void openProject(id); }} /> : null}
       {WORK.includes(task) ? (
         <ErrorBoundary onReset={() => { void openExample(); }}>
           <Workbench task={task as WorkTask} onTask={setTask} onNewProject={newProject} state={state} dispatch={dispatch} level={level} grid={grid} results={results} caches={caches.current} theme={theme} />

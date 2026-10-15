@@ -17,7 +17,8 @@ function Marker({ z, kind, label }: { z: Complex | null; kind: 'measured' | 'pre
   return (
     <g className={`mark ${kind}`}>
       <circle cx={X(t.u)} cy={Y(t.v)} r={6} fill={kind === 'measured' ? undefined : 'none'} strokeDasharray={kind === 'ghost' ? '3 2' : undefined} />
-      <text x={X(t.u) + 10} y={Y(t.v) + 4}>{label}{t.pinned ? ' (off the scale)' : ''}</text>
+      {/* points in the right part of the box are labelled on their left, so the label stays inside the box */}
+      <text x={t.u > 0.55 ? X(t.u) - 10 : X(t.u) + 10} y={Y(t.v) + 4} textAnchor={t.u > 0.55 ? 'end' : 'start'}>{label}{t.pinned ? ' (off the scale)' : ''}</text>
     </g>
   );
 }

@@ -39,3 +39,4 @@ export const putProject = (e: LibraryEntry): Promise<IDBValidKey> => tx(PROJECTS
 export const getProject = (id: string): Promise<LibraryEntry | undefined> => tx(PROJECTS, 'readonly', (s) => s.get(id) as IDBRequest<LibraryEntry | undefined>);
 export const setCurrentId = (id: string): Promise<IDBValidKey> => tx(META, 'readwrite', (s) => s.put(id, 'current'));
 export const getCurrentId = (): Promise<string | undefined> => tx(META, 'readonly', (s) => s.get('current') as IDBRequest<string | undefined>);
+export const listProjects = (): Promise<LibraryEntry[]> => tx(PROJECTS, 'readonly', (s) => s.getAll() as IDBRequest<LibraryEntry[]>);
