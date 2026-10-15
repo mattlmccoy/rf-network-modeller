@@ -11,6 +11,7 @@ import { getCurrentId, getProject, putProject, setCurrentId } from '../project/s
 import { ErrorBoundary } from './ErrorBoundary.tsx';
 import { Home, type Task, type WorkTask } from './Home.tsx';
 import { PastBuilds } from './PastBuilds.tsx';
+import { RigHistory } from './RigHistory.tsx';
 import { Sheet } from './Sheet.tsx';
 import { StockPanel } from './StockPanel.tsx';
 import { SweepsPanel } from './SweepsPanel.tsx';
@@ -60,6 +61,7 @@ export default function App() {
       // the level is a per-viewer convenience; it still applies for this session
     }
     setSheet((s) => (s && PROFILES[level].sheets.includes(s) ? s : null));
+    setTask((t) => (t === 'rigHistory' && level !== 'engineer' ? 'home' : t));
   }, [level]);
 
   // Reopen the last project; fall back to the O7 example with a notice (review focus 1).
@@ -167,8 +169,9 @@ export default function App() {
         save={save} sheets={PROFILES[level].sheets} onSheet={setSheet} onSave={saveFile} onOpen={(f) => { void openFile(f); }}
         theme={theme} onTheme={() => setTheme((t) => (t === 'light' ? 'dark' : 'light'))} />
       {notice ? <div className="notice" role="status"><span>{notice}</span><button onClick={() => setNotice(null)} aria-label="Dismiss">×</button></div> : null}
-      {task === 'home' ? <Home onTask={setTask} /> : null}
+      {task === 'home' ? <Home onTask={setTask} level={level} /> : null}
       {task === 'pastBuilds' ? <PastBuilds current={{ id: projectId, state }} level={level} onOpen={(id) => { void openProject(id); }} /> : null}
+      {task === 'rigHistory' && level === 'engineer' ? <RigHistory onCopy={(s) => newProject(s, 'pastBuilds')} /> : null}
       {WORK.includes(task) ? (
         <ErrorBoundary onReset={() => { void openExample(); }}>
           <Workbench task={task as WorkTask} onTask={setTask} onNewProject={newProject} state={state} dispatch={dispatch} level={level} grid={grid} results={results} caches={caches.current} theme={theme} />

@@ -10,6 +10,8 @@ const PH = 168;
 const X = (u: number): number => X0 + u * PW;
 const Y = (v: number): number => Y0 - v * PH;
 const clamp01 = (v: number): number => Math.min(1, Math.max(0, v));
+/** Sweep labels are often whole file names; the box shows their start (the full name is in Sweeps). */
+const short = (s: string): string => (s.length > 24 ? `${s.slice(0, 23)}…` : s);
 
 function Marker({ z, kind, label }: { z: Complex | null; kind: 'measured' | 'predicted' | 'ghost'; label: string }) {
   const t = z ? targetPos(z) : null;
@@ -38,8 +40,8 @@ export function TargetBox({ window: w, measured, measuredLabel, predicted, ghost
       <text x={X(0.5)} y={208} textAnchor="middle">resistance at 13.56 MHz (Ω), 0 to {TARGET.rMax}</text>
       <text x={14} y={Y(0.5)} transform={`rotate(-90 14 ${Y(0.5)})`} textAnchor="middle">reactance (Ω), 0 to {TARGET.xMax}</text>
       <Marker z={predicted} kind="predicted" label="model predicts" />
-      <Marker z={ghost} kind="ghost" label={ghostLabel} />
-      <Marker z={measured} kind="measured" label={measuredLabel ? `your sweep (${measuredLabel})` : 'your sweep'} />
+      <Marker z={ghost} kind="ghost" label={short(ghostLabel)} />
+      <Marker z={measured} kind="measured" label={measuredLabel ? `your sweep (${short(measuredLabel)})` : 'your sweep'} />
     </svg>
   );
 }
