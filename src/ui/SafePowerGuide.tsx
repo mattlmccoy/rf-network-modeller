@@ -6,7 +6,8 @@ import { capStress, powerText } from '../present/power.ts';
 import { fPriSolutions, fitBranchTModel, transformerView } from '../present/transformer.ts';
 import { DraftNumberInput } from './DraftNumberInput.tsx';
 
-const tone = (pct: number | null): string => (pct === null ? 'unknown' : pct >= 100 ? 'bad' : pct >= 80 ? 'warn' : 'good');
+/** Never green while a current-carrying part has no rating (review I6). */
+const tone = (pct: number | null, unrated: number): string => (pct === null ? 'unknown' : pct >= 100 ? 'bad' : unrated > 0 ? 'unknown' : pct >= 80 ? 'warn' : 'good');
 const message = (e: unknown): string => (e instanceof Error ? e.message : String(e));
 
 function TurnsForm({ onSave }: { onSave: (t: { nP: number; nS: number; nC: number }) => void }) {
@@ -50,7 +51,8 @@ export function SafePowerGuide({ state, dispatch, level, grid, caches }: { state
       </section>
       <section className="step current">
         <h4><span className="step-mark">2</span>Capacitors against their ratings</h4>
-        <p className={`verdict-line ${tone(cs.worstPct)}`}>{powerText(cs, level)}</p>
+        <p className={`verdict-line ${tone(cs.worstPct, cs.unrated.length)}`}>{powerText(cs, level)}</p>
+        <small>Only the capacitors have ratings here; transformer and wiring heating aren't modelled.</small>
         {level === 'beginner' ? null : (
           <table className="numbers">
             <thead><tr><th>Part</th><th>% of rating</th>{level === 'engineer' ? <><th>V rms</th><th>A rms</th></> : null}</tr></thead>

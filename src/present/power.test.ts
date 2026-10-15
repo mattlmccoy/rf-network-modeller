@@ -5,7 +5,9 @@ import { type ExampleManifest, exampleState } from '../app/example.ts';
 import { defaultGrid, evalGrid } from '../app/grid.ts';
 import { emptyState } from '../app/state.ts';
 import { ROOT } from '../testutil.ts';
-import { capStress, powerText, safePower } from './power.ts';
+import { counts } from '../blocks/ht50.ts';
+import { updateBlock } from '../chain/state.ts';
+import { capStress, powerText, roundSafe, safePower } from './power.ts';
 
 const read = (p: string): string => readFileSync(new URL(p, ROOT), 'utf8');
 const m = JSON.parse(read('public/examples/o7/o7.json')) as ExampleManifest;
@@ -40,4 +42,18 @@ test('a drive that fails says "Can\'t tell" and gives no safe power (review focu
 test('safePower: V and I scale with √P, so P_max = P (100 / worst %)²; unknown without a rated part', () => {
   assert.ok(Math.abs((safePower(500, 111.5) ?? 0) - 402.18) < 0.01);
   assert.equal(safePower(500, null), null);
+});
+
+test('an unrated capacitor carrying current is never shown as healthy (Plan 3B review I6)', () => {
+  const custom = { ...ex, chain: updateBlock(ex.chain, 'sh', { customPf: 100.5, counts: counts(0, 1, 1) }) };
+  const cs = capStress(custom, grid, 300);
+  assert.equal(cs.unrated.length, 1);
+  assert.equal(cs.unrated[0].pf, 100.5);
+  const text = powerText(cs, 'beginner');
+  assert.match(text, /The 100.5 pF custom part has no rating, so it isn't checked\./);
+  assert.doesNotMatch(text, /^The capacitors are within their ratings/);
+});
+
+test('the safe power rounds down to 10 W, since it is a limit', () => {
+  assert.deepEqual([402, 405, 409.9, 410].map(roundSafe), [400, 400, 400, 410]);
 });
