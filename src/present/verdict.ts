@@ -28,7 +28,7 @@ export const landingNearF0 = (f: number[], z: Complex[], w: Window): Landing | n
 
 /** Distance in ohms from z to the window rectangle; 0 inside, infinite for a non-finite z. */
 export function windowDistance(z: Complex, w: Window): number {
-  if (!Number.isFinite(z.re) || !Number.isFinite(z.im)) return Number.POSITIVE_INFINITY;
+  if (!z || !Number.isFinite(z.re) || !Number.isFinite(z.im)) return Number.POSITIVE_INFINITY;
   const dr = Math.max(w.rLo - z.re, 0, z.re - w.rHi);
   const dx = Math.max(w.xLo - z.im, 0, z.im - w.xHi);
   return Math.hypot(dr, dx);
@@ -45,7 +45,7 @@ function offSides(z: Complex, w: Window): OffSide[] {
 
 /** The tuner verdict for one landing (spec §7.1); room up is what matters because heating moves features down. */
 export function verdictOf(l: Landing | null, w: Window): Verdict {
-  if (!l || Number.isNaN(l.z.re) || Number.isNaN(l.z.im)) return { ...UNKNOWN, z: l?.z ?? null };
+  if (!l || !l.z || Number.isNaN(l.z.re) || Number.isNaN(l.z.im)) return { ...UNKNOWN, z: l?.z ?? null };
   if (!l.inWindow) return { state: 'outside', z: l.z, roomUp: null, off: offSides(l.z, w) };
   const state: VerdictState = l.roomUp < LITTLE_ROOM ? 'little' : l.roomUp < ROOM_CAP ? 'some' : 'plenty';
   return { state, z: l.z, roomUp: l.roomUp, off: [] };
