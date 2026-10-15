@@ -24,7 +24,7 @@
      "condition": null,
      "label": "2026-10-14: tuner re-match T1.70 / L1.66 V after re-terminating jumpers 3 and 6 and moving the sense loop to T2: |S11| 0.0295 (no .s1p extension)",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L807-813, L819-822",
-     "uncertain": "Caps not restated after the 10-14 re-termination (last stated 80/180, 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L554) and no no tuner sweep was taken (L826); load not stated per sweep (the cube was re-seated before the 12:59 run, L865).",
+     "uncertain": "Caps not restated after the 10-14 re-termination (last stated 80/180, 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L554) and no no-tuner sweep was taken (L826); load not stated per sweep (the cube was re-seated before the 12:59 run, L865).",
      "path": "2026-10-13_O7-4core_parallel_build/final-network/AIT_T1.70_L1.66_senseloop_nanovna-sweep-1791996232706.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/final-network/AIT_T1.70_L1.66_senseloop_nanovna-sweep-1791996232706"
@@ -56,7 +56,7 @@
      "condition": null,
      "label": "2026-10-14: tuner retune T1.70 / L1.74 V: |S11| 0.0026 at 13.560 MHz (no .s1p extension)",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L821-826",
-     "uncertain": "Caps not restated after the 10-14 re-termination (last stated 80/180, 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L554) and no no tuner sweep was taken (L826); load not stated per sweep (the cube was re-seated before the 12:59 run, L865).",
+     "uncertain": "Caps not restated after the 10-14 re-termination (last stated 80/180, 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L554) and no no-tuner sweep was taken (L826); load not stated per sweep (the cube was re-seated before the 12:59 run, L865).",
      "path": "2026-10-13_O7-4core_parallel_build/final-network/retune_AIT_T1.70_L1.74_senseloop_nanovna-sweep-1791996801680.s1p",
      "sources": [
       "2026-10-13_O7-4core_parallel_build/final-network/retune_AIT_T1.70_L1.74_senseloop_nanovna-sweep-1791996801680"
@@ -342,7 +342,7 @@
      "loop": true,
      "load": "electrodes",
      "condition": "power-ready",
-     "label": "FINAL no tuner result: series 80 (50+30) / shunt 180 (100+50+30), loop + probe connected: Z(13.56) 7.81 + j27.89 ohm, mid-window",
+     "label": "FINAL no-tuner result: series 80 (50+30) / shunt 180 (100+50+30), loop + probe connected: Z(13.56) 7.81 + j27.89 ohm, mid-window",
      "evidence": "file name; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L521, L554-559; 2026-10-13_O7-4core_parallel_build/SWEEP_NOTES.md:L28",
      "uncertain": null,
      "path": "2026-10-13_O7-4core_parallel_build/single-transformer/noAIT_sense-loop_80ser_180sh_full_4core_parallel_315turnsratio_load_nanovna-sweep-1791933400391.s1p",
@@ -613,7 +613,7 @@
      "condition": null,
      "label": "Unit N 100/300, one loop, probe unclipped: resonance 14.56 MHz",
      "evidence": "file name; 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L2390",
-     "uncertain": "The tuner state is not restated for this sweep (it sits in the no tuner series, 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L2371-2384), and the load is not stated per sweep.",
+     "uncertain": "The tuner state is not restated for this sweep (it sits in the no-tuner series, 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L2371-2384), and the load is not stated per sweep.",
      "path": "2026-10-09/C+D_new_network/100ser_300sh_no-probe_nanovna-sweep-1791574790812.s1p",
      "sources": [
       "2026-10-09/C+D_new_network/100ser_300sh_no-probe_nanovna-sweep-1791574790812.s1p"
@@ -677,7 +677,7 @@
      "condition": null,
      "label": "Unit N 100/300, rep 4, primary turns moved away from the secondary; second loop cut off before this sweep: resonance 14.54 MHz (no change)",
      "evidence": "file name; 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L2389-2390",
-     "uncertain": "The tuner state is not restated for this sweep (it sits in the no tuner series, 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L2371-2384), and the load is not stated per sweep.",
+     "uncertain": "The tuner state is not restated for this sweep (it sits in the no-tuner series, 2026-09-24_MATERIAL67_TRANSFORMER_FAILURE_AND_REDESIGN_RECORD.md:L2371-2384), and the load is not stated per sweep.",
      "path": "2026-10-09/C+D_new_network/100ser_300sh_rep4_primary-away-from-secondary_nanovna-sweep-1791574642432.s1p",
      "sources": [
       "2026-10-09/C+D_new_network/100ser_300sh_rep4_primary-away-from-secondary_nanovna-sweep-1791574642432.s1p"
