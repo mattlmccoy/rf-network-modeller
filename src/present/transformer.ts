@@ -120,3 +120,7 @@ export function fPriSolutions(loopV: (fPri: number) => number, measured: number)
   if (g[n] === 0) out.push(1);
   return out;
 }
+
+/** Leakage splits for a loop reading taken at `readingW`, with loopV evaluated at `planW`: V scales with √P (engine spec §10). */
+export const fPriAtPower = (loopV: (fPri: number) => number, reading: number, readingW: number, planW: number): number[] =>
+  fPriSolutions(loopV, reading * Math.sqrt(planW / readingW));

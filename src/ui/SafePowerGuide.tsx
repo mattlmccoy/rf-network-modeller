@@ -3,7 +3,7 @@ import type { BranchCache } from '../chain/types.ts';
 import type { Action, AppState } from '../app/state.ts';
 import type { Level } from '../present/level.ts';
 import { capStress, powerText } from '../present/power.ts';
-import { fPriSolutions, fitBranchTModel, transformerView } from '../present/transformer.ts';
+import { fPriAtPower, fitBranchTModel, transformerView } from '../present/transformer.ts';
 import { DraftNumberInput } from './DraftNumberInput.tsx';
 
 /** Never green while a current-carrying part has no rating (review I6). */
@@ -27,6 +27,7 @@ function TurnsForm({ onSave }: { onSave: (t: { nP: number; nS: number; nC: numbe
 export function SafePowerGuide({ state, dispatch, level, grid, caches }: { state: AppState; dispatch: Dispatch<Action>; level: Level; grid: number[]; caches: BranchCache[] }) {
   const [fitting, setFitting] = useState<string | null>(null);
   const [loopMeasured, setLoopMeasured] = useState<number | null>(null);
+  const [loopAtW, setLoopAtW] = useState<number | null>(null);
   const cs = useMemo(() => capStress(state, grid, state.powerW, caches), [state.chain, state.fits, state.variants, state.sweeps, state.powerW, grid]);
   const tv = useMemo(() => transformerView(state, grid, state.powerW, caches), [state.chain, state.fits, state.variants, state.primary, state.sweeps, state.powerW, state.tmodel, grid]);
   const fit = (): void => {
@@ -40,7 +41,8 @@ export function SafePowerGuide({ state, dispatch, level, grid, caches }: { state
       }
     }, 50);
   };
-  const sols = tv.kind === 'ranges' && tv.loopV && loopMeasured !== null ? fPriSolutions(tv.loopV, loopMeasured) : null;
+  const readingW = loopAtW ?? state.powerW;
+  const sols = tv.kind === 'ranges' && tv.loopV && loopMeasured !== null ? fPriAtPower(tv.loopV, loopMeasured, readingW, state.powerW) : null;
   const pct = (fp: number): string => `${(fp * 100).toFixed(0)} %`;
   return (
     <section className="panel guide">
@@ -92,9 +94,12 @@ export function SafePowerGuide({ state, dispatch, level, grid, caches }: { state
                     <tbody>{tv.ranges[0].points.map((p) => <tr key={p.fPri}><td>{p.fPri.toFixed(1)}</td><td>{p.bPk_mT.toFixed(2)}</td><td>{p.vLoopRms.toFixed(1)}</td></tr>)}</tbody>
                   </table>
                   {tv.loopV ? (
-                    <div className="form-row"><label>Measured loop voltage (V rms)</label><DraftNumberInput min="0" step="any" value={loopMeasured ?? 0} onCommit={(v) => setLoopMeasured(v > 0 ? v : null)} /></div>
+                    <>
+                      <div className="form-row"><label>Measured loop voltage (V rms)</label><DraftNumberInput min="0" step="any" value={loopMeasured ?? 0} onCommit={(v) => setLoopMeasured(v > 0 ? v : null)} /></div>
+                      <div className="form-row"><label>Measured at (W)</label><DraftNumberInput min="1" step="any" value={readingW} onCommit={(w) => setLoopAtW(w > 0 ? w : null)} /></div>
+                    </>
                   ) : null}
-                  {sols ? <small>{sols.length === 0 ? `No leakage split from 0 to 1 gives ${loopMeasured} V on the loop: the model structure, not the split, is off.` : sols.length === 1 ? `That reading means ${pct(sols[0])} of the leakage sits on the primary.` : `That reading fits ${sols.map(pct).join(' or ')} of the leakage on the primary; one sweep can't tell which.`}</small> : null}
+                  {sols ? <small>{sols.length === 0 ? `No leakage split from 0 to 1 gives ${loopMeasured} V on the loop at ${readingW} W: the model structure, not the split, is off.` : sols.length === 1 ? `That reading means ${pct(sols[0])} of the leakage sits on the primary.` : `That reading fits ${sols.map(pct).join(' or ')} of the leakage on the primary; one sweep can't tell which.`}</small> : null}
                   <p>{tv.source === 'branch'
                     ? `The measured part absorbs ${tv.branchW === null ? '?' : tv.branchW.toFixed(0)} W; the split between transformer, plates and part can't be identified from a one-port sweep.`
                     : `Power: ${tv.split.map((x) => `${x.label} ${x.watts.toFixed(1)} W`).join(' · ')}`}</p>

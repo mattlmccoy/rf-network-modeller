@@ -7,7 +7,7 @@ import { type ExampleManifest, exampleState } from '../app/example.ts';
 import { defaultGrid, evalGrid } from '../app/grid.ts';
 import { emptyState } from '../app/state.ts';
 import { ROOT, readFixtureJson } from '../testutil.ts';
-import { fPriSolutions, fitBranchTModel, transformerView } from './transformer.ts';
+import { fPriAtPower, fPriSolutions, fitBranchTModel, transformerView } from './transformer.ts';
 
 const read = (p: string): string => readFileSync(new URL(p, ROOT), 'utf8');
 const m = JSON.parse(read('public/examples/o7/o7.json')) as ExampleManifest;
@@ -82,4 +82,14 @@ test('the stated range is the true minimum and maximum over 0–0.5, not six sam
   assert.ok(Math.abs(e.bMin - 0.075) < 0.01 && Math.abs(e.vMin - 0.715) < 0.02, JSON.stringify(e));
   assert.ok(Math.abs(e.bMax - 6.31) < 0.01 && Math.abs(e.vMax - 60.0) < 0.1, JSON.stringify(e));
   assert.equal(v.ranges[0].points.length, 6, 'the Engineer table keeps six rows');
+});
+
+test('a scope reading is compared at the power it was taken at, since loop voltage scales with √P (Plan 3B review I3)', () => {
+  const at500 = transformerView(ex, grid, 500);
+  const at300 = transformerView(ex, grid, 300);
+  assert.ok(at500.kind === 'ranges' && at500.loopV && at300.kind === 'ranges' && at300.loopV);
+  const viaPlan = fPriAtPower(at500.loopV, 20, 300, 500);
+  const direct = fPriSolutions(at300.loopV, 20);
+  assert.equal(viaPlan.length, direct.length);
+  viaPlan.forEach((fp, i) => assert.ok(Math.abs(fp - direct[i]) < 1e-6, `${fp} vs ${direct[i]}`));
 });
