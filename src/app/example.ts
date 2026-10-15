@@ -3,11 +3,11 @@ import { AIT_WINDOW, DEFAULT_VARIANTS, O7_LOOP_REF, O7_REFS, o7Chain, o7State } 
 import { parseS1p } from '../io/s1p.ts';
 import type { Sweep } from '../io/sweep.ts';
 import { structureKey } from '../present/circuit.ts';
-import type { AppState } from './state.ts';
+import type { AppState, TModel } from './state.ts';
 
 export interface ExampleSweep { id: string; file: string; label: string; series: number[]; shunt: number[]; loop: boolean }
 export interface ExampleFit { variant: string; x: number[]; q: number; source: string }
-export interface ExampleManifest { name: string; capFree: string; sweeps: ExampleSweep[]; fits: ExampleFit[] }
+export interface ExampleManifest { name: string; capFree: string; sweeps: ExampleSweep[]; fits: ExampleFit[]; tmodel?: TModel }
 
 const sweepOf = (id: string, file: string, text: string | undefined): Sweep => {
   if (text === undefined) throw new Error(`example file ${file} is missing`);
@@ -32,6 +32,7 @@ export function exampleState(m: ExampleManifest, texts: Record<string, string>):
     stock: DEFAULT_STOCK,
     window: AIT_WINDOW,
     powerW: 500,
+    tmodel: m.tmodel ?? null,
     selected: null,
     panes: ['smith', 's11db', 'rx', 'vswr'],
   };

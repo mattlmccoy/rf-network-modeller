@@ -54,3 +54,11 @@ test('open rejects fits and blocks that would crash the workbench (review I5)', 
   const withSweeps = bad((j) => { const k = Object.keys(j.project.fits)[0]; j.project.fits[k].sweeps = ['o7-80-200']; });
   assert.doesNotThrow(() => fromProjectJson(withSweeps), 'a fit may record the sweeps it was made from');
 });
+
+test('a Plan 3A file without a transformer model opens with none; a malformed one is rejected', () => {
+  const j = JSON.parse(toProjectJson(ex, T));
+  delete j.project.tmodel;
+  assert.equal(fromProjectJson(JSON.stringify(j)).state.tmodel, null);
+  j.project.tmodel = { variant: 'x', unit: 'nope', load: {}, rmsRel: 0.1 };
+  assert.throws(() => fromProjectJson(JSON.stringify(j)), /its transformer model is malformed/);
+});

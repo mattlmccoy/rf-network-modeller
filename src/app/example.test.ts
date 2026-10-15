@@ -69,3 +69,14 @@ test('points where a measured branch is read outside its sweep are marked per fr
   assert.equal(r.clamped[k(13.56e6)], false);
   assert.equal(r.clamped[k(17e6)], true);
 });
+
+test('the example ships the Python T-model for the first cable assumption, and the O7 pair knows its turns', () => {
+  const s = exampleState(m, texts);
+  const tm = readFixtureJson<{ tmodel: { unit: unknown; load: unknown } }>('tmodel_short.json').tmodel;
+  assert.equal(s.tmodel?.variant, DEFAULT_VARIANTS[0].name);
+  assert.deepEqual(s.tmodel?.unit, tm.unit);
+  assert.deepEqual(s.tmodel?.load, tm.load);
+  const b = s.chain.blocks.flatMap((x) => (x.type === 'shunt' ? x.chain : [x])).find((x) => x.id === 'branch');
+  assert.ok(b?.type === 'measuredBranch');
+  assert.deepEqual(b.transformer, { nP: 3, nS: 15, nC: 4 });
+});

@@ -109,3 +109,16 @@ test('setCircuitState applies bank picks and skips blocks that are gone; setFits
 test('emptyState plans for 500 W', () => {
   assert.equal(emptyState().powerW, 500);
 });
+
+test('setPower takes a finite positive power and ignores anything else (review focus 1)', () => {
+  assert.equal(reducer(base, { type: 'setPower', watts: 300 }).powerW, 300);
+  for (const w of [0, -5, Number.NaN, Number.POSITIVE_INFINITY]) assert.equal(reducer(base, { type: 'setPower', watts: w }).powerW, 500);
+});
+
+test('setTModel stores or clears the transformer model', () => {
+  const tm = { variant: 'v', unit: { n: 5, L_leak: 1e-6, f_pri: 0, L_m: 1e-6, G_core: 1e-4, R1: 1, R2: 9, C_w: 0, N_p: 3, N_c: 4 }, load: { C: 7e-12, G_cube: 0, G_fix: 0 }, rmsRel: 0.05 };
+  const s = reducer(base, { type: 'setTModel', tmodel: tm });
+  assert.deepEqual(s.tmodel, tm);
+  assert.equal(reducer(s, { type: 'setTModel', tmodel: null }).tmodel, null);
+  assert.equal(emptyState().tmodel, null);
+});

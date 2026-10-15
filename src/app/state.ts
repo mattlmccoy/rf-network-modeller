@@ -1,4 +1,5 @@
 import { type Counts, DEFAULT_STOCK } from '../blocks/ht50.ts';
+import type { PlateLoad, Unit } from '../engine/transformer.ts';
 import { AIT_WINDOW, DEFAULT_VARIANTS } from '../chain/presets.ts';
 import { type StateOverrides, allBlocks, applyState, findBlock, updateBlock } from '../chain/state.ts';
 import type { Block, Chain, Param, Variant, Window } from '../chain/types.ts';
@@ -24,6 +25,9 @@ export interface FitValues {
   sweeps?: string[];
 }
 
+/** The stage-1 T-model of a measured branch's cap-free sweep, fitted for one cable assumption (spec §8.3). */
+export interface TModel { variant: string; unit: Unit; load: PlateLoad; rmsRel: number }
+
 /** A loaded caps-in sweep, the circuit state it was taken in, the circuit's structure then, and whether fits use it. */
 export interface TagRef {
   sweepId: string;
@@ -44,6 +48,7 @@ export interface AppState {
   stock: Counts;
   window: Window;
   powerW: number;
+  tmodel: TModel | null;
   selected: string | null;
   panes: PaneMode[];
 }
@@ -68,7 +73,9 @@ export type Action =
   | { type: 'setStock'; stock: Counts }
   | { type: 'retagSweep'; sweepId: string }
   | { type: 'setFits'; fits: Record<string, FitValues> }
-  | { type: 'setCircuitState'; state: StateOverrides };
+  | { type: 'setCircuitState'; state: StateOverrides }
+  | { type: 'setPower'; watts: number }
+  | { type: 'setTModel'; tmodel: TModel | null };
 
 export function emptyState(): AppState {
   return {
@@ -82,6 +89,7 @@ export function emptyState(): AppState {
     stock: DEFAULT_STOCK,
     window: AIT_WINDOW,
     powerW: 500,
+    tmodel: null,
     selected: null,
     panes: ['smith', 's11db', 'rx', 'vswr'],
   };
@@ -186,5 +194,9 @@ export function reducer(s: AppState, a: Action): AppState {
       return { ...s, fits: a.fits };
     case 'setCircuitState':
       return { ...s, chain: applyState(s.chain, knownState(s.chain, a.state)) };
+    case 'setPower':
+      return Number.isFinite(a.watts) && a.watts > 0 ? { ...s, powerW: a.watts } : s;
+    case 'setTModel':
+      return { ...s, tmodel: a.tmodel };
   }
 }

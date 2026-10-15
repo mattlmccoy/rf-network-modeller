@@ -120,5 +120,26 @@
    "q": 4.157587995264539,
    "source": "3-sweep fit + loop shift (o7_loopstate.py recipe, Python), captured by tools/capture_fixtures.py"
   }
- ]
+ ],
+ "tmodel": {
+  "variant": "1.245 m + 342 nH",
+  "unit": {
+   "n": 5,
+   "L_leak": 0.0000011492489047228436,
+   "f_pri": 0,
+   "L_m": 0.0000014896689787020887,
+   "G_core": 0.00021614274973254772,
+   "R1": 0.8822646690692251,
+   "R2": 9.452835740027414,
+   "C_w": 0,
+   "N_p": 3,
+   "N_c": 4
+  },
+  "load": {
+   "C": 7.0942769999019026e-12,
+   "G_cube": 0,
+   "G_fix": 0
+  },
+  "rmsRel": 0.10989730578751848
+ }
 }

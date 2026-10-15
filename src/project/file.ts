@@ -18,7 +18,7 @@ const readBounds = (k: string, v: unknown): unknown => (v === null && k === 'lo'
 
 export function toProjectJson(s: AppState, savedAt: string): string {
   const sweeps = Object.fromEntries(Object.values(s.sweeps).map((w) => [w.id, { name: w.name, f: w.f, gamma: w.gamma.map((g) => [g.re, g.im]) }]));
-  const project = { name: s.chain.name, chain: s.chain, variants: s.variants, primary: s.primary, fits: s.fits, sweeps, tagged: s.tagged, activeSweep: s.activeSweep, stock: s.stock, window: s.window, powerW: s.powerW };
+  const project = { name: s.chain.name, chain: s.chain, variants: s.variants, primary: s.primary, fits: s.fits, sweeps, tagged: s.tagged, activeSweep: s.activeSweep, stock: s.stock, window: s.window, powerW: s.powerW, tmodel: s.tmodel };
   return JSON.stringify({ format: FORMAT, savedAt, project }, writeInfinity);
 }
 
@@ -95,9 +95,10 @@ export function fromProjectJson(text: string): OpenedProject {
   need(isObj(p.stock) && [100, 50, 30].every((v) => isNum(p.stock[v])), 'its parts on hand are malformed');
   need(isObj(p.window) && ['rLo', 'rHi', 'xLo', 'xHi'].every((k) => isNum(p.window[k])), 'its tuner window is malformed');
   need(isNum(p.powerW) && p.powerW > 0, 'its planned power is malformed');
+  need(p.tmodel === undefined || p.tmodel === null || (isObj(p.tmodel) && typeof p.tmodel.variant === 'string' && isObj(p.tmodel.unit) && isObj(p.tmodel.load) && isNum(p.tmodel.rmsRel)), 'its transformer model is malformed');
   return {
     name: p.name,
     savedAt: raw.savedAt,
-    state: { ...emptyState(), chain: p.chain as AppState['chain'], variants: p.variants, primary: p.primary, fits: p.fits, sweeps, tagged: p.tagged, activeSweep: p.activeSweep, stock: p.stock as AppState['stock'], window: p.window as AppState['window'], powerW: p.powerW },
+    state: { ...emptyState(), chain: p.chain as AppState['chain'], variants: p.variants, primary: p.primary, fits: p.fits, sweeps, tagged: p.tagged, activeSweep: p.activeSweep, stock: p.stock as AppState['stock'], window: p.window as AppState['window'], powerW: p.powerW, tmodel: p.tmodel ?? null },
   };
 }

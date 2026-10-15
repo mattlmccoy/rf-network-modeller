@@ -37,7 +37,11 @@ export interface CapBankBlock extends Base {
 }
 export interface InductorBlock extends Base { type: 'inductor'; L: Param; R: number }
 export interface WireBlock extends Base { type: 'wire'; lengthMm: number; awg: number; strands: number }
-export interface MeasuredBranchBlock extends Base { type: 'measuredBranch'; sweepId: string; kr: Param; d: Param; dLb: Param; loop: boolean }
+export interface MeasuredBranchBlock extends Base {
+  type: 'measuredBranch'; sweepId: string; kr: Param; d: Param; dLb: Param; loop: boolean;
+  /** Turns and cores of the measured transformer; only flux needs them (spec §8.3). */
+  transformer?: { nP: number; nS: number; nC: number };
+}
 export interface StackBlock extends Base { type: 'stack'; unit: Unit; source: 'preset' | 'estimate' | 'fit'; design?: Design }
 export interface PlatesBlock extends Base { type: 'plates'; C: Param; G_cube: Param; G_fix: Param }
 export interface PrimitiveBlock extends Base { type: 'primitive'; kind: 'R' | 'L' | 'C' | 'short'; value: Param }
