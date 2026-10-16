@@ -59,11 +59,11 @@ export default function App() {
   // an un-kept Try-a-change trial, with the project it belongs to: autosave writes the circuit from before it (fix review I1)
   const [trial, setTrial] = useState<{ chain: AppState['chain']; fits: AppState['fits']; project: string | null } | null>(null);
   // The tutorial (tutorial spec §3): the running tour and, while practising, the project to return to; projectId stays null so nothing is saved.
-  const [tour, setTour] = useState<{ id: TourId; i: number; atStep: AppState } | null>(null);
+  const [tour, setTour] = useState<{ id: TourId; i: number; atStep: AppState; atTask: Task } | null>(null);
   const [practice, setPractice] = useState<{ returnTo: string | null } | null>(null);
   const [offerTour, setOfferTour] = useState(readOffer);
-  const latest = useRef({ state, level, tour });
-  latest.current = { state, level, tour };
+  const latest = useRef({ state, level, tour, task });
+  latest.current = { state, level, tour, task };
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -83,6 +83,7 @@ export default function App() {
     }
     setSheet((s) => (s && PROFILES[level].sheets.includes(s) ? s : null));
     setTask((t) => (t === 'rigHistory' && level !== 'engineer' ? 'home' : t));
+    if (latest.current.tour && !tourById(latest.current.tour.id).levels.includes(level)) void endTour(false); // e.g. the rig-history tour after leaving Engineer
   }, [level]);
 
   // Reopen the last project; fall back to the O7 example with a notice (review focus 1).
@@ -208,8 +209,9 @@ export default function App() {
       dispatch({ type: 'load', state: ex });
       setProjectId(null);
       setTask('home');
-      setTour({ id, i: 0, atStep: ex });
+      setTour({ id, i: 0, atStep: ex, atTask: 'home' });
       setNotice(null);
+      setSave('idle'); // nothing is being saved now: no stale "Saved ✓" during practice or after a failed restore
     } catch (e) {
       setNotice(`Couldn't start the tutorial: ${message(e)}`);
     }
@@ -238,7 +240,7 @@ export default function App() {
 
   /** One step forward or back; the next step starts from the app as it is now (refs: a click step advances after its handler ran). */
   const moveTour = (d: 1 | -1): void => {
-    const { tour: t, level: l, state: s } = latest.current;
+    const { tour: t, level: l, state: s, task: k } = latest.current;
     if (!t) return;
     const n = stepsFor(tourById(t.id), l).length;
     const i = Math.min(t.i, n - 1) + d;
@@ -246,7 +248,7 @@ export default function App() {
       void endTour(true);
       return;
     }
-    setTour({ ...t, i: Math.max(0, i), atStep: s });
+    setTour({ ...t, i: Math.max(0, i), atStep: s, atTask: k });
   };
   const tourSteps = tour ? stepsFor(tourById(tour.id), level) : [];
 
@@ -273,7 +275,7 @@ export default function App() {
         </Sheet>
       ) : null}
       {tour && tourSteps.length ? (
-        <TourOverlay steps={tourSteps} index={Math.min(tour.i, tourSteps.length - 1)} ctx={{ state, atStep: tour.atStep, task, level }}
+        <TourOverlay steps={tourSteps} index={Math.min(tour.i, tourSteps.length - 1)} ctx={{ state, atStep: tour.atStep, task, atTask: tour.atTask, level }}
           onNext={() => moveTour(1)} onBack={() => moveTour(-1)} onExit={() => { void endTour(false); }} />
       ) : null}
     </div>

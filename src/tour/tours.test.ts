@@ -8,7 +8,7 @@ import { stepDone, stepsFor, tourById, toursFor } from './run.ts';
 import { TOURS, type StepCtx, type TourId } from './tours.ts';
 
 const ex = loadExampleState();
-const ctx = (state: AppState, atStep: AppState, task: StepCtx['task'] = 'home', level: Level = 'builder'): StepCtx => ({ state, atStep, task, level });
+const ctx = (state: AppState, atStep: AppState, task: StepCtx['task'] = 'home', level: Level = 'builder', atTask: StepCtx['task'] = 'home'): StepCtx => ({ state, atStep, task, level, atTask });
 const step = (tour: TourId, id: string, level: Level = 'builder') => {
   const s = stepsFor(tourById(tour), level).find((x) => x.id === id);
   assert.ok(s, `${tour}/${id} at ${level}`);
@@ -33,7 +33,7 @@ test('the tour menu follows the level: rig history only at Engineer', () => {
   assert.deepEqual(toursFor('beginner').map((t) => t.id), ['newSweep', 'tryChange', 'safePower', 'newNetwork', 'pastBuilds']);
   assert.deepEqual(toursFor('builder').map((t) => t.id), ['newSweep', 'tryChange', 'safePower', 'newNetwork', 'pastBuilds']);
   assert.equal(toursFor('engineer').at(-1)?.id, 'rigHistory');
-  for (const level of LEVELS) for (const t of toursFor(level)) assert.equal(stepsFor(t, level)[0].target, `tile-${t.task}`, 'each tour opens its task from Home');
+  for (const level of LEVELS) for (const t of toursFor(level)) assert.equal(stepsFor(t, level)[0].target, `tile-${t.id}`, 'each tour opens its task from Home');
 });
 
 test('steps resolve per level: the result is read where that level shows it; Builder-only steps drop at Beginner', () => {
@@ -76,4 +76,13 @@ test('state steps complete only after the user acts, never at the state they sta
   assert.equal(stepDone(step('rigHistory', 'copy', 'engineer'), ctx(ex, ex, 'rigHistory', 'engineer')), false);
   assert.equal(stepDone(step('rigHistory', 'copy', 'engineer'), ctx(ex, ex, 'pastBuilds', 'engineer')), true);
   assert.equal(stepDone(step('newSweep', 'power'), ctx(ex, ex, 'newSweep')), false, 'look steps never complete on their own');
+});
+
+test('a blur that commits the same value is not a change; Back onto "Open the task" waits for the user (final review I2, M4)', () => {
+  const picked = reducer(ex, { type: 'select', id: 'sh' });
+  const same = reducer(picked, { type: 'patchBlock', id: 'sh', patch: { customPf: 0 } });
+  assert.notEqual(same.chain, picked.chain, 'the reducer builds a new circuit object');
+  assert.equal(stepDone(step('tryChange', 'change'), ctx(same, picked, 'tryChange')), false, 'but nothing changed');
+  assert.equal(stepDone(step('newSweep', 'open'), ctx(ex, ex, 'newSweep', 'builder', 'newSweep')), false, 'already on the task when the step began');
+  assert.equal(stepDone(step('rigHistory', 'copy', 'engineer'), ctx(ex, ex, 'pastBuilds', 'engineer', 'pastBuilds')), false);
 });

@@ -22,7 +22,7 @@ export function DraftNumberInput({ value, onCommit, ...props }: DraftNumberInput
       else setDraft(String(value));
       return false;
     }
-    onCommit(parsed);
+    if (parsed !== value) onCommit(parsed); // an unchanged value is not an edit (no false "Changed", final review I2)
     setDraft(String(parsed));
     return true;
   }

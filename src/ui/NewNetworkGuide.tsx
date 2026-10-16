@@ -37,8 +37,8 @@ export function NewNetworkGuide({ state, dispatch, level, onNewProject, verdictL
     }
   };
   const add = (): void => dispatch({ type: 'place', targetId: sel?.id ?? null, where: w, block: newBlock(state.chain, k, k === 'measuredBranch' ? sw : '', reservedIds(state)) });
-  const step = (n: number, title: string, body: ReactNode, live = true, anchor?: string): ReactNode => (
-    <section className={`step ${live ? 'active' : 'waiting'}`} key={n} data-tour={anchor}><h4><span className="step-mark">{n}</span>{title}</h4>{live ? body : null}</section>
+  const step = (n: number, title: string, body: ReactNode, live = true): ReactNode => (
+    <section className={`step ${live ? 'active' : 'waiting'}`} key={n}><h4><span className="step-mark">{n}</span>{title}</h4>{live ? body : null}</section>
   );
   return (
     <section className="panel guide">
@@ -71,7 +71,7 @@ export function NewNetworkGuide({ state, dispatch, level, onNewProject, verdictL
         </>
       ), started)}
       {level === 'engineer' ? step(3, 'Rig settings', <RigSettings state={state} dispatch={dispatch} />, started) : null}
-      {step(level === 'engineer' ? 4 : 3, 'What it predicts', <p>{hasModel(state.chain) ? verdictLine : 'Add parts to get a prediction.'}</p>, true, 'predict')}
+      <div data-tour="predict">{step(level === 'engineer' ? 4 : 3, 'What it predicts', <p>{hasModel(state.chain) ? verdictLine : 'Add parts to get a prediction.'}</p>)}</div>
     </section>
   );
 }

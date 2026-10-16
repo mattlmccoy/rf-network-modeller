@@ -4,12 +4,12 @@ import type { Level } from '../present/level.ts';
 import type { Task } from '../ui/Home.tsx';
 
 export type TourId = 'newSweep' | 'tryChange' | 'safePower' | 'newNetwork' | 'pastBuilds' | 'rigHistory';
-/** What a step's completion is judged on: the app now, the app when the step began, the open task and the level. */
-export interface StepCtx { state: AppState; atStep: AppState; task: Task; level: Level }
+/** What a step's completion is judged on: the app and the open task now and when the step began, and the level. */
+export interface StepCtx { state: AppState; atStep: AppState; task: Task; atTask: Task; level: Level }
 export type Advance = { kind: 'next' } | { kind: 'click' } | { kind: 'state'; done: (c: StepCtx) => boolean };
 export type PerLevel<T> = T | { beginner?: T; builder?: T; engineer?: T };
 export interface Step { id: string; title: string; text: PerLevel<string>; target: PerLevel<string | null>; advance: Advance; levels?: readonly Level[] }
-export interface Tour { id: TourId; task: Task; title: string; minutes: number; blurb: string; levels: readonly Level[]; steps: readonly Step[] }
+export interface Tour { id: TourId; title: string; minutes: number; blurb: string; levels: readonly Level[]; steps: readonly Step[] }
 
 const ALL: readonly Level[] = ['beginner', 'builder', 'engineer'];
 const ABOVE: readonly Level[] = ['builder', 'engineer'];
@@ -17,13 +17,13 @@ const ids = (s: AppState): string[] => allBlocks(s.chain.blocks).map((b) => b.id
 const next: Advance = { kind: 'next' };
 const click: Advance = { kind: 'click' };
 const when = (done: (c: StepCtx) => boolean): Advance => ({ kind: 'state', done });
-const open = (task: Task, title: string, text: string): Step => ({ id: 'open', title, text, target: `tile-${task}`, advance: when((c) => c.task === task) });
+const open = (task: Task, title: string, text: string): Step => ({ id: 'open', title, text, target: `tile-${task}`, advance: when((c) => c.task === task && c.atTask !== task) });
 const DRAWING = { beginner: 'power-flow drawing', builder: 'hardware drawing', engineer: 'schematic' } as const;
 
 /** The tours, one per Home task (spec §5). Text says where to look, never a number. */
 export const TOURS: readonly Tour[] = [
   {
-    id: 'newSweep', task: 'newSweep', title: 'I measured a new sweep', minutes: 3, levels: ALL,
+    id: 'newSweep', title: 'I measured a new sweep', minutes: 3, levels: ALL,
     blurb: 'Load a sweep, read what it says, and find the next change to make.',
     steps: [
       open('newSweep', 'Open the task', 'Click “I measured a new sweep”. This is the task to use after every VNA sweep.'),
@@ -52,7 +52,7 @@ export const TOURS: readonly Tour[] = [
     ],
   },
   {
-    id: 'tryChange', task: 'tryChange', title: 'Try a change first', minutes: 2, levels: ALL,
+    id: 'tryChange', title: 'Try a change first', minutes: 2, levels: ALL,
     blurb: 'Change a part and see what the VNA would show, before touching the board.',
     steps: [
       open('tryChange', 'Open the task', 'Click “Try a change first”. Use it to check a change before you build it.'),
@@ -62,7 +62,8 @@ export const TOURS: readonly Tour[] = [
           builder: `Click the shunt bank in the ${DRAWING.builder}.`,
           engineer: `Click the shunt bank in the ${DRAWING.engineer}.`,
         } },
-      { id: 'change', title: 'Change it', target: 'editor', advance: when((c) => c.state.chain !== c.atStep.chain),
+      // compared by content: a field that commits its unchanged value still builds a new circuit object (final review I2)
+      { id: 'change', title: 'Change it', target: 'editor', advance: when((c) => JSON.stringify(c.state.chain.blocks) !== JSON.stringify(c.atStep.chain.blocks)),
         text: 'The part editor opens beside the drawing (below it on a phone). Change one of the part counts, for example add a 100 pF part.' },
       { id: 'compare', title: 'Before and now', target: 'what-it-does', advance: next,
         text: {
@@ -75,7 +76,7 @@ export const TOURS: readonly Tour[] = [
     ],
   },
   {
-    id: 'safePower', task: 'safePower', title: 'Safe at full power?', minutes: 2, levels: ALL,
+    id: 'safePower', title: 'Safe at full power?', minutes: 2, levels: ALL,
     blurb: 'Check the capacitors, and the transformer, at the power you plan to run.',
     steps: [
       open('safePower', 'Open the task', 'Click “Safe at full power?”. It checks the parts at the power you plan to run.'),
@@ -90,7 +91,7 @@ export const TOURS: readonly Tour[] = [
     ],
   },
   {
-    id: 'newNetwork', task: 'newNetwork', title: 'Start a new network', minutes: 3, levels: ALL,
+    id: 'newNetwork', title: 'Start a new network', minutes: 3, levels: ALL,
     blurb: 'Start the next build from a template, then add, move and remove parts.',
     steps: [
       open('newNetwork', 'Open the task', 'Click “Start a new network”. Use it to plan the next build.'),
@@ -113,7 +114,7 @@ export const TOURS: readonly Tour[] = [
     ],
   },
   {
-    id: 'pastBuilds', task: 'pastBuilds', title: 'Look back at past builds', minutes: 1, levels: ALL,
+    id: 'pastBuilds', title: 'Look back at past builds', minutes: 1, levels: ALL,
     blurb: 'Find an old build and compare two of them.',
     steps: [
       open('pastBuilds', 'Open the task', 'Click “Look back at past builds”. It lists every build saved in this browser.'),
@@ -126,13 +127,13 @@ export const TOURS: readonly Tour[] = [
     ],
   },
   {
-    id: 'rigHistory', task: 'rigHistory', title: 'Rig history', minutes: 2, levels: ['engineer'],
+    id: 'rigHistory', title: 'Rig history', minutes: 2, levels: ['engineer'],
     blurb: 'Every configuration ever swept on the rig, read-only.',
     steps: [
       open('rigHistory', 'Open the task', 'Click “Rig history”. It lists every sweep ever taken on the rig, day by day.'),
       { id: 'session', title: 'One rig session', target: 'session', advance: next,
         text: 'Each card is one day on the rig: what was built, the rig, and its sweeps. Open its sweeps to read each one with its evidence and anything that is uncertain.' },
-      { id: 'copy', title: 'Open a copy', target: 'open-copy', advance: when((c) => c.task === 'pastBuilds'),
+      { id: 'copy', title: 'Open a copy', target: 'open-copy', advance: when((c) => c.task === 'pastBuilds' && c.atTask !== 'pastBuilds'),
         text: '“Open a copy” loads that day’s sweeps as a project. Click it.' },
       { id: 'measured', title: 'Measured only', target: 'project-head', advance: next,
         text: 'The copy appears in Past builds marked “measured only”: it shows what the sweeps measured, with no model predictions.' },

@@ -21,7 +21,7 @@ export function Home({ onTask, level, onTour, offerTour, onDismissOffer }: { onT
   return (
     <main className="home">
       {offerTour ? (
-        <div className="tour-banner" data-tour="tour-banner">
+        <div className="tour-banner">
           <span>New here? Take the 2-minute tour of the main task.</span>
           <button onClick={() => { onDismissOffer(); onTour('newSweep'); }}>Take the tour</button>
           <button onClick={onDismissOffer}>No thanks</button>
@@ -35,7 +35,7 @@ export function Home({ onTask, level, onTour, offerTour, onDismissOffer }: { onT
             <span>{t.text}</span>
           </button>
         ))}
-        <button className="tile" data-tour="learn" onClick={() => setLearn((x) => !x)}><b>Learn the tool</b><span>Short hands-on tours, one per task</span></button>
+        <button className="tile" onClick={() => setLearn((x) => !x)}><b>Learn the tool</b><span>Short hands-on tours, one per task</span></button>
       </div>
       {learn ? <LearnMenu level={level} onStart={onTour} /> : null}
     </main>

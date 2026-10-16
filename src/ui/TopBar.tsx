@@ -35,7 +35,7 @@ export function TopBar(p: TopBarProps) {
         {p.practice ? (
           <>
             <span className="save-status practice" role="status">Practice: nothing here is saved</span>
-            <button data-tour="exit-tour" onClick={p.onExitTour}>Exit tutorial</button>
+            <button onClick={p.onExitTour}>Exit tutorial</button>
           </>
         ) : <span className={`save-status ${p.save}`} role="status">{SAVE_TEXT[p.save]}</span>}
         {p.sheets.map((s) => <button key={s} onClick={() => p.onSheet(s)}>{SHEET_TEXT[s]}</button>)}

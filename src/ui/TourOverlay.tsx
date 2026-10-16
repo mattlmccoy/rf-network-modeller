@@ -40,7 +40,7 @@ export function TourOverlay({ steps, index, ctx, onNext, onBack, onExit }: { ste
   }, [step.id, step.target]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') onExit();
+      if (e.key === 'Escape' && !e.defaultPrevented) onExit(); // a field that used Escape to cancel its edit keeps the tour
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);

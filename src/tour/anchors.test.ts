@@ -9,6 +9,7 @@ import { TOURS } from './tours.ts';
 
 const walk = (dir: URL): string[] => readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(new URL(`${e.name}/`, dir)) : e.name.endsWith('.tsx') ? [readFileSync(new URL(e.name, dir), 'utf8')] : []));
 const ui = walk(new URL('src/ui/', ROOT)).join('\n');
+const lines = ui.split('\n');
 
 test('every tour target is an anchor in the UI, so tours cannot drift away from the screens (spec §7)', () => {
   const targets = new Set(TOURS.flatMap((t) => LEVELS.filter((l) => t.levels.includes(l)).flatMap((l) => stepsFor(t, l).map((s) => s.target))).filter((x): x is string => x !== null));
@@ -20,7 +21,8 @@ test('every tour target is an anchor in the UI, so tours cannot drift away from 
     } else if (id.startsWith('tile-')) {
       assert.ok(ui.includes('data-tour={`tile-${'), 'Home tiles carry tile anchors');
     } else {
-      assert.ok(ui.includes(`data-tour="${id}"`) || ui.includes(`'${id}'`), `anchor ${id} exists in src/ui`);
+      // a quoted id counts only on a line that sets an anchor, so an unrelated string with the same name cannot pass (final review I3)
+      assert.ok(ui.includes(`data-tour="${id}"`) || lines.some((l) => l.includes(`'${id}'`) && /data-tour|tour=|ANCHOR/.test(l)), `anchor ${id} exists in src/ui`);
     }
   }
 });
