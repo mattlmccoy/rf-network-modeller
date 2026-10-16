@@ -19,9 +19,16 @@ export const tourById = (id: TourId): Tour => {
   return t;
 };
 
-/** A tour's steps as shown at a level: per-level text and target resolved, level-limited steps dropped. */
-export const stepsFor = (t: Tour, level: Level): ResolvedStep[] =>
-  t.steps.filter((s) => !s.levels || s.levels.includes(level)).map((s) => ({ id: s.id, title: s.title, text: pick(s.text, level), target: pick(s.target, level), advance: s.advance }));
+/**
+ * A tour's steps as shown at a level: per-level text and target resolved, level-limited steps dropped, then the steps of
+ * the tour it carries on into (without that tour's "Open the task"; its ids prefixed so every step stays unique).
+ */
+export function stepsFor(t: Tour, level: Level): ResolvedStep[] {
+  const own = t.steps.filter((s) => !s.levels || s.levels.includes(level)).map((s) => ({ id: s.id, title: s.title, text: pick(s.text, level), target: pick(s.target, level), advance: s.advance }));
+  if (!t.next) return own;
+  const next = tourById(t.next);
+  return [...own, ...stepsFor(next, level).filter((s) => s.id !== 'open').map((s) => ({ ...s, id: `${next.id}.${s.id}` }))];
+}
 
 /** A state step is done once its check holds; click and look steps complete by user action only. */
 export const stepDone = (s: ResolvedStep, c: StepCtx): boolean => s.advance.kind === 'state' && s.advance.done(c);

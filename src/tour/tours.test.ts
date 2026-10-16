@@ -86,3 +86,13 @@ test('a blur that commits the same value is not a change; Back onto "Open the ta
   assert.equal(stepDone(step('newSweep', 'open'), ctx(ex, ex, 'newSweep', 'builder', 'newSweep')), false, 'already on the task when the step began');
   assert.equal(stepDone(step('rigHistory', 'copy', 'engineer'), ctx(ex, ex, 'pastBuilds', 'engineer', 'pastBuilds')), false);
 });
+
+test('the new-sweep tour carries on into the power check: one counter, no second "Open the task", unique steps (Matt 2026-10-15)', () => {
+  const builder = stepsFor(tourById('newSweep'), 'builder');
+  const i = builder.findIndex((s) => s.id === 'safe');
+  assert.equal(builder[i + 1].target, 'power-input', 'after "Check it at full power" comes the planned-power step');
+  assert.equal(builder.length, 8 + 4);
+  assert.equal(stepsFor(tourById('newSweep'), 'beginner').length, 8 + 2, 'Builder-only power steps drop at Beginner');
+  assert.equal(new Set(builder.map((s) => s.id)).size, builder.length);
+  assert.ok(!builder.slice(1).some((s) => s.target?.startsWith('tile-')));
+});

@@ -9,7 +9,8 @@ export interface StepCtx { state: AppState; atStep: AppState; task: Task; atTask
 export type Advance = { kind: 'next' } | { kind: 'click' } | { kind: 'state'; done: (c: StepCtx) => boolean };
 export type PerLevel<T> = T | { beginner?: T; builder?: T; engineer?: T };
 export interface Step { id: string; title: string; text: PerLevel<string>; target: PerLevel<string | null>; advance: Advance; levels?: readonly Level[] }
-export interface Tour { id: TourId; title: string; minutes: number; blurb: string; levels: readonly Level[]; steps: readonly Step[] }
+/** next: a tour this one carries straight on into (its steps follow, without its own "Open the task"). */
+export interface Tour { id: TourId; title: string; minutes: number; blurb: string; levels: readonly Level[]; steps: readonly Step[]; next?: TourId }
 
 const ALL: readonly Level[] = ['beginner', 'builder', 'engineer'];
 const ABOVE: readonly Level[] = ['builder', 'engineer'];
@@ -23,8 +24,8 @@ const DRAWING = { beginner: 'power-flow drawing', builder: 'hardware drawing', e
 /** The tours, one per Home task (spec §5). Text says where to look, never a number. */
 export const TOURS: readonly Tour[] = [
   {
-    id: 'newSweep', title: 'I measured a new sweep', minutes: 3, levels: ALL,
-    blurb: 'Load a sweep, read what it says, and find the next change to make.',
+    id: 'newSweep', title: 'I measured a new sweep', minutes: 4, levels: ALL, next: 'safePower',
+    blurb: 'Load a sweep, read what it says, find the next change to make, and check it at full power.',
     steps: [
       open('newSweep', 'Open the task', 'Click “I measured a new sweep”. This is the task to use after every VNA sweep.'),
       { id: 'confirm', title: 'Say what is installed', target: 'confirm', advance: click,
@@ -48,7 +49,7 @@ export const TOURS: readonly Tour[] = [
       { id: 'changes', title: 'What to change', target: 'changes', advance: next,
         text: 'Step 4 lists capacitor changes you can make from your parts on hand, ranked by the model. “Show on drawing” previews one; “Use this” sets the circuit to it so you can build it and sweep again. When nothing in stock helps, it says what limits you.' },
       { id: 'safe', title: 'Safe at full power?', target: 'to-safe', advance: click,
-        text: 'Last, “Check it at full power” opens the power check for this build. It has its own tour. Click it to finish this one.' },
+        text: 'Last, check this build at the power you plan to run: click “Check it at full power”.' },
     ],
   },
   {
