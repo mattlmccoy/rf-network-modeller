@@ -27,7 +27,7 @@ export function HardwareView({ chain, selected, highlight, onSelect, cableM }: D
       {l.parts.map((p) => {
         const b = findBlock(chain, p.id);
         return (
-          <g key={p.id} className={`part${selected === p.id ? ' selected' : ''}${highlight.includes(p.id) ? ' highlight' : ''}`} onClick={() => onSelect(p.id)} role="button" aria-label={b?.label ?? p.id}>
+          <g key={p.id} className={`part${selected === p.id ? ' selected' : ''}${highlight.includes(p.id) ? ' highlight' : ''}`} data-tour={`part-${p.id}`} onClick={() => onSelect(p.id)} role="button" aria-label={b?.label ?? p.id}>
             <rect x={p.x * S - 4} y={p.y * S - 4} width={p.w * S + 8} height={p.h * S + 8} className="hit" />
             <g transform={frame(p)}>{hardwareSymbol(p, b)}</g>
             <PartLabel p={p} title={b?.label ?? p.id} value={b ? partValue(b, cableM) : ''} />

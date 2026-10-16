@@ -111,7 +111,7 @@ export function Workbench({ task, onTask, onNewProject, onOpenExample, projectId
   return (
     <main className="workbench">
       <div className="wb-main">
-        <section className="panel">
+        <section className="panel" data-tour="drawing">
           <header className="panel-head">
             <h3>Your circuit{dKind === 'flow' ? '' : ': click any part to change it'}</h3>
             <label className="override">Drawing <select value={dKind} onChange={(e) => setDrawing(e.target.value as DrawingKind)}>{DRAWINGS.map((k) => <option key={k} value={k}>{DRAWING_LABEL[k]}</option>)}</select></label>
@@ -137,7 +137,7 @@ export function Workbench({ task, onTask, onNewProject, onOpenExample, projectId
           {rKind === 'target' ? <TargetBox window={state.window} measured={m?.z ?? null} measuredLabel={tag?.label ?? active?.name ?? ''} predicted={modelZ} ghost={task === 'tryChange' ? before : ghost} ghostLabel={task === 'tryChange' ? 'before the change' : 'with the change'} /> : null}
           {rKind !== 'verdict' ? <p className={`verdict-line ${tone}`}>{line}</p> : null}
           {rKind !== 'verdict' && shown.source === 'measured' && modelNow ? <small>{fittedVariants(state).some(Boolean) ? 'Model' : 'Estimate'} for this build: {verdictText(modelNow.v, lvl, modelNow.c)}</small> : null}
-          {power ? <p className={`verdict-line ${powerTone(power)}`}>{powerText(power, level)}</p> : null}
+          {power ? <p className={`verdict-line ${powerTone(power)}`} data-tour="power-line">{powerText(power, level)}</p> : null}
           {rKind === 'target' ? <p className="rx-readout">At the tuner, 13.56 MHz. {active ? `Your sweep${nearest}: ${plainRX(m?.z ?? null)}. ` : ''}{model ? `${shown.estimate ? 'Estimate' : 'Model'}: ${plainRX(modelZ)}.` : ''}</p> : null}
           {rKind === 'plots' ? <EngineerPanel state={state} dispatch={dispatch} grid={grid} results={results} theme={theme} /> : null}
           {rKind !== 'verdict' && note ? <small>{note}</small> : null}

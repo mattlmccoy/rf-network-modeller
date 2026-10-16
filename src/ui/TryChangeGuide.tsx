@@ -14,7 +14,7 @@ export function TryChangeGuide({ state, dispatch, level, baseline, onKeep, verdi
   const status = tryChangeStatus(state.selected !== null, changed);
   const note = trustText(trust(state.chain, state.tagged), level);
   const step = (n: number, title: string, body: ReactNode): ReactNode => (
-    <section className={`step ${status[n]}`} key={n}>
+    <section className={`step ${status[n]}`} key={n} data-tour={n === 2 ? 'what-it-does' : undefined}>
       <h4><span className="step-mark">{status[n] === 'done' ? '✓' : n + 1}</span>{title}</h4>
       {status[n] === 'waiting' ? null : body}
     </section>
@@ -31,7 +31,7 @@ export function TryChangeGuide({ state, dispatch, level, baseline, onKeep, verdi
           {note ? <small>{note}</small> : null}
           {level === 'builder' ? <small>The dashed ring in the target box marks where it was before the change.</small> : null}
           <div className="row">
-            <button onClick={onKeep}>Keep this change</button>
+            <button data-tour="keep" onClick={onKeep}>Keep this change</button>
             <button onClick={() => dispatch({ type: 'load', state: { ...state, chain: baseline.chain, fits: baseline.fits } })}>Undo</button>
           </div>
           <small>This is a trial: leaving this task without “Keep this change” puts the circuit back.</small>

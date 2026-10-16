@@ -64,11 +64,11 @@ export function RigHistory({ onCopy }: { onCopy: (s: AppState) => void }) {
   return (
     <main className="past">
       <p>{index.sessions.length} sessions, {index.sessions.reduce((n, s) => n + s.sweeps.length, 0)} sweeps, newest first; undated files last. Read-only copies of {index.source}. Impedances quoted in labels come from the notes and can differ slightly from the file. Load: cube = powder and cube between connected plates; electrodes = plates connected, contents not recorded; none = no load: plates bare or nothing connected to them.</p>
-      {index.sessions.map((s) => (
-        <section className="panel" key={s.id}>
+      {index.sessions.map((s, si) => (
+        <section className="panel" key={s.id} data-tour={si === 0 ? 'session' : undefined}>
           <header className="panel-head">
             <h3>{s.date ?? 'date unknown'}</h3>
-            <button disabled={busy || !s.sweeps.length} onClick={() => { void copy(s); }}>Open a copy</button>
+            <button data-tour={si === 0 ? 'open-copy' : undefined} disabled={busy || !s.sweeps.length} onClick={() => { void copy(s); }}>Open a copy</button>
           </header>
           <p><b>{s.title}</b></p>
           {status[s.id] ? <small>{status[s.id]}</small> : null}

@@ -62,7 +62,7 @@ export const TOURS: readonly Tour[] = [
           builder: `Click the shunt bank in the ${DRAWING.builder}.`,
           engineer: `Click the shunt bank in the ${DRAWING.engineer}.`,
         } },
-      { id: 'change', title: 'Change it', target: 'part-editor', advance: when((c) => c.state.chain !== c.atStep.chain),
+      { id: 'change', title: 'Change it', target: 'editor', advance: when((c) => c.state.chain !== c.atStep.chain),
         text: 'The part editor opens beside the drawing (below it on a phone). Change one of the part counts, for example add a 100 pF part.' },
       { id: 'compare', title: 'Before and now', target: 'what-it-does', advance: next,
         text: {

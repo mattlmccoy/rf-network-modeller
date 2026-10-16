@@ -19,7 +19,7 @@ export function Home({ onTask, level }: { onTask: (t: Task) => void; level: Leve
       <h2>What are you doing today?</h2>
       <div className="tiles">
         {TILES.filter((t) => !t.engineerOnly || level === 'engineer').map((t) => (
-          <button key={t.title} className="tile" onClick={() => onTask(t.task)}>
+          <button key={t.title} className="tile" data-tour={`tile-${t.task}`} onClick={() => onTask(t.task)}>
             <b>{t.title}</b>
             <span>{t.text}</span>
           </button>

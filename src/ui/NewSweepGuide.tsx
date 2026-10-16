@@ -24,6 +24,9 @@ function rowText(r: RecRow, level: Level, watts: number): string {
   return `${v} · ${st}`;
 }
 
+/** Tutorial anchors on the guide's steps (spec: tutorial §6). */
+const STEP_ANCHOR: Record<number, string> = { 2: 'agree', 3: 'changes' };
+
 const MEASURED_ONLY = <p>This project holds measured sweeps only, so there is no model to compare with or to suggest changes from.</p>;
 
 export interface GuideProps {
@@ -159,7 +162,7 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
   };
 
   const step = (n: number, title: string, body: ReactNode): ReactNode => (
-    <section className={`step ${status[n]}`} key={n}>
+    <section className={`step ${status[n]}`} key={n} data-tour={STEP_ANCHOR[n]}>
       <h4><span className="step-mark">{status[n] === 'done' ? '✓' : n + 1}</span>{title}</h4>
       {status[n] === 'waiting' ? null : body}
     </section>
@@ -174,7 +177,7 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
           <p>{tagSummary(state.chain, snapshotState(state.chain)) || 'No capacitor banks or sense loop in this circuit.'}</p>
           {sameAsLast ? <small>Same as your last build.</small> : null}
           <div className="row">
-            <button onClick={() => { setConfirmedFor(circuit); setUsedChange(false); }} disabled={confirmed}>{confirmed ? 'Confirmed' : "That's what's installed"}</button>
+            <button data-tour="confirm" onClick={() => { setConfirmedFor(circuit); setUsedChange(false); }} disabled={confirmed}>{confirmed ? 'Confirmed' : "That's what's installed"}</button>
             <button onClick={editBanks}>Change</button>
           </div>
         </>
@@ -182,7 +185,7 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
       {step(1, 'Load the sweep', (
         <>
           <label className="file-picker">Choose an .s1p file…<input type="file" accept=".s1p" onChange={(e) => { void onFiles(e.target.files); e.target.value = ''; }} /></label>
-          {activeTag && !loaded && tagMatches ? <button onClick={() => setLoaded(true)}>Use "{activeTag.label}" (already loaded)</button> : null}
+          {activeTag && !loaded && tagMatches ? <button data-tour="use-sweep" onClick={() => setLoaded(true)}>Use "{activeTag.label}" (already loaded)</button> : null}
           {activeTag && !loaded && !tagMatches ? <small>"{activeTag.label}" was taken on {tagSummary(state.chain, activeTag.state) || 'a different build'}, not on what's installed now. Load this build's sweep, or fix the tag in Sweeps.</small> : null}
           {loadError ? <small className="bad">{loadError}</small> : null}
           {PROFILES[level].sheets.includes('sweeps') ? <small>Tagged with the wrong build? Fix it in Sweeps (top bar).</small> : null}
@@ -199,7 +202,7 @@ export function NewSweepGuide({ state, dispatch, level, grid, caches, verdict, p
         </>
       ))}
       {model ? step(3, 'What to change', recBody()) : null}
-      {model ? step(4, 'Safe at full power?', <button onClick={onSafePower}>Check it at full power</button>) : null}
+      {model ? step(4, 'Safe at full power?', <button data-tour="to-safe" onClick={onSafePower}>Check it at full power</button>) : null}
     </section>
   );
 }

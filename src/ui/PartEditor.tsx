@@ -118,7 +118,7 @@ export function PartEditor({ state, dispatch, level }: { state: AppState; dispat
   );
   const num: Num = (label, value, onCommit, attrs = {}) => <div className="form-row" key={label}><label>{label}</label><DraftNumberInput step="any" {...attrs} value={value} onCommit={onCommit} /></div>;
   return (
-    <section className="panel part-editor">
+    <section className="panel part-editor" data-tour="editor">
       <header className="panel-head"><h3>{b.label}</h3><button onClick={() => dispatch({ type: 'select', id: null })} aria-label="Close the part editor">×</button></header>
       {set !== 'stock' ? <div className="form-row"><label>Name</label><input value={b.label} onChange={(e) => patch({ label: e.target.value })} /></div> : null}
       <small>{blockSummary(b)}{PROFILES[level].nameAssumptions ? ` · values for ${state.variants[state.primary].name}` : ''}</small>

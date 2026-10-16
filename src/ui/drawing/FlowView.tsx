@@ -58,7 +58,7 @@ export function FlowView({ chain, selected, highlight, onSelect, cableM, tuner }
           <small>Parts in the {stageTitle(shown).toLowerCase()}:</small>
           {shown.blockIds.map((id) => {
             const b = findBlock(chain, id);
-            return <button key={id} className={selected === id ? 'selected' : ''} onClick={() => onSelect(id)}><b>{b?.label ?? id}</b> <span>{b ? partValue(b, cableM) : ''}</span></button>;
+            return <button key={id} data-tour={`part-${id}`} className={selected === id ? 'selected' : ''} onClick={() => onSelect(id)}><b>{b?.label ?? id}</b> <span>{b ? partValue(b, cableM) : ''}</span></button>;
           })}
         </div>
       ) : null}

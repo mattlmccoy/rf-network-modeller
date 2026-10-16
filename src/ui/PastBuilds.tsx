@@ -50,7 +50,7 @@ export function PastBuilds({ current, level, onOpen }: { current: { id: string |
     <main className="past">
       {error ? <p className="bad">{error}</p> : null}
       {rows === null && !error ? <p>Reading the projects saved in this browser…</p> : null}
-      <section className="panel">
+      <section className="panel" data-tour="compare">
         <header className="panel-head"><h3>Compare</h3></header>
         {picked.length ? (
           <>
@@ -71,14 +71,14 @@ export function PastBuilds({ current, level, onOpen }: { current: { id: string |
           </>
         )}
       </section>
-      {all.map((r) => {
+      {all.map((r, ri) => {
         const builds = r.state ? buildsOf(r.state) : [];
         return (
           <section className="panel" key={r.id ?? 'current'}>
-            <header className="panel-head">
+            <header className="panel-head" data-tour={ri === 0 ? 'project-head' : undefined}>
               <h3>{r.name}</h3>
               {r.state ? <small title={hasModel(r.state.chain) ? 'Has a circuit model, so it can predict' : 'Holds measured sweeps only: no circuit model to predict from'}>{hasModel(r.state.chain) ? 'modelled' : 'measured only'}</small> : null}
-              {r.id === current.id ? <small>open now</small> : r.id ? <button onClick={() => onOpen(r.id as string)}>Open</button> : null}
+              {r.id === current.id ? <small>open now</small> : r.id ? <button data-tour={r.id === rows?.[0]?.id ? 'open-project' : undefined} onClick={() => onOpen(r.id as string)}>Open</button> : null}
             </header>
             {r.error ? <p className="bad">Couldn't read this project: {r.error}</p> : null}
             {r.state && !builds.length ? <small>{Object.keys(r.state.sweeps).length ? `${Object.keys(r.state.sweeps).length} sweep${Object.keys(r.state.sweeps).length === 1 ? '' : 's'} loaded, none tagged to a build.` : 'No sweeps yet.'}</small> : null}
@@ -86,7 +86,7 @@ export function PastBuilds({ current, level, onOpen }: { current: { id: string |
               const sweep = r.state ? buildSweep(r.state, b) : undefined;
               const key = `${r.id ?? 'current'}:${b.key}`;
               return (
-                <label className="check-row" key={key}>
+                <label className="check-row" key={key} data-tour={ri === 0 && b.key === 'b0' ? 'build-check' : undefined}>
                   <input type="checkbox" disabled={!sweep} checked={picked.some((x) => x.key === key)}
                     onChange={() => { if (sweep && r.state) toggle({ key, label: `${r.name}: ${b.label}`, sweep, window: r.state.window }); }} />
                   {dateText(b.newest)} · {b.label} · {b.sweepIds.length} sweep{b.sweepIds.length === 1 ? '' : 's'}

@@ -60,7 +60,7 @@ export function EngineerPanel({ state, dispatch, grid, results, theme }: { state
   const mRoom = useMemo(() => (active ? landingNearF0(active.f, active.gamma.map((g) => zFromGamma(g)), state.window) : null), [active, state.window]);
   return (
     <div className="engineer">
-      <div className="plots">
+      <div className="plots" data-tour="plots">
         {state.panes.map((mode, i) => <PlotPane key={i} mode={mode} traces={traces} dots={dots} aitWindow={state.window} theme={theme} onMode={(md: PaneMode) => dispatch({ type: 'setPane', index: i, mode: md })} />)}
       </div>
       <label className="title-select">Cable assumption

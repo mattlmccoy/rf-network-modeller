@@ -46,14 +46,14 @@ export function SafePowerGuide({ state, dispatch, level, grid, caches, cs }: { s
       <h3>Guide</h3>
       <section className="step current">
         <h4><span className="step-mark">1</span>Planned power</h4>
-        <div className="form-row"><label>Power into the cage (W)</label><DraftNumberInput min="1" step="any" value={state.powerW} onCommit={(w) => dispatch({ type: 'setPower', watts: w })} /></div>
+        <div className="form-row" data-tour="power-input"><label>Power into the cage (W)</label><DraftNumberInput min="1" step="any" value={state.powerW} onCommit={(w) => dispatch({ type: 'setPower', watts: w })} /></div>
       </section>
       <section className="step current">
         <h4><span className="step-mark">2</span>Capacitors against their ratings</h4>
-        <p className={`verdict-line ${powerTone(cs)}`}>{powerText(cs, level)}</p>
+        <p className={`verdict-line ${powerTone(cs)}`} data-tour="cap-line">{powerText(cs, level)}</p>
         <small>Only the capacitors have ratings here; transformer and wiring heating aren't modelled.</small>
         {level === 'beginner' ? null : (
-          <table className="numbers">
+          <table className="numbers" data-tour="cap-table">
             <thead><tr><th>Part</th><th>% of rating</th>{level === 'engineer' ? <><th>V rms</th><th>A rms</th></> : null}</tr></thead>
             <tbody>
               {cs.rows.map((r) => (
@@ -68,7 +68,7 @@ export function SafePowerGuide({ state, dispatch, level, grid, caches, cs }: { s
         )}
       </section>
       {level === 'beginner' ? null : (
-        <section className="step current">
+        <section className="step current" data-tour="transformer">
           <h4><span className="step-mark">3</span>Transformer</h4>
           {tv.kind === 'none' ? <p>No transformer in this circuit.</p> : null}
           {tv.kind === 'error' ? <p className="bad">Can't tell: {tv.message}.</p> : null}

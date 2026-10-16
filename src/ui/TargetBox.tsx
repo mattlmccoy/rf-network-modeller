@@ -32,7 +32,7 @@ export function TargetBox({ window: w, measured, measuredLabel, predicted, ghost
   const y1 = Y(clamp01(w.xHi / TARGET.xMax));
   const y2 = Y(clamp01(w.xLo / TARGET.xMax));
   return (
-    <svg className="target" viewBox="0 0 310 214" role="img" aria-label={`${WORDS.landing} at 13.56 MHz`}>
+    <svg className="target" data-tour="target-box" viewBox="0 0 310 214" role="img" aria-label={`${WORDS.landing} at 13.56 MHz`}>
       <line x1={X0} y1={Y0} x2={X(1)} y2={Y0} className="axis" />
       <line x1={X0} y1={Y0} x2={X0} y2={Y(1)} className="axis" />
       <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} className="win" />

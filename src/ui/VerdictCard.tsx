@@ -12,7 +12,7 @@ export const NEXT: Record<VerdictState, string> = {
 /** Beginner result: one plain verdict, where it comes from, and one next step (spec §7.4). */
 export function VerdictCard({ text, tone, label, trustNote, next }: { text: string; tone: Tone; label: string; trustNote: string | null; next: string }) {
   return (
-    <div className={`verdict-card ${tone}`}>
+    <div className={`verdict-card ${tone}`} data-tour="verdict-card">
       <small>{label}</small>
       <b>{text}</b>
       {trustNote ? <small>{trustNote}</small> : null}
