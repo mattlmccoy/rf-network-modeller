@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import type { Level } from '../present/level.ts';
+import type { TourId } from '../tour/tours.ts';
+import { LearnMenu } from './LearnMenu.tsx';
 
 export type WorkTask = 'newSweep' | 'tryChange' | 'safePower' | 'newNetwork';
 export type Task = 'home' | WorkTask | 'pastBuilds' | 'rigHistory';
@@ -12,10 +15,18 @@ const TILES: readonly { task: Exclude<Task, 'home'>; title: string; text: string
   { task: 'rigHistory', title: 'Rig history', text: 'Every configuration ever swept, read-only', engineerOnly: true },
 ];
 
-/** What are you doing today? Rig history shows at Engineer level only ("hidden, not private", spec §2). */
-export function Home({ onTask, level }: { onTask: (t: Task) => void; level: Level }) {
+/** What are you doing today? Rig history shows at Engineer level only ("hidden, not private", spec §2); tours under Learn the tool. */
+export function Home({ onTask, level, onTour, offerTour, onDismissOffer }: { onTask: (t: Task) => void; level: Level; onTour: (id: TourId) => void; offerTour: boolean; onDismissOffer: () => void }) {
+  const [learn, setLearn] = useState(false);
   return (
     <main className="home">
+      {offerTour ? (
+        <div className="tour-banner" data-tour="tour-banner">
+          <span>New here? Take the 2-minute tour of the main task.</span>
+          <button onClick={() => { onDismissOffer(); onTour('newSweep'); }}>Take the tour</button>
+          <button onClick={onDismissOffer}>No thanks</button>
+        </div>
+      ) : null}
       <h2>What are you doing today?</h2>
       <div className="tiles">
         {TILES.filter((t) => !t.engineerOnly || level === 'engineer').map((t) => (
@@ -24,7 +35,9 @@ export function Home({ onTask, level }: { onTask: (t: Task) => void; level: Leve
             <span>{t.text}</span>
           </button>
         ))}
+        <button className="tile" data-tour="learn" onClick={() => setLearn((x) => !x)}><b>Learn the tool</b><span>Short hands-on tours, one per task</span></button>
       </div>
+      {learn ? <LearnMenu level={level} onStart={onTour} /> : null}
     </main>
   );
 }

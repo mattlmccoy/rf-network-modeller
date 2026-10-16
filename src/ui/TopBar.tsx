@@ -17,6 +17,9 @@ export interface TopBarProps {
   onOpen: (f: File) => void;
   theme: 'light' | 'dark';
   onTheme: () => void;
+  /** Practice mode (tutorial): nothing is saved, so the save status gives way to a practice note and Exit. */
+  practice: boolean;
+  onExitTour: () => void;
 }
 
 export function TopBar(p: TopBarProps) {
@@ -29,7 +32,12 @@ export function TopBar(p: TopBarProps) {
         {p.taskTitle ? <b>· {p.taskTitle}</b> : null}
       </span>
       <div className="window-actions">
-        <span className={`save-status ${p.save}`} role="status">{SAVE_TEXT[p.save]}</span>
+        {p.practice ? (
+          <>
+            <span className="save-status practice" role="status">Practice: nothing here is saved</span>
+            <button data-tour="exit-tour" onClick={p.onExitTour}>Exit tutorial</button>
+          </>
+        ) : <span className={`save-status ${p.save}`} role="status">{SAVE_TEXT[p.save]}</span>}
         {p.sheets.map((s) => <button key={s} onClick={() => p.onSheet(s)}>{SHEET_TEXT[s]}</button>)}
         <button onClick={p.onSave}>Save project</button>
         <label className="file-picker">Open project<input type="file" accept=".json" onChange={(e) => { const f = e.target.files?.[0]; if (f) p.onOpen(f); e.target.value = ''; }} /></label>

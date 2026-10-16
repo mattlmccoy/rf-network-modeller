@@ -36,7 +36,7 @@ export const TOURS: readonly Tour[] = [
         text: {
           beginner: 'The card says in plain words whether the build sits in the tuner’s good range and how much room it has as the part warms. The small line on top says whether that comes from your sweep or from the model.',
           builder: 'The box is the tuner’s good range. Your sweep is the filled dot and the model is the ring. The line under it says whether it lands in range and how much room is left to drift.',
-          engineer: 'The plots show the measured trace (dashed) and the model for each cable assumption. Dots mark 13.56 MHz and the shaded patch is the tuner’s good range. The table under them gives the impedance and the room for each.',
+          engineer: 'The first plot shows the measured trace (dashed) and the model for each cable assumption; dots mark 13.56 MHz and the shaded patch is the tuner’s good range. The other plots show the same as |S11|, R and X, and VSWR, and the table under them gives the impedance and the room for each.',
         } },
       { id: 'power', title: 'Check the power line', target: 'power-line', advance: next,
         text: 'The line under the verdict checks every capacitor at the planned power. If one would go over its rating, it names the part and the power that keeps it safe.' },

@@ -144,3 +144,16 @@ html[data-theme='dark'] .stress-red { color: #ff8a80; }
 .stress-bar.amber i { background: #ff9f0a; }
 .stress-bar.red i { background: #ff3b30; }
 .stress-bar.unknown i { background: transparent; }
+.tour { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+.tour-spot { position: fixed; border-radius: 8px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, .45); outline: 2px solid #f2c94c; transition: all .15s ease; }
+.tour-dim { position: fixed; inset: 0; background: rgba(0, 0, 0, .3); }
+.tour-card { position: fixed; width: 360px; max-width: calc(100vw - 24px); pointer-events: auto; display: grid; gap: 6px; padding: 12px; border-radius: 10px; background: var(--panel, #f4f4f2); color: inherit; box-shadow: 0 6px 24px rgba(0, 0, 0, .3); }
+.tour-card.centred { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.tour-card.bottom { top: auto; left: 12px; right: 12px; bottom: 12px; width: auto; transform: none; }
+.tour-card p { margin: 0; }
+html[data-theme='dark'] .tour-card { background: #2a2b2e; }
+.tour-banner { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; padding: 10px 12px; border: 2px solid #f2c94c; border-radius: 8px; }
+.learn { display: grid; gap: 8px; margin-top: 12px; }
+.learn-row { display: flex; gap: 12px; justify-content: space-between; align-items: center; }
+.save-status.practice { color: #b8860b; font-weight: 600; }
+@media (max-width: 767px) { html.touring body { padding-bottom: 60vh; } }

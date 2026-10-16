@@ -189,7 +189,7 @@ function draw(canvas: HTMLCanvasElement, p: DrawInput): void {
   legend(ctx, items, p.mode === 'smith' ? 8 : 46, text, W);
 }
 
-export function PlotPane({ mode, traces, dots, aitWindow, theme, onMode }: { mode: PaneMode; traces: Trace[]; dots: Dot[]; aitWindow: Window; theme: 'light' | 'dark'; onMode: (m: PaneMode) => void }) {
+export function PlotPane({ mode, traces, dots, aitWindow, theme, onMode, tour }: { mode: PaneMode; traces: Trace[]; dots: Dot[]; aitWindow: Window; theme: 'light' | 'dark'; onMode: (m: PaneMode) => void; tour?: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const [span, setSpan] = useState<Span>('zoom');
   const [tick, setTick] = useState(0);
@@ -204,7 +204,7 @@ export function PlotPane({ mode, traces, dots, aitWindow, theme, onMode }: { mod
     if (ref.current) draw(ref.current, { mode, traces, dots, aitWindow, dark: theme === 'dark', span });
   }, [mode, traces, dots, aitWindow, theme, span, tick]);
   return (
-    <section className="chart-panel" style={{ '--chart-height': '330px' } as CSSProperties}>
+    <section className="chart-panel" data-tour={tour} style={{ '--chart-height': '330px' } as CSSProperties}>
       <div className="chart-titlebar">
         <select value={mode} onChange={(e) => onMode(e.target.value as PaneMode)} aria-label="Plot">
           {(Object.keys(LABELS) as PaneMode[]).map((m) => <option key={m} value={m}>{LABELS[m]}</option>)}
